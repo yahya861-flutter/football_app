@@ -14,10 +14,14 @@ class LeagueProvider with ChangeNotifier {
   // Store any error messages that occur during the API call
   String? _errorMessage;
 
+  // Store the details of a specific selected league
+  dynamic _selectedLeague;
+
   // Getters to expose the private state variables to the UI
   List<dynamic> get leagues => _leagues;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  dynamic get selectedLeague => _selectedLeague;
 
   // API Configuration
   final String _baseUrl = 'https://api.sportmonks.com/v3/football/leagues';
@@ -59,6 +63,38 @@ class LeagueProvider with ChangeNotifier {
       _isLoading = false;
       
       // Notify the UI to rebuild with the new data or error message
+      notifyListeners();
+    }
+  }
+
+  /// Fetches detailed information for a single league by its unique ID
+  Future<void> fetchLeagueById(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _selectedLeague = null; // Clear previous selection
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': _apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // The individual league data is inside the 'data' key
+        _selectedLeague = data['data'];
+      } else {
+        _errorMessage = 'Failed to load league details: ${response.statusCode}';
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while fetching league details: $e';
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

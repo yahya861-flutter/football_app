@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/screens/league_details_screen.dart';
 
 /// This screen displays a grid of all available football leagues.
 /// It retrieves data from the LeagueProvider and handles images using Image.network.
@@ -48,7 +49,21 @@ class LeaguesScreen extends StatelessWidget {
           itemCount: provider.leagues.length,
           itemBuilder: (context, index) {
             final league = provider.leagues[index];
-            return _buildLeagueCard(league);
+            final leagueId = league['id'] ?? 0;
+
+            return InkWell(
+              onTap: () {
+                // Navigate to the detailed league page when a card is tapped
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => LeagueDetailsScreen(leagueId: leagueId),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(24),
+              child: _buildLeagueCard(league),
+            );
           },
         );
       },
