@@ -174,6 +174,8 @@ class LeagueProvider with ChangeNotifier {
           'Authorization': _apiKey,
         },
       );
+      print("Status Response: ${response.statusCode}");
+      print("Status Body:${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

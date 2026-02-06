@@ -141,8 +141,10 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                   // HOME TAB - Refactored to only show details, teams and scores
                   _buildHomeTabContent(league, leagueProvider, matchProvider, accentColor),
                   
+                  // TABLE TAB - Showing standings table
+                  _buildTableTabContent(leagueProvider, accentColor),
+                  
                   // PLACEHOLDERS
-                  _buildPlaceholderTab("League Table", Icons.table_chart, accentColor),
                   _buildPlaceholderTab("Recent Results", Icons.history, accentColor),
                   _buildPlaceholderTab("Upcoming Fixtures", Icons.calendar_month, accentColor),
                 ],
@@ -168,14 +170,6 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("League Info", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          _buildInfoRow("Type", type.toString().toUpperCase()),
-          _buildInfoRow("Sub-Type", subType.toString().replaceAll('_', ' ').toUpperCase()),
-          _buildInfoRow("Category", (league['category'] ?? 'N/A').toString()),
-          _buildInfoRow("Has Jerseys", (league['has_jerseys'] == true ? "YES" : "NO")),
-
-          const SizedBox(height: 40),
           // STANDINGS SECTION
           const Text("Standings", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
@@ -320,6 +314,176 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             const Text("Content coming soon", style: TextStyle(color: Colors.white38, fontSize: 16)),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Builds the content for the "Table" tab (League Standings)
+  Widget _buildTableTabContent(LeagueProvider leagueProvider, Color accentColor) {
+    if (leagueProvider.isLoading && leagueProvider.standings.isEmpty) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+    }
+
+    if (leagueProvider.standings.isEmpty) {
+      return _buildPlaceholderTab("League Table", Icons.table_chart, accentColor);
+    }
+
+    return Container(
+      color: Color(0xFF1E1E2C), // Matching the light background from the screenshot
+      child: Column(
+        children: [
+          // Table Header
+          _buildTableHeader(),
+          // Standings List
+          Expanded(
+            child: ListView.builder(
+              padding: EdgeInsets.zero,
+              itemCount: leagueProvider.standings.length,
+              itemBuilder: (context, index) {
+                return _buildTableStandingRow(leagueProvider.standings[index], accentColor);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the header row for the standings table
+  Widget _buildTableHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 40), // Space for rank
+          const Expanded(child: SizedBox()), // Space for team name
+          _buildHeaderColumn("MP"),
+          _buildHeaderColumn("W"),
+          _buildHeaderColumn("D"),
+          _buildHeaderColumn("L"),
+          _buildHeaderColumn("GD"),
+          _buildHeaderColumn("PTS", isLast: true),
+        ],
+      ),
+    );
+  }
+
+  /// Helper for header columns
+  Widget _buildHeaderColumn(String label, {bool isLast = false}) {
+    return SizedBox(
+      width: 35,
+      child: Text(
+        label,
+        style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.w500),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  /// Builds a single row for the league table
+  Widget _buildTableStandingRow(dynamic standing, Color accentColor) {
+    final team = standing['participant'] ?? {};
+    final position = standing['position'] ?? '-';
+    final points = standing['points'] ?? 0;
+    final teamName = team['name'] ?? 'Unknown';
+
+    // Extracting stats from details if available, otherwise using defaults
+    final details = standing['details'] as List? ?? [];
+    
+    String mp = "-";
+    String w = "-";
+    String d = "-";
+    String l = "-";
+    String gd = "-";
+
+    // Common SportMonks detail types
+    for (var detail in details) {
+      final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
+      final value = detail['value']?.toString() ?? '0';
+      if (type.contains('played')) mp = value;
+      else if (type.contains('won')) w = value;
+      else if (type.contains('draw')) d = value;
+      else if (type.contains('lost')) l = value;
+      else if (type.contains('goals-difference')) gd = value;
+    }
+
+    // Fallback: If details are simple objects or if stats are directly on the object
+    if ((mp == "-" || mp == "0") && standing['overall'] != null) {
+      final overall = standing['overall'];
+      mp = overall['played']?.toString() ?? "-";
+      w = overall['won']?.toString() ?? "-";
+      d = overall['draw']?.toString() ?? "-";
+      l = overall['lost']?.toString() ?? "-";
+      gd = overall['goals_diff']?.toString() ?? "-";
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
+      ),
+      child: Row(
+        children: [
+          // RANK
+          Container(
+            width: 30,
+            height: 30,
+            alignment: Alignment.center,
+            decoration: const BoxDecoration(
+              color: Color(0xFF000000), // Light green-ish background
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              position.toString(),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // TEAM NAME
+          Expanded(
+            child: Text(
+              teamName,
+              style: const TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.bold, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // STATS
+          _buildStatColumn(mp),
+          _buildStatColumn(w),
+          _buildStatColumn(d),
+          _buildStatColumn(l),
+          _buildStatColumn(gd),
+          // POINTS
+          Container(
+            width: 35,
+            height: 35,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.white),
+              shape: BoxShape.circle,
+            ),
+            child: Text(
+              points.toString(),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Helper for stat columns in the table row
+  Widget _buildStatColumn(String value) {
+    return SizedBox(
+      width: 35,
+      child: Text(
+        value,
+        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w400),
+        textAlign: TextAlign.center,
       ),
     );
   }
