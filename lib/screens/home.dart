@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/screens/live_scores_screen.dart';
 import 'package:football_app/screens/leagues_screen.dart';
-import 'package:football_app/screens/competitions_screen.dart';
-import 'package:football_app/screens/teams_screen.dart';
-import 'package:football_app/screens/settings_screen.dart';
+import 'package:football_app/screens/shorts_screen.dart';
+import 'package:football_app/screens/highlights_screen.dart';
+import 'package:football_app/screens/news_screen.dart';
 import '../providers/league_provider.dart';
 import '../providers/live_score_provider.dart';
 
@@ -34,20 +34,20 @@ class _HomeState extends State<Home> {
 
   // List of titles for each tab, used in the AppBar
   final List<String> _titles = [
-    "Live Scores",
-    "Leagues",
-    "Competitions",
-    "Teams",
-    "Settings"
+    "Matches",
+    "Following",
+    "Shorts",
+    "Highlights",
+    "News"
   ];
 
   // List of actual screen widgets ordered by the bottom navigation items
   final List<Widget> _screens = const [
     LiveScoresScreen(),
     LeaguesScreen(),
-    CompetitionsScreen(),
-    TeamsScreen(),
-    SettingsScreen(),
+    ShortsScreen(),
+    HighlightsScreen(),
+    NewsScreen(),
   ];
 
   @override
@@ -87,11 +87,11 @@ class _HomeState extends State<Home> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.live_tv), label: "Live"),
+          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: "Matches"),
           BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: "Leagues"),
-          BottomNavigationBarItem(icon: Icon(Icons.reorder), label: "Comp."),
-          BottomNavigationBarItem(icon: Icon(Icons.groups), label: "Teams"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
+          BottomNavigationBarItem(icon: Icon(Icons.video_library), label: "Shorts"),
+          BottomNavigationBarItem(icon: Icon(Icons.play_circle_outline), label: "Highlights"),
+          BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: "News"),
         ],
       ),
     );

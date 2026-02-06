@@ -1,152 +1,318 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/league_details_screen.dart';
 
-/// This screen displays a grid of all available football leagues.
-/// It retrieves data from the LeagueProvider and handles images using Image.network.
-class LeaguesScreen extends StatelessWidget {
+class LeaguesScreen extends StatefulWidget {
   const LeaguesScreen({super.key});
 
   @override
+  State<LeaguesScreen> createState() => _LeaguesScreenState();
+}
+
+class _LeaguesScreenState extends State<LeaguesScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
+  @override
   Widget build(BuildContext context) {
-    return Consumer<LeagueProvider>(
-      builder: (context, provider, child) {
-        // Display a loading indicator while data is being fetched
-        if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
-        }
+    const Color primaryColor = Color(0xFF1E1E2C);
+    const Color accentColor = Color(0xFFD4FF00);
+    const Color cardColor = Color(0xFF2D2D44);
 
-        // Display an error message if the API fetch fails
-        if (provider.errorMessage != null) {
-          return Center(
-            child: Text(
-              provider.errorMessage!,
-              style: const TextStyle(color: Colors.redAccent),
+    return Scaffold(
+      backgroundColor: primaryColor,
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            // Sub Tabs: Leagues | Teams
+            const TabBar(
+              indicatorColor: accentColor,
+              labelColor: accentColor,
+              unselectedLabelColor: Colors.white38,
+              tabs: [
+                Tab(text: "Leagues"),
+                Tab(text: "Teams"),
+              ],
             ),
-          );
-        }
-
-        // Show a message if no leagues are available in the provider
-        if (provider.leagues.isEmpty) {
-          return const Center(
-            child: Text(
-              "No leagues found",
-              style: TextStyle(color: Colors.white70),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildLeaguesTab(accentColor, cardColor),
+                  _buildTeamsTab(accentColor),
+                ],
+              ),
             ),
-          );
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeaguesTab(Color accentColor, Color cardColor) {
+    return Consumer2<LeagueProvider, FollowProvider>(
+      builder: (context, leagueProvider, followProvider, child) {
+        if (leagueProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator(color: Colors.blueGrey));
         }
 
-        // Build a grid of league cards, 2 items per row
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 2 columns for a clean grid layout
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.8, // Controls the height vs width of cards
+        // Apply search filtering
+        final filteredLeagues = leagueProvider.leagues.where((l) {
+          final name = l['name']?.toLowerCase() ?? "";
+          return name.contains(_searchQuery.toLowerCase());
+        }).toList();
+
+        final topLeagues = filteredLeagues.where((l) => l['category'] == 1).toList();
+        
+        // Regroup filtered leagues by country
+        Map<String, List<dynamic>> leaguesByCountry = {};
+        for (var league in filteredLeagues) {
+          final countryName = league['country']?['name'] ?? 'International';
+          if (!leaguesByCountry.containsKey(countryName)) {
+            leaguesByCountry[countryName] = [];
+          }
+          leaguesByCountry[countryName]!.add(league);
+        }
+
+        final followedLeagues = filteredLeagues.where((l) => followProvider.isLeagueFollowed(l['id'])).toList();
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              // Search Bar
+              _buildSearchBar(cardColor),
+              const SizedBox(height: 24),
+              
+              // Following Section
+              _buildExpandableSection(
+                icon: Icons.star,
+                iconColor: Colors.tealAccent,
+                title: "Following",
+                count: followedLeagues.length,
+                content: followedLeagues.isEmpty 
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text("You are not following any leagues", style: TextStyle(color: Colors.white38)),
+                    )
+                  : Column(children: followedLeagues.map((l) => _buildLeagueItem(l, accentColor)).toList()),
+              ),
+              const SizedBox(height: 12),
+
+              // Top Leagues Section
+              _buildExpandableSection(
+                icon: Icons.thumb_up,
+                iconColor: Colors.tealAccent,
+                title: "Top Leagues",
+                showSeeAll: true,
+                count: topLeagues.length,
+                content: Column(children: topLeagues.map((l) => _buildLeagueItem(l, accentColor)).toList()),
+              ),
+              const SizedBox(height: 12),
+
+              // Suggestions Section
+              _buildExpandableSection(
+                icon: Icons.lightbulb_outline,
+                iconColor: Colors.tealAccent,
+                title: "Suggestions",
+                count: 3,
+                content: _buildSuggestionsRow(accentColor, cardColor, leagueProvider.leagues),
+              ),
+              const SizedBox(height: 32),
+
+              const Text("All Leagues", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+
+              // All Leagues grouped by country
+              ...leaguesByCountry.entries.map((entry) {
+                return _buildCountryExpandable(entry.key, entry.value, accentColor);
+              }).toList(),
+              
+              const SizedBox(height: 40),
+            ],
           ),
-          itemCount: provider.leagues.length,
-          itemBuilder: (context, index) {
-            final league = provider.leagues[index];
-            final leagueId = league['id'] ?? 0;
-
-            return InkWell(
-              onTap: () {
-                // Navigate to the detailed league page when a card is tapped
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => LeagueDetailsScreen(leagueId: leagueId),
-                  ),
-                );
-              },
-              borderRadius: BorderRadius.circular(24),
-              child: _buildLeagueCard(league),
-            );
-          },
         );
       },
     );
   }
 
-  /// Builds an individual league card with its logo and name.
-  Widget _buildLeagueCard(dynamic league) {
-    // Extract name and logo path, with defaults for safety
-    final name = league['name'] ?? 'Unknown League';
-    final imagePath = league['image_path'] ?? '';
-    final shortName = league['short_code'] ?? 'UEFA';
-
+  Widget _buildSearchBar(Color cardColor) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44), // Consistent dark card background
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
       ),
-      clipBehavior: Clip.antiAlias, // Ensures child content stays within rounded corners
+      child: TextField(
+        controller: _searchController,
+        style: const TextStyle(color: Colors.white),
+        onChanged: (val) => setState(() => _searchQuery = val),
+        decoration: const InputDecoration(
+          hintText: "Type to search leagues",
+          hintStyle: TextStyle(color: Colors.white38),
+          prefixIcon: Icon(Icons.search, color: Colors.white38),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+// Expandable content
+  Widget _buildExpandableSection({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required int count,
+    required Widget content,
+    bool showSeeAll = false,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D44),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Icon(icon, color: iconColor),
+          title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showSeeAll)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8.0),
+                  child: Text("See All", style: TextStyle(color: Colors.tealAccent, fontSize: 12)),
+                ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(count.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
+            ],
+          ),
+          children: [content],
+        ),
+      ),
+    );
+  }
+// suggestion area
+  Widget _buildSuggestionsRow(Color accentColor, Color cardColor, List<dynamic> leagues) {
+    // Pick a few leagues for suggestions
+    final suggestions = leagues.take(3).toList();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: suggestions.map((l) {
+          return Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.blueGrey,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              children: [
+                if (l['image_path'] != null)
+                  Image.network(l['image_path'], width: 24, height: 24)
+                else
+                  Icon(Icons.emoji_events, color: accentColor, size: 20),
+                const SizedBox(width: 8),
+                Text(l['name'] ?? 'League', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                const Icon(Icons.star_border, color: Colors.white38, size: 18),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+// all leageus area by country
+  Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, Color accentColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D44),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white10),
+            child: const Icon(Icons.public, color: Colors.blue, size: 20),
+          ),
+          title: Text(countryName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(leagues.length.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
+            ],
+          ),
+          children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLeagueItem(dynamic league, Color accentColor) {
+    return ListTile(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LeagueDetailsScreen(leagueId: league['id']),
+          ),
+        );
+      },
+      leading: league['image_path'] != null 
+        ? Image.network(league['image_path'], width: 30, height: 30)
+        : Icon(Icons.emoji_events, color: accentColor, size: 30),
+      title: Text(league['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 14)),
+      trailing: Consumer<FollowProvider>(
+        builder: (context, follow, child) {
+          final isFollowed = follow.isLeagueFollowed(league['id']);
+          return IconButton(
+            icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
+                 color: isFollowed ? accentColor : Colors.white38),
+            onPressed: () => follow.toggleFollowLeague(league['id']),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTeamsTab(Color accentColor) {
+    return const Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Header section containing the league logo
-          Expanded(
-            flex: 2,
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.black26, // Darker backdrop for logos
-              ),
-              child: imagePath.isNotEmpty
-                  ? Image.network(
-                      imagePath,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.emoji_events,
-                        color: Colors.white24,
-                        size: 40,
-                      ),
-                    )
-                  : const Icon(Icons.emoji_events, color: Colors.white24, size: 40),
-            ),
-          ),
-          // Footer section containing the league name and short info
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis, // Prevents overflow for long names
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    shortName,
-                    style: const TextStyle(
-                      color: Colors.white38,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Icon(Icons.groups, size: 80, color: Colors.white10),
+          SizedBox(height: 16),
+          Text("Follow Teams", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          Text("Search for your favorite teams to follow them", style: TextStyle(color: Colors.white38, fontSize: 12)),
         ],
       ),
     );

@@ -35,6 +35,22 @@ class LeagueProvider with ChangeNotifier {
   List<dynamic> get standings => _standings;
   List<dynamic> get liveLeagues => _liveLeagues;
 
+  /// Returns leagues categorized as 'Top Leagues' (Category 1)
+  List<dynamic> get topLeagues => _leagues.where((l) => l['category'] == 1).toList();
+
+  /// Groups leagues by country for the "All Leagues" section
+  Map<String, List<dynamic>> get leaguesByCountry {
+    Map<String, List<dynamic>> groups = {};
+    for (var league in _leagues) {
+      final countryName = league['country']?['name'] ?? 'International';
+      if (!groups.containsKey(countryName)) {
+        groups[countryName] = [];
+      }
+      groups[countryName]!.add(league);
+    }
+    return groups;
+  }
+
   /// Returns the list of teams for the currently selected league
   /// Extracted from the current season included in the API response
   List<dynamic> get teams {
@@ -66,11 +82,10 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse(_baseUrl),
+        Uri.parse('$_baseUrl?include=country&api_token=$_apiKey'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': _apiKey,
         },
       );
 
