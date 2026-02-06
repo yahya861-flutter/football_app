@@ -17,11 +17,19 @@ class LeagueProvider with ChangeNotifier {
   // Store the details of a specific selected league
   dynamic _selectedLeague;
 
+  // Store the top scorers for the current season
+  List<dynamic> _topScorers = [];
+
+  // Store the standings for the current season
+  List<dynamic> _standings = [];
+
   // Getters to expose the private state variables to the UI
   List<dynamic> get leagues => _leagues;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   dynamic get selectedLeague => _selectedLeague;
+  List<dynamic> get topScorers => _topScorers;
+  List<dynamic> get standings => _standings;
 
   /// Returns the list of teams for the currently selected league
   /// Extracted from the current season included in the API response
@@ -30,6 +38,14 @@ class LeagueProvider with ChangeNotifier {
       return _selectedLeague['currentseason']['teams'] ?? [];
     }
     return [];
+  }
+
+  /// Returns the current season ID for the selected league
+  int? get currentSeasonId {
+    if (_selectedLeague != null && _selectedLeague['currentseason'] != null) {
+      return _selectedLeague['currentseason']['id'];
+    }
+    return null;
   }
 
   // API Configuration
@@ -103,6 +119,70 @@ class LeagueProvider with ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'An error occurred while fetching league details: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetches the top scorers for a specific season
+  Future<void> fetchTopScorers(int seasonId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _topScorers = [];
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        // Include player and team (participant) details
+        Uri.parse('https://api.sportmonks.com/v3/football/topscorers/seasons/$seasonId?include=player;participant'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': _apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _topScorers = data['data'] ?? [];
+      } else {
+        _errorMessage = 'Failed to load top scorers: ${response.statusCode}';
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while fetching top scorers: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetches the standings for a specific season
+  Future<void> fetchStandings(int seasonId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _standings = [];
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        // Include participant details (team name, logo)
+        Uri.parse('https://api.sportmonks.com/v3/football/standings/seasons/$seasonId?include=participant'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': _apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _standings = data['data'] ?? [];
+      } else {
+        _errorMessage = 'Failed to load standings: ${response.statusCode}';
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while fetching standings: $e';
     } finally {
       _isLoading = false;
       notifyListeners();

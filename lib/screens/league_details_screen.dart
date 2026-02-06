@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:provider/provider.dart';
-
 /// This screen shows detailed information for a single football league.
 /// It also fetches and displays live (in-play) matches specifically for this league.
 class LeagueDetailsScreen extends StatefulWidget {
@@ -20,8 +19,16 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   void initState() {
     super.initState();
     // Fetch league details and current in-play matches on initialization
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LeagueProvider>().fetchLeagueById(widget.leagueId);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final leagueProvider = context.read<LeagueProvider>();
+      await leagueProvider.fetchLeagueById(widget.leagueId);
+      
+      // Fetch standings once we have the season ID
+      final seasonId = leagueProvider.currentSeasonId;
+      if (seasonId != null) {
+        leagueProvider.fetchStandings(seasonId);
+      }
+      
       context.read<MatchProvider>().fetchInPlayMatches();
     });
   }
@@ -132,7 +139,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
                   // HOME TAB - Refactored to only show details, teams and scores
-                  _buildHomeTabContent(league, leagueProvider.teams, matchProvider, accentColor),
+                  _buildHomeTabContent(league, leagueProvider, matchProvider, accentColor),
                   
                   // PLACEHOLDERS
                   _buildPlaceholderTab("League Table", Icons.table_chart, accentColor),
@@ -148,7 +155,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   /// Builds the content for the "Home" tab (Info, Teams, and Live Scores)
-  Widget _buildHomeTabContent(dynamic league, List<dynamic> teams, MatchProvider matchProvider, Color accentColor) {
+  Widget _buildHomeTabContent(dynamic league, LeagueProvider leagueProvider, MatchProvider matchProvider, Color accentColor) {
     final type = league['type'] ?? 'N/A';
     final subType = league['sub_type'] ?? 'N/A';
 
@@ -169,26 +176,16 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           _buildInfoRow("Has Jerseys", (league['has_jerseys'] == true ? "YES" : "NO")),
 
           const SizedBox(height: 40),
-          // TEAMS SECTION
-          const Text("Teams", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+          // STANDINGS SECTION
+          const Text("Standings", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          if (teams.isEmpty)
-            const Text("No teams found for this season", style: TextStyle(color: Colors.white38))
+          if (leagueProvider.standings.isEmpty && !leagueProvider.isLoading)
+            const Text("No standings found for this season", style: TextStyle(color: Colors.white38))
+          else if (leagueProvider.isLoading && leagueProvider.standings.isEmpty)
+             const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
           else
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: teams.length,
-              itemBuilder: (context, index) {
-                final team = teams[index];
-                return _buildTeamItem(team);
-              },
+            Column(
+              children: leagueProvider.standings.map((standing) => _buildStandingRow(standing, accentColor)).toList(),
             ),
 
           const SizedBox(height: 40),
@@ -238,6 +235,74 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           overflow: TextOverflow.ellipsis,
         ),
       ],
+    );
+  }
+
+  /// Builds a clean row for a team standing
+  Widget _buildStandingRow(dynamic standing, Color accentColor) {
+    final team = standing['participant'] ?? {};
+    final position = standing['position'] ?? '-';
+    final points = standing['points'] ?? 0;
+    
+    final teamName = team['name'] ?? 'Unknown';
+    final teamLogo = team['image_path'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D44),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          // RANK
+          SizedBox(
+            width: 30,
+            child: Text(
+              position.toString(),
+              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // LOGO
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            padding: const EdgeInsets.all(4),
+            child: teamLogo.isNotEmpty
+                ? Image.network(teamLogo, fit: BoxFit.contain)
+                : const Icon(Icons.shield, size: 16, color: Colors.white24),
+          ),
+          const SizedBox(width: 12),
+          // NAME
+          Expanded(
+            child: Text(
+              teamName,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 15),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // POINTS
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              "$points PTS",
+              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -295,6 +360,116 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
         children: [
           Text(label, style: const TextStyle(color: Colors.white38, fontSize: 16)),
           Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the "Top Scorers" tab content
+  Widget _buildTopScorersTab(List<dynamic> topScorers, bool isLoading, Color accentColor) {
+    if (isLoading && topScorers.isEmpty) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+    }
+
+    if (topScorers.isEmpty) {
+      return _buildPlaceholderTab("Top Scorers", Icons.emoji_events, accentColor);
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: topScorers.length,
+      itemBuilder: (context, index) {
+        final scorer = topScorers[index];
+        return _buildTopScorerCard(scorer, accentColor);
+      },
+    );
+  }
+
+  /// Builds a premium card for a top scorer
+  Widget _buildTopScorerCard(dynamic scorer, Color accentColor) {
+    final player = scorer['player'] ?? {};
+    final team = scorer['participant'] ?? {};
+    final goals = scorer['total'] ?? 0;
+    final position = scorer['position'] ?? '-';
+    
+    final playerName = player['display_name'] ?? player['common_name'] ?? 'Unknown Player';
+    final playerImage = player['image_path'] ?? '';
+    final teamName = team['name'] ?? 'Unknown Team';
+    final teamLogo = team['image_path'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D44),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Row(
+        children: [
+          // Position Rank
+          SizedBox(
+            width: 30,
+            child: Text(
+              position.toString(),
+              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Player Image
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white10,
+              image: playerImage.isNotEmpty
+                  ? DecorationImage(image: NetworkImage(playerImage), fit: BoxFit.cover)
+                  : null,
+            ),
+            child: playerImage.isEmpty ? const Icon(Icons.person, color: Colors.white24) : null,
+          ),
+          const SizedBox(width: 12),
+          // Player & Team Name
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  playerName,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    if (teamLogo.isNotEmpty)
+                      Image.network(teamLogo, width: 16, height: 16)
+                    else
+                      const Icon(Icons.shield, size: 16, color: Colors.white24),
+                    const SizedBox(width: 6),
+                    Text(
+                      teamName,
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Goal Count
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                goals.toString(),
+                style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              const Text(
+                "GOALS",
+                style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
         ],
       ),
     );
