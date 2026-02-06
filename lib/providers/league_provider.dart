@@ -23,6 +23,9 @@ class LeagueProvider with ChangeNotifier {
   // Store the standings for the current season
   List<dynamic> _standings = [];
 
+  // Store the live leagues (leagues with active matches)
+  List<dynamic> _liveLeagues = [];
+
   // Getters to expose the private state variables to the UI
   List<dynamic> get leagues => _leagues;
   bool get isLoading => _isLoading;
@@ -30,6 +33,7 @@ class LeagueProvider with ChangeNotifier {
   dynamic get selectedLeague => _selectedLeague;
   List<dynamic> get topScorers => _topScorers;
   List<dynamic> get standings => _standings;
+  List<dynamic> get liveLeagues => _liveLeagues;
 
   /// Returns the list of teams for the currently selected league
   /// Extracted from the current season included in the API response
@@ -189,5 +193,40 @@ class LeagueProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Fetches the list of leagues that currently have live matches
+  Future<void> fetchLiveLeagues() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        Uri.parse('$_baseUrl/live'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': _apiKey,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _liveLeagues = data['data'] ?? [];
+      } else {
+        _errorMessage = 'Failed to load live leagues: ${response.statusCode}';
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while fetching live leagues: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Returns true if the given league ID is currently live
+  bool isLeagueLive(int leagueId) {
+    return _liveLeagues.any((league) => league['id'] == leagueId);
   }
 }

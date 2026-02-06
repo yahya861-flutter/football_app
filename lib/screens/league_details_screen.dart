@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
+import 'package:football_app/providers/fixture_provider.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 /// This screen shows detailed information for a single football league.
 /// It also fetches and displays live (in-play) matches specifically for this league.
@@ -27,6 +29,15 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       final seasonId = leagueProvider.currentSeasonId;
       if (seasonId != null) {
         leagueProvider.fetchStandings(seasonId);
+        leagueProvider.fetchTopScorers(seasonId);
+      }
+      
+      await leagueProvider.fetchLiveLeagues();
+      
+      if (mounted) {
+        final fixtureProvider = context.read<FixtureProvider>();
+        fixtureProvider.fetchFixturesByDateRange(widget.leagueId);
+        fixtureProvider.fetchResultsByLeague(widget.leagueId);
       }
       
       context.read<MatchProvider>().fetchInPlayMatches();
@@ -100,17 +111,51 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 8),
-                          // Short Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: accentColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: Text(
-                              shortCode,
-                              style: const TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
+                          // Badges Row (Short Code + LIVE)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Short Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: accentColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Text(
+                                  shortCode,
+                                  style: const TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
+                                ),
+                              ),
+                              if (leagueProvider.isLeagueLive(widget.leagueId)) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red.withOpacity(0.5),
+                                        blurRadius: 8,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.circle, size: 8, color: Colors.white),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        "LIVE",
+                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           const SizedBox(height: 20), // Added gap from the bottom (tabs)
                         ],
@@ -144,9 +189,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                   // TABLE TAB - Showing standings table
                   _buildTableTabContent(leagueProvider, accentColor),
                   
-                  // PLACEHOLDERS
-                  _buildPlaceholderTab("Recent Results", Icons.history, accentColor),
-                  _buildPlaceholderTab("Upcoming Fixtures", Icons.calendar_month, accentColor),
+                  // RESULTS TAB - Showing finished matches
+                  _buildResultsTabContent(accentColor),
+                  
+                  // FIXTURES TAB - Showing last 14 days matches
+                  _buildFixturesTabContent(accentColor),
                 ],
               ),
             );
@@ -377,7 +424,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       width: 35,
       child: Text(
         label,
-        style: const TextStyle(color: Colors.black38, fontSize: 12, fontWeight: FontWeight.w500),
+        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
         textAlign: TextAlign.center,
       ),
     );
@@ -634,6 +681,182 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  /// Builds the "Results" tab content
+  Widget _buildResultsTabContent(Color accentColor) {
+    return Consumer<FixtureProvider>(
+      builder: (context, fixtureProvider, child) {
+        if (fixtureProvider.isLoading && fixtureProvider.results.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (fixtureProvider.results.isEmpty) {
+          return _buildPlaceholderTab("No Results Found", Icons.history, accentColor);
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: fixtureProvider.results.length,
+          itemBuilder: (context, index) {
+            final result = fixtureProvider.results[index];
+            return _buildFixtureCard(result, accentColor);
+          },
+        );
+      },
+    );
+  }
+
+  /// Builds the "Fixtures" tab content
+  Widget _buildFixturesTabContent(Color accentColor) {
+    return Consumer<FixtureProvider>(
+      builder: (context, fixtureProvider, child) {
+        if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (fixtureProvider.fixtures.isEmpty) {
+          return _buildPlaceholderTab("No Fixtures Found", Icons.calendar_month, accentColor);
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: fixtureProvider.fixtures.length,
+          itemBuilder: (context, index) {
+            final fixture = fixtureProvider.fixtures[index];
+            return _buildFixtureCard(fixture, accentColor);
+          },
+        );
+      },
+    );
+  }
+
+  /// Builds a card for a single match fixture
+  Widget _buildFixtureCard(dynamic fixture, Color accentColor) {
+    final name = fixture['name'] ?? 'Unknown Match';
+    final startTime = fixture['starting_at'] ?? '';
+    final resultInfo = fixture['result_info'] ?? '';
+    final stateId = fixture['state_id']; // 5 is usually finished
+    
+    // Parse the date
+    String formattedDate = 'N/A';
+    if (startTime.isNotEmpty) {
+      try {
+        final parsedDate = DateTime.parse(startTime);
+        formattedDate = DateFormat('EEE, d MMM • HH:mm').format(parsedDate);
+      } catch (e) {
+        formattedDate = startTime;
+      }
+    }
+
+    final participants = fixture['participants'] as List? ?? [];
+    dynamic homeTeam;
+    dynamic awayTeam;
+    
+    if (participants.isNotEmpty) {
+      homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      if (participants.length > 1) {
+        awayTeam = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+      }
+    }
+
+    final homeName = homeTeam?['name'] ?? 'Home';
+    final awayName = awayTeam?['name'] ?? 'Away';
+    final homeImg = homeTeam?['image_path'] ?? '';
+    final awayImg = awayTeam?['image_path'] ?? '';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D44),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                formattedDate,
+                style: const TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
+              ),
+              if (stateId == 5)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Text(
+                    "FINISHED",
+                    style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  children: [
+                    if (homeImg.isNotEmpty)
+                      Image.network(homeImg, width: 40, height: 40)
+                    else
+                      const Icon(Icons.shield, size: 40, color: Colors.white10),
+                    const SizedBox(height: 8),
+                    Text(
+                      homeName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  "VS",
+                  style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (awayImg.isNotEmpty)
+                      Image.network(awayImg, width: 40, height: 40)
+                    else
+                      const Icon(Icons.shield, size: 40, color: Colors.white10),
+                    const SizedBox(height: 8),
+                    Text(
+                      awayName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (resultInfo.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            const Divider(color: Colors.white10, height: 1),
+            const SizedBox(height: 12),
+            Text(
+              resultInfo,
+              style: TextStyle(color: accentColor.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w400),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ],
       ),
     );

@@ -1,0 +1,1606 @@
+{
+  "data": [
+    {
+      "id": 19352411,
+      "sport_id": 1,
+      "league_id": 1607,
+      "season_id": 24959,
+      "stage_id": 77475038,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 395834,
+      "state_id": 5,
+      "venue_id": 21622,
+      "name": "Forward Madison vs Tormenta",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Forward Madison won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 234632,
+          "sport_id": 1,
+          "country_id": 3483,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Forward Madison",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/8\/234632.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-25 22:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 13
+          }
+        },
+        {
+          "id": 150514,
+          "sport_id": 1,
+          "country_id": 3483,
+          "venue_id": 139993,
+          "gender": "male",
+          "name": "Tormenta",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": 2016,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-11-03 01:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 11
+          }
+        }
+      ]
+    },
+    {
+      "id": 19352714,
+      "sport_id": 1,
+      "league_id": 3354,
+      "season_id": 24965,
+      "stage_id": 77475057,
+      "group_id": 251937,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 342308,
+      "name": "Union Omaha vs Texoma",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Union Omaha won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 275648,
+          "sport_id": 1,
+          "country_id": 3483,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Texoma",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-25 23:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 6
+          }
+        },
+        {
+          "id": 239058,
+          "sport_id": 1,
+          "country_id": 3483,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Union Omaha",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-11-01 23:30:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": 19392655,
+      "sport_id": 1,
+      "league_id": 699,
+      "season_id": 25229,
+      "stage_id": 77475837,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 368260,
+      "state_id": 5,
+      "venue_id": 11073,
+      "name": "Imbabura vs Vinotinto",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Imbabura won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 9134,
+          "sport_id": 1,
+          "country_id": 459,
+          "venue_id": 5945,
+          "gender": "male",
+          "name": "Imbabura",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/14\/9134.png",
+          "founded": 1993,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-30 20:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 11
+          }
+        },
+        {
+          "id": 270886,
+          "sport_id": 1,
+          "country_id": 459,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Vinotinto",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-30 18:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": 19401352,
+      "sport_id": 1,
+      "league_id": 1900,
+      "season_id": 25298,
+      "stage_id": 77476070,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 13639,
+      "name": "Burlington vs Woodbridge Strikers",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Woodbridge Strikers won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 248306,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Woodbridge Strikers",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-24 00:30:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": 1
+          }
+        },
+        {
+          "id": 17947,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": 13639,
+          "gender": "male",
+          "name": "Burlington",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/27\/17947.png",
+          "founded": 2013,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-24 23:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": 19401353,
+      "sport_id": 1,
+      "league_id": 1900,
+      "season_id": 25298,
+      "stage_id": 77476070,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "Simcoe County Rovers vs FC London",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Simcoe County Rovers won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 261062,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Simcoe County Rovers",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-17 23:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 3
+          }
+        },
+        {
+          "id": 248308,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": null,
+          "gender": "male",
+          "name": "FC London",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-24 00:30:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 11
+          }
+        }
+      ]
+    },
+    {
+      "id": 19416429,
+      "sport_id": 1,
+      "league_id": 2569,
+      "season_id": 25372,
+      "stage_id": 77476303,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 19,
+      "venue_id": null,
+      "name": "Tosno Sankt-Peterburg vs Khimik Koryazhma",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": null,
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 272965,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Tosno Sankt-Peterburg",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-09 15:00:00",
+          "meta": {
+            "location": "home",
+            "winner": null,
+            "position": 2
+          }
+        },
+        {
+          "id": 261497,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Khimik Koryazhma",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-05-26 22:00:00",
+          "meta": {
+            "location": "away",
+            "winner": null,
+            "position": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": 19418479,
+      "sport_id": 1,
+      "league_id": 3138,
+      "season_id": 25370,
+      "stage_id": 77476305,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 371339,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "Avangard Sankt-Peterburg vs STD Petrovich",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "STD Petrovich won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 268811,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Avangard Sankt-Peterburg",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-16 00:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 6
+          }
+        },
+        {
+          "id": 268818,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "STD Petrovich",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/18\/268818.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-10-17 00:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": 5
+          }
+        }
+      ]
+    },
+    {
+      "id": 19419163,
+      "sport_id": 1,
+      "league_id": 3344,
+      "season_id": 25364,
+      "stage_id": 77476301,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 371420,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "Avangard Kursk II vs Metallurg Lipetsk II",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Avangard Kursk II won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 261452,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Avangard Kursk II",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-07-24 00:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 9
+          }
+        },
+        {
+          "id": 261455,
+          "sport_id": 1,
+          "country_id": 227,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Metallurg Lipetsk II",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-07-24 00:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 10
+          }
+        }
+      ]
+    },
+    {
+      "id": 19424045,
+      "sport_id": 1,
+      "league_id": 839,
+      "season_id": 25471,
+      "stage_id": 77476671,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 395074,
+      "state_id": 5,
+      "venue_id": 12390,
+      "name": "Hard Rock vs Queens Park Rangers",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": "Hard Rock won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 16614,
+          "sport_id": 1,
+          "country_id": 26833,
+          "venue_id": 12390,
+          "gender": "male",
+          "name": "Hard Rock",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/6\/16614.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-11-30 22:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 8
+          }
+        },
+        {
+          "id": 16621,
+          "sport_id": 1,
+          "country_id": 26833,
+          "venue_id": 12401,
+          "gender": "male",
+          "name": "Queens Park Rangers",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-11-30 22:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": 19495659,
+      "sport_id": 1,
+      "league_id": 2034,
+      "season_id": 25059,
+      "stage_id": 77475310,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 380007,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "Sporting SM II vs \u00c1rabe Unido II",
+      "starting_at": "2025-07-24 00:00:00",
+      "result_info": null,
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753315200,
+      "participants": [
+        {
+          "id": 253971,
+          "sport_id": 1,
+          "country_id": 65437,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Sporting SM II",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/19\/253971.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 21:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": null
+          }
+        },
+        {
+          "id": 253967,
+          "sport_id": 1,
+          "country_id": 65437,
+          "venue_id": null,
+          "gender": "male",
+          "name": "\u00c1rabe Unido II",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/15\/253967.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 21:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": null
+          }
+        }
+      ]
+    },
+    {
+      "id": 19411564,
+      "sport_id": 1,
+      "league_id": 642,
+      "season_id": 24997,
+      "stage_id": 77475150,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 129,
+      "name": "Boca Juniors vs Atl\u00e9tico Tucum\u00e1n",
+      "starting_at": "2025-07-24 00:10:00",
+      "result_info": "Atl\u00e9tico Tucum\u00e1n won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753315800,
+      "participants": [
+        {
+          "id": 10675,
+          "sport_id": 1,
+          "country_id": 44,
+          "venue_id": 5394,
+          "gender": "male",
+          "name": "Atl\u00e9tico Tucum\u00e1n",
+          "short_code": "ATU",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/19\/10675.png",
+          "founded": 1902,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-01 01:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": null
+          }
+        },
+        {
+          "id": 587,
+          "sport_id": 1,
+          "country_id": 44,
+          "venue_id": 129,
+          "gender": "male",
+          "name": "Boca Juniors",
+          "short_code": "BOC",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/11\/587.png",
+          "founded": 1905,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-01 22:15:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": null
+          }
+        }
+      ]
+    },
+    {
+      "id": 19387057,
+      "sport_id": 1,
+      "league_id": 648,
+      "season_id": 25184,
+      "stage_id": 77475702,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 367539,
+      "state_id": 5,
+      "venue_id": 2156,
+      "name": "Santos vs Internacional",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Internacional won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 3684,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 2156,
+          "gender": "male",
+          "name": "Santos",
+          "short_code": "STS",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/4\/3684.png",
+          "founded": 1912,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 23:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 17
+          }
+        },
+        {
+          "id": 2696,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 1604,
+          "gender": "male",
+          "name": "Internacional",
+          "short_code": "INL",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/8\/2696.png",
+          "founded": 1909,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 22:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": 19387058,
+      "sport_id": 1,
+      "league_id": 648,
+      "season_id": 25184,
+      "stage_id": 77475702,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 367539,
+      "state_id": 5,
+      "venue_id": 5057,
+      "name": "Bragantino vs Flamengo",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Flamengo won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 1024,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 392,
+          "gender": "male",
+          "name": "Flamengo",
+          "short_code": "FLA",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/0\/1024.png",
+          "founded": 1895,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 22:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": 2
+          }
+        },
+        {
+          "id": 7808,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 5057,
+          "gender": "male",
+          "name": "Bragantino",
+          "short_code": "BRA",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/0\/7808.png",
+          "founded": 1928,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 22:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": 19387061,
+      "sport_id": 1,
+      "league_id": 648,
+      "season_id": 25184,
+      "stage_id": 77475702,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 367539,
+      "state_id": 5,
+      "venue_id": 2006,
+      "name": "Vit\u00f3ria vs Sport Recife",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Game ended in draw.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 3440,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 2006,
+          "gender": "male",
+          "name": "Vit\u00f3ria",
+          "short_code": "VTO",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/16\/3440.png",
+          "founded": 1899,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 00:30:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 15
+          }
+        },
+        {
+          "id": 2352,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 1425,
+          "gender": "male",
+          "name": "Sport Recife",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/16\/2352.png",
+          "founded": 1905,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-01-31 19:30:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": 19391035,
+      "sport_id": 1,
+      "league_id": 651,
+      "season_id": 25185,
+      "stage_id": 77475703,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 368053,
+      "state_id": 5,
+      "venue_id": 10495,
+      "name": "Cuiab\u00e1 vs Am\u00e9rica Mineiro",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Cuiab\u00e1 won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 5463,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 10495,
+          "gender": "male",
+          "name": "Cuiab\u00e1",
+          "short_code": "CUI",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/23\/5463.png",
+          "founded": 2001,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 23:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 7
+          }
+        },
+        {
+          "id": 6325,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 1999,
+          "gender": "male",
+          "name": "Am\u00e9rica Mineiro",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/21\/6325.png",
+          "founded": 1912,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-01-31 21:30:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 15
+          }
+        }
+      ]
+    },
+    {
+      "id": 19391039,
+      "sport_id": 1,
+      "league_id": 651,
+      "season_id": 25185,
+      "stage_id": 77475703,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 368053,
+      "state_id": 5,
+      "venue_id": 24802,
+      "name": "Amazonas vs Paysandu",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Game ended in draw.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 238918,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Amazonas",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/6\/238918.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 00:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 20
+          }
+        },
+        {
+          "id": 3478,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 2027,
+          "gender": "male",
+          "name": "Paysandu",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/22\/3478.png",
+          "founded": 1914,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 18:30:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 17
+          }
+        }
+      ]
+    },
+    {
+      "id": 19401354,
+      "sport_id": 1,
+      "league_id": 1900,
+      "season_id": 25298,
+      "stage_id": 77476070,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 343648,
+      "name": "Vaughan vs Oakville",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Oakville won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 17900,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Oakville",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/12\/17900.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-08-24 20:00:00",
+          "meta": {
+            "location": "away",
+            "winner": true,
+            "position": 8
+          }
+        },
+        {
+          "id": 17904,
+          "sport_id": 1,
+          "country_id": 1004,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Vaughan",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/16\/17904.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": null,
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 7
+          }
+        }
+      ]
+    },
+    {
+      "id": 19424236,
+      "sport_id": 1,
+      "league_id": 1116,
+      "season_id": 24955,
+      "stage_id": 77475015,
+      "group_id": null,
+      "aggregate_id": 59816,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 1718,
+      "name": "Gr\u00eamio vs Alianza Lima",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Game ended in draw.",
+      "leg": "2\/2",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 10671,
+          "sport_id": 1,
+          "country_id": 338,
+          "venue_id": 7082,
+          "gender": "male",
+          "name": "Alianza Lima",
+          "short_code": "ALI",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/15\/10671.png",
+          "founded": 1901,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 00:30:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 1
+          }
+        },
+        {
+          "id": 2925,
+          "sport_id": 1,
+          "country_id": 5,
+          "venue_id": 1718,
+          "gender": "male",
+          "name": "Gr\u00eamio",
+          "short_code": "GRE",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/13\/2925.png",
+          "founded": 1903,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 00:30:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 19424238,
+      "sport_id": 1,
+      "league_id": 1116,
+      "season_id": 24955,
+      "stage_id": 77475015,
+      "group_id": null,
+      "aggregate_id": 59817,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 2069,
+      "name": "Once Caldas vs San Antonio Bulo Bulo",
+      "starting_at": "2025-07-24 00:30:00",
+      "result_info": "Once Caldas won after full-time.",
+      "leg": "2\/2",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753317000,
+      "participants": [
+        {
+          "id": 3547,
+          "sport_id": 1,
+          "country_id": 353,
+          "venue_id": 2069,
+          "gender": "male",
+          "name": "Once Caldas",
+          "short_code": "OCC",
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/27\/3547.png",
+          "founded": 1961,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-01 23:10:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 1
+          }
+        },
+        {
+          "id": 259042,
+          "sport_id": 1,
+          "country_id": 7598,
+          "venue_id": null,
+          "gender": "male",
+          "name": "San Antonio Bulo Bulo",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/2\/259042.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-12-15 19:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": 19363322,
+      "sport_id": 1,
+      "league_id": 3213,
+      "season_id": 25013,
+      "stage_id": 77475210,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": null,
+      "state_id": 5,
+      "venue_id": 343370,
+      "name": "MLS All-Stars vs ",
+      "starting_at": "2025-07-24 01:00:00",
+      "result_info": "MLS All-Stars won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753318800,
+      "participants": [
+        {
+          "id": 269530,
+          "sport_id": 1,
+          "country_id": 99474,
+          "venue_id": null,
+          "gender": "male",
+          "name": "MLS All-Stars",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/26\/269530.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-07-24 01:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 2
+          }
+        },
+        {
+          "id": 272277,
+          "sport_id": 1,
+          "country_id": 99474,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Liga MX All-Stars",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/21\/272277.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2025-07-24 01:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": 19468325,
+      "sport_id": 1,
+      "league_id": 702,
+      "season_id": 25889,
+      "stage_id": 77477178,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 376886,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "Inter vs Fuerte San Francisco",
+      "starting_at": "2025-07-24 01:00:00",
+      "result_info": "Game ended in draw.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753318800,
+      "participants": [
+        {
+          "id": 277144,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Inter",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 01:00:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 7
+          }
+        },
+        {
+          "id": 270179,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Fuerte San Francisco",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/3\/270179.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 21:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": 19468328,
+      "sport_id": 1,
+      "league_id": 702,
+      "season_id": 25889,
+      "stage_id": 77477178,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 376886,
+      "state_id": 5,
+      "venue_id": 4957,
+      "name": "Firpo vs Zacatecoluca",
+      "starting_at": "2025-07-24 01:00:00",
+      "result_info": "Firpo won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753318800,
+      "participants": [
+        {
+          "id": 7634,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": 4957,
+          "gender": "male",
+          "name": "Firpo",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/18\/7634.png",
+          "founded": 1923,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 21:30:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": 2
+          }
+        },
+        {
+          "id": 277145,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Zacatecoluca",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 21:15:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 12
+          }
+        }
+      ]
+    },
+    {
+      "id": 19495652,
+      "sport_id": 1,
+      "league_id": 2034,
+      "season_id": 25059,
+      "stage_id": 77475311,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 380006,
+      "state_id": 5,
+      "venue_id": null,
+      "name": "La Familia FC vs Herrera II",
+      "starting_at": "2025-07-24 01:00:00",
+      "result_info": "La Familia FC won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753318800,
+      "participants": [
+        {
+          "id": 275783,
+          "sport_id": 1,
+          "country_id": 65437,
+          "venue_id": null,
+          "gender": "male",
+          "name": "La Familia FC",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-01 21:30:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": null
+          }
+        },
+        {
+          "id": 253977,
+          "sport_id": 1,
+          "country_id": 65437,
+          "venue_id": null,
+          "gender": "male",
+          "name": "Herrera II",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": null,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-01-28 21:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": null
+          }
+        }
+      ]
+    },
+    {
+      "id": 19538827,
+      "sport_id": 1,
+      "league_id": 752,
+      "season_id": 25967,
+      "stage_id": 77477254,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 385179,
+      "state_id": 5,
+      "venue_id": 11218,
+      "name": "Real Madriz vs Walter Ferreti",
+      "starting_at": "2025-07-24 01:00:00",
+      "result_info": "Real Madriz won after full-time.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": false,
+      "has_premium_odds": false,
+      "starting_at_timestamp": 1753318800,
+      "participants": [
+        {
+          "id": 15480,
+          "sport_id": 1,
+          "country_id": 3990,
+          "venue_id": 11218,
+          "gender": "male",
+          "name": "Real Madriz",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/team_placeholder.png",
+          "founded": 1996,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 23:00:00",
+          "meta": {
+            "location": "home",
+            "winner": true,
+            "position": null
+          }
+        },
+        {
+          "id": 13481,
+          "sport_id": 1,
+          "country_id": 3990,
+          "venue_id": 9350,
+          "gender": "male",
+          "name": "Walter Ferreti",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/9\/13481.png",
+          "founded": 1987,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-03 21:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": null
+          }
+        }
+      ]
+    },
+    {
+      "id": 19468327,
+      "sport_id": 1,
+      "league_id": 702,
+      "season_id": 25889,
+      "stage_id": 77477178,
+      "group_id": null,
+      "aggregate_id": null,
+      "round_id": 376886,
+      "state_id": 5,
+      "venue_id": 340196,
+      "name": "Isidro Metap\u00e1n vs \u00c1guila",
+      "starting_at": "2025-07-24 01:15:00",
+      "result_info": "Game ended in draw.",
+      "leg": "1\/1",
+      "details": null,
+      "length": 90,
+      "placeholder": false,
+      "has_odds": true,
+      "has_premium_odds": true,
+      "starting_at_timestamp": 1753319700,
+      "participants": [
+        {
+          "id": 14666,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": 10393,
+          "gender": "male",
+          "name": "Isidro Metap\u00e1n",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/10\/14666.png",
+          "founded": 2000,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-05 01:30:00",
+          "meta": {
+            "location": "home",
+            "winner": false,
+            "position": 11
+          }
+        },
+        {
+          "id": 8200,
+          "sport_id": 1,
+          "country_id": 35008,
+          "venue_id": 5324,
+          "gender": "male",
+          "name": "\u00c1guila",
+          "short_code": null,
+          "image_path": "https:\/\/cdn.sportmonks.com\/images\/soccer\/teams\/8\/8200.png",
+          "founded": 1956,
+          "type": "domestic",
+          "placeholder": false,
+          "last_played_at": "2026-02-04 21:00:00",
+          "meta": {
+            "location": "away",
+            "winner": false,
+            "position": 4
+          }
+        }
+      ]
+    }
+  ],
+  "pagination": {
+    "count": 25,
+    "per_page": 25,
+    "current_page": 1,
+    "next_page": "https:\/\/api.sportmonks.com\/v3\/football\/fixtures\/between\/2025-07-24\/2025-08-08?include=participants&page=2",
+    "has_more": true
+  },
+  "subscription": [
+    {
+      "meta": {
+        "trial_ends_at": null,
+        "ends_at": "2026-02-11 04:59:08",
+        "current_timestamp": 1770375118
+      },
+      "plans": [
+        {
+          "plan": "Muahmmad imran ajmal Custom Plan",
+          "sport": "Football",
+          "category": "Custom"
+        }
+      ],
+      "add_ons": [
+        {
+          "add_on": "Muahmmad imran ajmal Custom Plan Predictions",
+          "sport": "Football",
+          "category": "Predictions"
+        },
+        {
+          "add_on": "Muahmmad 200K extra API calls",
+          "sport": "Football",
+          "category": "Calls"
+        },
+        {
+          "add_on": "Muahmmad imran ajmal Custom Plan Pressure Index",
+          "sport": "Football",
+          "category": "Pressure index"
+        },
+        {
+          "add_on": "Match Facts Advanced - Trialing until 2026-03-31 12:00:00",
+          "sport": "Football",
+          "category": "Match facts"
+        }
+      ],
+      "widgets": []
+    }
+  ],
+  "rate_limit": {
+    "resets_in_seconds": 1254,
+    "remaining": 149960,
+    "requested_entity": "Fixture"
+  },
+  "timezone": "UTC"
+}
