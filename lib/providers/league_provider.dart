@@ -23,6 +23,15 @@ class LeagueProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   dynamic get selectedLeague => _selectedLeague;
 
+  /// Returns the list of teams for the currently selected league
+  /// Extracted from the current season included in the API response
+  List<dynamic> get teams {
+    if (_selectedLeague != null && _selectedLeague['currentseason'] != null) {
+      return _selectedLeague['currentseason']['teams'] ?? [];
+    }
+    return [];
+  }
+
   // API Configuration
   final String _baseUrl = 'https://api.sportmonks.com/v3/football/leagues';
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
@@ -76,7 +85,8 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('$_baseUrl/$id'),
+        // Include currentSeason and its teams to show them in the Home tab
+        Uri.parse('$_baseUrl/$id?include=currentSeason.teams'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

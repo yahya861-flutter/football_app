@@ -1,5 +1,6 @@
 import 'package:football_app/providers/live_score_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/providers/match_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => LiveScoreProvider()),
         ChangeNotifierProvider(create: (_) => LeagueProvider()),
+        ChangeNotifierProvider(create: (_) => MatchProvider()),
       ],
       child: const MyApp(),
     ),
