@@ -59,27 +59,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     return DefaultTabController(
       length: 2, // Fixtures and Table
       child: Scaffold(
-        backgroundColor: const Color(0xFF121212), // Darker background as per screenshot
-        body: Consumer3<LeagueProvider, MatchProvider, FollowProvider>(
-          builder: (context, leagueProvider, matchProvider, followProvider, child) {
-            // Loading state for initial data fetch
-            if (leagueProvider.isLoading && leagueProvider.selectedLeague == null) {
-              return const Center(child: CircularProgressIndicator(color: accentColor));
-            }
-
-            final league = leagueProvider.selectedLeague;
-            if (league == null) {
-              return const Center(
-                child: Text("No details found", style: TextStyle(color: Colors.white70)),
-              );
-            }
-
-            final name = league['name'] ?? 'Unknown';
-            final imagePath = league['image_path'] ?? '';
-            final country = league['country']?['name'] ?? 'International';
-            final isFollowed = followProvider.isLeagueFollowed(widget.leagueId);
-
-            return NestedScrollView(
+        backgroundColor: const Color(0xFF121212),
+        body: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
@@ -91,67 +72,81 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    actions: [
-                      IconButton(
+                actions: [
+                  Consumer<FollowProvider>(
+                    builder: (context, followProvider, _) {
+                      final isFollowed = followProvider.isLeagueFollowed(widget.leagueId);
+                      return IconButton(
                         icon: Icon(
                           isFollowed ? Icons.star : Icons.star_border,
                           color: isFollowed ? accentColor : Colors.white60,
                         ),
                         onPressed: () => followProvider.toggleFollowLeague(widget.leagueId),
-                      ),
-                    ],
+                      );
+                    },
+                  ),
+                ],
                     flexibleSpace: FlexibleSpaceBar(
                       collapseMode: CollapseMode.pin,
                       background: Padding(
                         padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // League Logo in a rounded container - Smaller
-                            Container(
-                              width: 60,
-                              height: 60,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2D2D44).withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: imagePath.isNotEmpty
-                                  ? Image.network(imagePath, fit: BoxFit.contain)
-                                  : const Icon(Icons.emoji_events, size: 30, color: Colors.white24),
-                            ),
-                            const SizedBox(width: 16),
-                            // Name and Country
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                        child: Selector<LeagueProvider, Map<String, dynamic>?>(
+                          selector: (_, p) => p.selectedLeague,
+                          builder: (context, league, _) {
+                            final name = league?['name'] ?? 'Loading...';
+                            final imagePath = league?['image_path'] ?? '';
+                            final country = league?['country']?['name'] ?? '...';
+                            
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // League Logo in a rounded container - Smaller
+                                Container(
+                                  width: 60,
+                                  height: 60,
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2D2D44).withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.white10),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    country,
-                                    style: const TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 14,
-                                      fontFamily: 'Poppins',
-                                    ),
+                                  child: imagePath.isNotEmpty
+                                      ? Image.network(imagePath, fit: BoxFit.contain)
+                                      : const Icon(Icons.emoji_events, size: 30, color: Colors.white24),
+                                ),
+                                const SizedBox(width: 16),
+                                // Name and Country
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        name,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        country,
+                                        style: const TextStyle(
+                                          color: Colors.white60,
+                                          fontSize: 14,
+                                          fontFamily: 'Poppins',
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -183,15 +178,15 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                   _buildFixturesTabContent(accentColor),
                   
                   // TABLE TAB
-                  _buildTableTabContent(leagueProvider, accentColor),
+                  Consumer<LeagueProvider>(
+                    builder: (context, lp, _) => _buildTableTabContent(lp, accentColor),
+                  ),
                 ],
               ),
-            );
-          },
-        ),
-      ),
-    );
-  }
+            ),
+          ),
+        );
+      }
 
   /// Builds the "Fixtures" tab content with grouping by date
   Widget _buildFixturesTabContent(Color accentColor) {

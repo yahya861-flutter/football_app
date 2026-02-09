@@ -6,6 +6,8 @@ import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/transfer_provider.dart';
+
 class TeamDetailsScreen extends StatefulWidget {
   final int teamId;
   final String teamName;
@@ -52,117 +54,123 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       length: 4,
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
-        body: Consumer<TeamProvider>(
-          builder: (context, teamProvider, child) {
-            final team = teamProvider.selectedTeam;
-            final country = team?['country']?['name'] ?? 'Loading...';
-            final seasons = team?['seasons'] as List? ?? [];
-
-            return NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  SliverAppBar(
-                    expandedHeight: 180,
-                    pinned: true,
-                    backgroundColor: const Color(0xFF121212),
-                    elevation: 0,
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.star_border, color: Colors.white60),
-                        onPressed: () {},
-                      ),
-                    ],
-                    flexibleSpace: FlexibleSpaceBar(
-                      collapseMode: CollapseMode.pin,
-                      background: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 70,
-                              height: 70,
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2D2D44).withOpacity(0.5),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white10),
-                              ),
-                              child: widget.teamLogo.isNotEmpty
-                                  ? Image.network(widget.teamLogo, fit: BoxFit.contain)
-                                  : const Icon(Icons.shield, size: 40, color: Colors.white24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.teamName,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    country,
-                                    style: const TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 16,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+        body: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 180,
+                pinned: true,
+                backgroundColor: const Color(0xFF121212),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.star_border, color: Colors.white60),
+                    onPressed: () {},
+                  ),
+                ],
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 70,
+                          height: 70,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2D2D44).withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: widget.teamLogo.isNotEmpty
+                              ? Image.network(widget.teamLogo, fit: BoxFit.contain)
+                              : const Icon(Icons.shield, size: 40, color: Colors.white24),
                         ),
-                      ),
-                    ),
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(48),
-                      child: Container(
-                        alignment: Alignment.centerLeft,
-                        child: TabBar(
-                          isScrollable: true,
-                          indicatorColor: accentColor,
-                          labelColor: accentColor,
-                          unselectedLabelColor: Colors.white38,
-                          indicatorWeight: 3,
-                          indicatorSize: TabBarIndicatorSize.label,
-                          labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                          tabs: const [
-                            Tab(text: "Stats"),
-                            Tab(text: "Fixtures"),
-                            Tab(text: "Squad"),
-                            Tab(text: "Transfers"),
-                          ],
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.teamName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'Poppins',
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Selector<TeamProvider, String>(
+                                selector: (_, p) => p.selectedTeam?['country']?['name'] ?? 'Loading...',
+                                builder: (_, country, __) => Text(
+                                  country,
+                                  style: const TextStyle(
+                                    color: Colors.white60,
+                                    fontSize: 16,
+                                    fontFamily: 'Poppins',
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ];
-              },
-              body: TabBarView(
-                children: [
-                  _buildStatsTab(teamProvider, seasons, accentColor),
-                  _buildFixturesTab(teamProvider, accentColor),
-                  Consumer<SquadProvider>(builder: (context, squadProvider, _) => _buildSquadTab(squadProvider, accentColor)),
-                  _buildTransfersTab(teamProvider, accentColor),
-                ],
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    child: TabBar(
+                      isScrollable: true,
+                      indicatorColor: accentColor,
+                      labelColor: accentColor,
+                      unselectedLabelColor: Colors.white38,
+                      indicatorWeight: 3,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      tabs: const [
+                        Tab(text: "Stats"),
+                        Tab(text: "Fixtures"),
+                        Tab(text: "Squad"),
+                        Tab(text: "Transfers"),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            );
+            ];
           },
+          body: TabBarView(
+            children: [
+              Consumer<TeamProvider>(
+                builder: (context, provider, _) {
+                  final seasons = provider.selectedTeam?['seasons'] as List? ?? [];
+                  return _buildStatsTab(provider, seasons, accentColor);
+                },
+              ),
+              Consumer<TeamProvider>(
+                builder: (context, provider, _) => _buildFixturesTab(provider, accentColor),
+              ),
+              Consumer<SquadProvider>(
+                builder: (context, provider, _) => _buildSquadTab(provider, accentColor),
+              ),
+              Consumer<TransferProvider>(
+                builder: (context, provider, _) => _buildTransfersTab(provider, accentColor),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -519,15 +527,15 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
-  Widget _buildTransfersTab(TeamProvider provider, Color accentColor) {
-    if (provider.teamTransfers.isEmpty) {
+  Widget _buildTransfersTab(TransferProvider provider, Color accentColor) {
+    if (provider.transfers.isEmpty) {
       return const Center(child: Text("No recent transfers", style: TextStyle(color: Colors.white38)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: provider.teamTransfers.length,
+      itemCount: provider.transfers.length,
       itemBuilder: (context, index) {
-        final transfer = provider.teamTransfers[index];
+        final transfer = provider.transfers[index];
         final player = transfer['player'] ?? {};
         final fromTeam = transfer['fromTeam'] ?? {};
         final toTeam = transfer['toTeam'] ?? {};
