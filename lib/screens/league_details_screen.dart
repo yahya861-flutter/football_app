@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
+import 'package:football_app/providers/follow_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 /// This screen shows detailed information for a single football league.
@@ -50,11 +51,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     const Color accentColor = Color(0xFFD4FF00); // Premium Lime accent
 
     return DefaultTabController(
-      length: 4, // Home, Table, Results, Fixtures
+      length: 2, // Fixtures and Table
       child: Scaffold(
-        backgroundColor: primaryColor,
-        body: Consumer2<LeagueProvider, MatchProvider>(
-          builder: (context, leagueProvider, matchProvider, child) {
+        backgroundColor: const Color(0xFF121212), // Darker background as per screenshot
+        body: Consumer3<LeagueProvider, MatchProvider, FollowProvider>(
+          builder: (context, leagueProvider, matchProvider, followProvider, child) {
             // Loading state for initial data fetch
             if (leagueProvider.isLoading && leagueProvider.selectedLeague == null) {
               return const Center(child: CircularProgressIndicator(color: accentColor));
@@ -69,131 +70,94 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
 
             final name = league['name'] ?? 'Unknown';
             final imagePath = league['image_path'] ?? '';
-            final shortCode = league['short_code'] ?? 'N/A';
+            final country = league['country']?['name'] ?? 'International';
+            final isFollowed = followProvider.isLeagueFollowed(widget.leagueId);
 
             return NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
-                    expandedHeight: 320, // Increased to fix overflow with the new spacing
+                    expandedHeight: 280,
                     pinned: true,
-                    backgroundColor: primaryColor,
+                    backgroundColor: const Color(0xFF121212),
                     elevation: 0,
-                    // The standard back button
                     leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
-                    // Flexible space contains the Logo and Name (Header)
+                    actions: [
+                      IconButton(
+                        icon: Icon(
+                          isFollowed ? Icons.star : Icons.star_border,
+                          color: isFollowed ? accentColor : Colors.white60,
+                        ),
+                        onPressed: () => followProvider.toggleFollowLeague(widget.leagueId),
+                      ),
+                    ],
                     flexibleSpace: FlexibleSpaceBar(
                       collapseMode: CollapseMode.pin,
                       background: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 80), // Increased gap from the toolbar area
-                          // League Logo in a circular container
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2D2D44),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white10),
-                            ),
-                            child: imagePath.isNotEmpty
-                                ? Image.network(imagePath, height: 90, width: 90, fit: BoxFit.contain)
-                                : const Icon(Icons.emoji_events, size: 60, color: Colors.white24),
-                          ),
+                          const SizedBox(height: 60),
+                          // League Logo
+                          if (imagePath.isNotEmpty)
+                            Image.network(imagePath, height: 80, width: 80, fit: BoxFit.contain)
+                          else
+                            const Icon(Icons.emoji_events, size: 80, color: Colors.white24),
                           const SizedBox(height: 16),
                           // League Name
                           Text(
                             name,
-                            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 8),
-                          // Badges Row (Short Code + LIVE)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Short Badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: accentColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                child: Text(
-                                  shortCode,
-                                  style: const TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
-                                ),
-                              ),
-                              if (leagueProvider.isLeagueLive(widget.leagueId)) ...[
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.red.withOpacity(0.5),
-                                        blurRadius: 8,
-                                        spreadRadius: 1,
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(Icons.circle, size: 8, color: Colors.white),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        "LIVE",
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ],
+                          const SizedBox(height: 4),
+                          // Country Name
+                          Text(
+                            country,
+                            style: const TextStyle(
+                              color: Colors.white60,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 20), // Added gap from the bottom (tabs)
                         ],
                       ),
                     ),
-                    // TabBar is sticky at the bottom of the header
-                    bottom: const TabBar(
-                      isScrollable: false, // Fixed tabs that stretch to fill width
-                      indicatorColor: accentColor,
-                      labelColor: accentColor,
-                      unselectedLabelColor: Colors.white38,
-                      indicatorWeight: 3,
-                      padding: EdgeInsets.symmetric(horizontal: 10),
-                      tabs: [
-                        Tab(text: "Home"),
-                        Tab(text: "Table"),
-                        Tab(text: "Results"),
-                        Tab(text: "Fixtures"),
-                      ],
+                    bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(48),
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        child: TabBar(
+                          isScrollable: true,
+                          indicatorColor: accentColor,
+                          labelColor: accentColor,
+                          unselectedLabelColor: Colors.white38,
+                          indicatorWeight: 3,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                          tabs: const [
+                            Tab(text: "Fixtures"),
+                            Tab(text: "Table"),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ];
               },
               body: TabBarView(
-                // Disable swiping (view-pager type) so it's tappable only
-                physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  // HOME TAB - Refactored to only show details, teams and scores
-                  _buildHomeTabContent(league, leagueProvider, matchProvider, accentColor),
-                  
-                  // TABLE TAB - Showing standings table
-                  _buildTableTabContent(leagueProvider, accentColor),
-                  
-                  // RESULTS TAB - Showing finished matches
-                  _buildResultsTabContent(accentColor),
-                  
-                  // FIXTURES TAB - Showing last 14 days matches
+                  // FIXTURES TAB
                   _buildFixturesTabContent(accentColor),
+                  
+                  // TABLE TAB
+                  _buildTableTabContent(leagueProvider, accentColor),
                 ],
               ),
             );
@@ -203,172 +167,177 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     );
   }
 
-  /// Builds the content for the "Home" tab (Info, Teams, and Live Scores)
-  Widget _buildHomeTabContent(dynamic league, LeagueProvider leagueProvider, MatchProvider matchProvider, Color accentColor) {
-    final type = league['type'] ?? 'N/A';
-    final subType = league['sub_type'] ?? 'N/A';
+  /// Builds the "Fixtures" tab content with grouping by date
+  Widget _buildFixturesTabContent(Color accentColor) {
+    return Consumer<FixtureProvider>(
+      builder: (context, fixtureProvider, child) {
+        if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
+          return  Center(child: CircularProgressIndicator(color: accentColor));
+        }
 
-    final filteredMatches = matchProvider.inPlayMatches.where((match) => 
-      match['league_id'] == widget.leagueId
-    ).toList();
+        if (fixtureProvider.fixtures.isEmpty) {
+          return _buildPlaceholderTab("No Fixtures Found", Icons.calendar_month, accentColor);
+        }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // STANDINGS SECTION
-          const Text("Standings", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          if (leagueProvider.standings.isEmpty && !leagueProvider.isLoading)
-            const Text("No standings found for this season", style: TextStyle(color: Colors.white38))
-          else if (leagueProvider.isLoading && leagueProvider.standings.isEmpty)
-             const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
-          else
-            Column(
-              children: leagueProvider.standings.map((standing) => _buildStandingRow(standing, accentColor)).toList(),
-            ),
+        // Group fixtures by date
+        Map<String, List<dynamic>> groupedFixtures = {};
+        for (var fixture in fixtureProvider.fixtures) {
+          final startTime = fixture['starting_at'] ?? '';
+          if (startTime.isNotEmpty) {
+            final date = startTime.split(' ')[0]; // Extract YYYY-MM-DD
+            if (!groupedFixtures.containsKey(date)) {
+              groupedFixtures[date] = [];
+            }
+            groupedFixtures[date]!.add(fixture);
+          }
+        }
 
-          const SizedBox(height: 40),
-          Text("Live Score", style: TextStyle(color: accentColor, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          if (matchProvider.isLoading)
-            const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
-          else if (filteredMatches.isEmpty)
-             const Padding(
-               padding: EdgeInsets.only(top: 10),
-               child: Text("No in-play matches for this league", style: TextStyle(color: Colors.white38)),
-             )
-          else
-            ...filteredMatches.map((match) => _buildLiveMatchCard(match)).toList(),
-          const SizedBox(height: 40),
-        ],
-      ),
+        final sortedDates = groupedFixtures.keys.toList()..sort();
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: sortedDates.length,
+          itemBuilder: (context, index) {
+            final date = sortedDates[index];
+            final fixtures = groupedFixtures[date]!;
+            return _buildDateGroup(date, fixtures, accentColor);
+          },
+        );
+      },
     );
   }
 
-  /// Builds a small item for a team (Logo + Name)
-  Widget _buildTeamItem(dynamic team) {
-    final name = team['name'] ?? 'Unknown';
-    final imagePath = team['image_path'] ?? '';
-
-    return Column(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2D2D44),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: imagePath.isNotEmpty
-                ? Image.network(imagePath, fit: BoxFit.contain)
-                : const Icon(Icons.shield, color: Colors.white24),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          name,
-          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w500),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    );
-  }
-
-  /// Builds a clean row for a team standing
-  Widget _buildStandingRow(dynamic standing, Color accentColor) {
-    final team = standing['participant'] ?? {};
-    final position = standing['position'] ?? '-';
-    final points = standing['points'] ?? 0;
-    
-    final teamName = team['name'] ?? 'Unknown';
-    final teamLogo = team['image_path'] ?? '';
-
+  /// Builds a group of fixtures for a specific date
+  Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44),
+        color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
       ),
-      child: Row(
-        children: [
-          // RANK
-          SizedBox(
-            width: 30,
-            child: Text(
-              position.toString(),
-              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
+          title: Text(
+            date,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
           ),
-          const SizedBox(width: 8),
-          // LOGO
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              shape: BoxShape.circle,
-            ),
-            padding: const EdgeInsets.all(4),
-            child: teamLogo.isNotEmpty
-                ? Image.network(teamLogo, fit: BoxFit.contain)
-                : const Icon(Icons.shield, size: 16, color: Colors.white24),
-          ),
-          const SizedBox(width: 12),
-          // NAME
-          Expanded(
-            child: Text(
-              teamName,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 15),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          // POINTS
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              "$points PTS",
-              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Helper to build a clean placeholder for empty tabs
-  Widget _buildPlaceholderTab(String title, IconData icon, Color accentColor) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 100),
-        child: Column(
           children: [
-            Icon(icon, size: 80, color: Colors.white10),
-            const SizedBox(height: 16),
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            const Text("Content coming soon", style: TextStyle(color: Colors.white38, fontSize: 16)),
+            const Divider(color: Colors.white10, height: 1),
+            ...fixtures.map((f) => _buildRedesignedFixtureItem(f, accentColor)).toList(),
           ],
         ),
       ),
     );
   }
 
+  /// Redesigned fixture item to match screenshot
+  Widget _buildRedesignedFixtureItem(dynamic fixture, Color accentColor) {
+    final startTime = fixture['starting_at'] ?? '';
+    String time = "N/A";
+    if (startTime.isNotEmpty) {
+      try {
+        final parsedDate = DateTime.parse(startTime);
+        time = DateFormat('h:mm a').format(parsedDate);
+      } catch (e) {
+        time = startTime;
+      }
+    }
+
+    final participants = fixture['participants'] as List? ?? [];
+    dynamic homeTeam;
+    dynamic awayTeam;
+    
+    if (participants.isNotEmpty) {
+      homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      if (participants.length > 1) {
+        awayTeam = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+      }
+    }
+
+    final homeName = homeTeam?['name'] ?? 'Home';
+    final awayName = awayTeam?['name'] ?? 'Away';
+    final homeImg = homeTeam?['image_path'] ?? '';
+    final awayImg = awayTeam?['image_path'] ?? '';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+      ),
+      child: Row(
+        children: [
+          // Match Time
+          Container(
+            width: 70,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF262626),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              time,
+              style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(width: 16),
+          // Vertical Line
+          Container(width: 1, height: 40, color: Colors.white10),
+          const SizedBox(width: 16),
+          // Teams
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTeamRow(homeName, homeImg),
+                const SizedBox(height: 12),
+                _buildTeamRow(awayName, awayImg),
+              ],
+            ),
+          ),
+          // Alarm Icon
+          Column(
+            children: [
+              const Icon(Icons.alarm, color: Colors.white60, size: 28),
+              const SizedBox(height: 4),
+              const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTeamRow(String name, String img) {
+    return Row(
+      children: [
+        if (img.isNotEmpty)
+          Image.network(img, width: 24, height: 24)
+        else
+          const Icon(Icons.shield, size: 24, color: Colors.white24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Builds the content for the "Table" tab (League Standings)
   Widget _buildTableTabContent(LeagueProvider leagueProvider, Color accentColor) {
     if (leagueProvider.isLoading && leagueProvider.standings.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+      return  Center(child: CircularProgressIndicator(color: accentColor));
     }
 
     if (leagueProvider.standings.isEmpty) {
@@ -376,7 +345,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     }
 
     return Container(
-      color: Color(0xFF1E1E2C), // Matching the light background from the screenshot
+      color: const Color(0xFF121212),
       child: Column(
         children: [
           // Table Header
@@ -401,12 +370,12 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
+        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 40), // Space for rank
-          const Expanded(child: SizedBox()), // Space for team name
+          const SizedBox(width: 40),
+          const Expanded(child: SizedBox()),
           _buildHeaderColumn("MP"),
           _buildHeaderColumn("W"),
           _buildHeaderColumn("D"),
@@ -424,7 +393,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       width: 35,
       child: Text(
         label,
-        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+        style: const TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w500),
         textAlign: TextAlign.center,
       ),
     );
@@ -437,16 +406,10 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final points = standing['points'] ?? 0;
     final teamName = team['name'] ?? 'Unknown';
 
-    // Extracting stats from details if available, otherwise using defaults
+    // Extracting stats
     final details = standing['details'] as List? ?? [];
-    
-    String mp = "-";
-    String w = "-";
-    String d = "-";
-    String l = "-";
-    String gd = "-";
+    String mp = "0", w = "0", d = "0", l = "0", gd = "0";
 
-    // Common SportMonks detail types
     for (var detail in details) {
       final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
       final value = detail['value']?.toString() ?? '0';
@@ -457,20 +420,19 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       else if (type.contains('goals-difference')) gd = value;
     }
 
-    // Fallback: If details are simple objects or if stats are directly on the object
-    if ((mp == "-" || mp == "0") && standing['overall'] != null) {
+    if (mp == "0" && standing['overall'] != null) {
       final overall = standing['overall'];
-      mp = overall['played']?.toString() ?? "-";
-      w = overall['won']?.toString() ?? "-";
-      d = overall['draw']?.toString() ?? "-";
-      l = overall['lost']?.toString() ?? "-";
-      gd = overall['goals_diff']?.toString() ?? "-";
+      mp = overall['played']?.toString() ?? "0";
+      w = overall['won']?.toString() ?? "0";
+      d = overall['draw']?.toString() ?? "0";
+      l = overall['lost']?.toString() ?? "0";
+      gd = overall['goals_diff']?.toString() ?? "0";
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
+        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
       ),
       child: Row(
         children: [
@@ -480,7 +442,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             height: 30,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: Color(0xFF000000), // Light green-ish background
+              color: Colors.black,
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -493,7 +455,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           Expanded(
             child: Text(
               teamName,
-              style: const TextStyle(color: Color(0xFFFFFFFF), fontWeight: FontWeight.bold, fontSize: 14),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -510,7 +472,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             height: 35,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.white),
+              border: Border.all(color: Colors.white24),
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -529,335 +491,26 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       width: 35,
       child: Text(
         value,
-        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w400),
+        style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w400),
         textAlign: TextAlign.center,
       ),
     );
   }
 
-  /// Builds a small card for a live match
-  Widget _buildLiveMatchCard(dynamic match) {
-    final matchName = match['name'] ?? 'Unknown Match';
-    final result = match['result_info'] ?? 'Live';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          Text(matchName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16), textAlign: TextAlign.center),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-            child: Text(result, style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Helper row for key-value info
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.white38, fontSize: 16)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the "Top Scorers" tab content
-  Widget _buildTopScorersTab(List<dynamic> topScorers, bool isLoading, Color accentColor) {
-    if (isLoading && topScorers.isEmpty) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
-    }
-
-    if (topScorers.isEmpty) {
-      return _buildPlaceholderTab("Top Scorers", Icons.emoji_events, accentColor);
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: topScorers.length,
-      itemBuilder: (context, index) {
-        final scorer = topScorers[index];
-        return _buildTopScorerCard(scorer, accentColor);
-      },
-    );
-  }
-
-  /// Builds a premium card for a top scorer
-  Widget _buildTopScorerCard(dynamic scorer, Color accentColor) {
-    final player = scorer['player'] ?? {};
-    final team = scorer['participant'] ?? {};
-    final goals = scorer['total'] ?? 0;
-    final position = scorer['position'] ?? '-';
-    
-    final playerName = player['display_name'] ?? player['common_name'] ?? 'Unknown Player';
-    final playerImage = player['image_path'] ?? '';
-    final teamName = team['name'] ?? 'Unknown Team';
-    final teamLogo = team['image_path'] ?? '';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        children: [
-          // Position Rank
-          SizedBox(
-            width: 30,
-            child: Text(
-              position.toString(),
-              style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ),
-          const SizedBox(width: 8),
-          // Player Image
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white10,
-              image: playerImage.isNotEmpty
-                  ? DecorationImage(image: NetworkImage(playerImage), fit: BoxFit.cover)
-                  : null,
-            ),
-            child: playerImage.isEmpty ? const Icon(Icons.person, color: Colors.white24) : null,
-          ),
-          const SizedBox(width: 12),
-          // Player & Team Name
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  playerName,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    if (teamLogo.isNotEmpty)
-                      Image.network(teamLogo, width: 16, height: 16)
-                    else
-                      const Icon(Icons.shield, size: 16, color: Colors.white24),
-                    const SizedBox(width: 6),
-                    Text(
-                      teamName,
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Goal Count
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                goals.toString(),
-                style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-              const Text(
-                "GOALS",
-                style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Builds the "Results" tab content
-  Widget _buildResultsTabContent(Color accentColor) {
-    return Consumer<FixtureProvider>(
-      builder: (context, fixtureProvider, child) {
-        if (fixtureProvider.isLoading && fixtureProvider.results.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
-        }
-
-        if (fixtureProvider.results.isEmpty) {
-          return _buildPlaceholderTab("No Results Found", Icons.history, accentColor);
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: fixtureProvider.results.length,
-          itemBuilder: (context, index) {
-            final result = fixtureProvider.results[index];
-            return _buildFixtureCard(result, accentColor);
-          },
-        );
-      },
-    );
-  }
-
-  /// Builds the "Fixtures" tab content
-  Widget _buildFixturesTabContent(Color accentColor) {
-    return Consumer<FixtureProvider>(
-      builder: (context, fixtureProvider, child) {
-        if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
-        }
-
-        if (fixtureProvider.fixtures.isEmpty) {
-          return _buildPlaceholderTab("No Fixtures Found", Icons.calendar_month, accentColor);
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: fixtureProvider.fixtures.length,
-          itemBuilder: (context, index) {
-            final fixture = fixtureProvider.fixtures[index];
-            return _buildFixtureCard(fixture, accentColor);
-          },
-        );
-      },
-    );
-  }
-
-  /// Builds a card for a single match fixture
-  Widget _buildFixtureCard(dynamic fixture, Color accentColor) {
-    final name = fixture['name'] ?? 'Unknown Match';
-    final startTime = fixture['starting_at'] ?? '';
-    final resultInfo = fixture['result_info'] ?? '';
-    final stateId = fixture['state_id']; // 5 is usually finished
-    
-    // Parse the date
-    String formattedDate = 'N/A';
-    if (startTime.isNotEmpty) {
-      try {
-        final parsedDate = DateTime.parse(startTime);
-        formattedDate = DateFormat('EEE, d MMM • HH:mm').format(parsedDate);
-      } catch (e) {
-        formattedDate = startTime;
-      }
-    }
-
-    final participants = fixture['participants'] as List? ?? [];
-    dynamic homeTeam;
-    dynamic awayTeam;
-    
-    if (participants.isNotEmpty) {
-      homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
-      if (participants.length > 1) {
-        awayTeam = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
-      }
-    }
-
-    final homeName = homeTeam?['name'] ?? 'Home';
-    final awayName = awayTeam?['name'] ?? 'Away';
-    final homeImg = homeTeam?['image_path'] ?? '';
-    final awayImg = awayTeam?['image_path'] ?? '';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                formattedDate,
-                style: const TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
-              ),
-              if (stateId == 5)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white10,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: const Text(
-                    "FINISHED",
-                    style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  children: [
-                    if (homeImg.isNotEmpty)
-                      Image.network(homeImg, width: 40, height: 40)
-                    else
-                      const Icon(Icons.shield, size: 40, color: Colors.white10),
-                    const SizedBox(height: 8),
-                    Text(
-                      homeName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "VS",
-                  style: TextStyle(color: Colors.white24, fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  children: [
-                    if (awayImg.isNotEmpty)
-                      Image.network(awayImg, width: 40, height: 40)
-                    else
-                      const Icon(Icons.shield, size: 40, color: Colors.white10),
-                    const SizedBox(height: 8),
-                    Text(
-                      awayName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (resultInfo.isNotEmpty) ...[
+  /// Helper to build a clean placeholder for empty tabs
+  Widget _buildPlaceholderTab(String title, IconData icon, Color accentColor) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 100),
+        child: Column(
+          children: [
+            Icon(icon, size: 80, color: Colors.white10),
             const SizedBox(height: 16),
-            const Divider(color: Colors.white10, height: 1),
-            const SizedBox(height: 12),
-            Text(
-              resultInfo,
-              style: TextStyle(color: accentColor.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w400),
-              textAlign: TextAlign.center,
-            ),
+            Text(title, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text("Content coming soon", style: TextStyle(color: Colors.white38, fontSize: 16)),
           ],
-        ],
+        ),
       ),
     );
   }
