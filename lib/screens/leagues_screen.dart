@@ -13,7 +13,20 @@ class LeaguesScreen extends StatefulWidget {
 
 class _LeaguesScreenState extends State<LeaguesScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +92,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         final followedLeagues = filteredLeagues.where((l) => followProvider.isLeagueFollowed(l['id'])).toList();
 
         return SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,6 +146,24 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 return _buildCountryExpandable(entry.key, entry.value, accentColor);
               }).toList(),
               
+              // Small indicator if we are still loading pages in the background
+              if (leagueProvider.hasMore)
+                 Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Column(
+                      children: [
+                         CircularProgressIndicator(color: accentColor, strokeWidth: 2),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Loading more leagues (${leagueProvider.leagues.length} loaded)...",
+                          style: const TextStyle(color: Colors.white38, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               const SizedBox(height: 40),
             ],
           ),

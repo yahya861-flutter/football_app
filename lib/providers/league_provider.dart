@@ -35,6 +35,12 @@ class LeagueProvider with ChangeNotifier {
   List<dynamic> get standings => _standings;
   List<dynamic> get liveLeagues => _liveLeagues;
 
+  // Pagination state
+  String? _nextUrl;
+  bool _isFetchingMore = false;
+  bool get isFetchingMore => _isFetchingMore;
+  bool get hasMore => _nextUrl != null;
+
   /// Returns leagues categorized as 'Top Leagues' (Category 1)
   List<dynamic> get topLeagues => _leagues.where((l) => l['category'] == 1).toList();
 
@@ -72,41 +78,109 @@ class LeagueProvider with ChangeNotifier {
   final String _baseUrl = 'https://api.sportmonks.com/v3/football/leagues';
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
 
-  /// Fetches the list of football leagues from the SportMonks API
+  /// Fetches the first page of football leagues and then loads the rest in the background
   Future<void> fetchLeagues() async {
     _isLoading = true;
     _errorMessage = null;
-    
-    // Notify the UI to show the loading spinner
+    _leagues = [];
+    _nextUrl = null;
     notifyListeners();
 
     try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl?include=country&api_token=$_apiKey'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      // Increase per_page to load more data faster
+      final String firstPageUrl = '$_baseUrl?include=country&per_page=50&api_token=$_apiKey';
+      final response = await http.get(Uri.parse(firstPageUrl));
 
-      // Check if the request was successful (HTTP status 200)
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
-        // Extract the 'data' array from the JSON response
         _leagues = data['data'] ?? [];
+        
+        // Find next page
+        final pagination = data['pagination'];
+        if (pagination != null && pagination['has_more'] == true) {
+          _nextUrl = pagination['next_page'];
+          if (_nextUrl != null && !_nextUrl!.contains('api_token=')) {
+            _nextUrl = _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
+          }
+        }
+        
+        // KEY: Set loading to false after the first page so the UI is usable immediately
+        _isLoading = false;
+        notifyListeners();
+
+        // Continue loading the rest in the background without blocking the UI
+        if (_nextUrl != null) {
+          _loadRemainingPages();
+        }
       } else {
-        // Handle server-side errors
+        _isLoading = false;
         _errorMessage = 'Failed to load leagues: ${response.statusCode}';
+        notifyListeners();
       }
     } catch (e) {
-      // Handle network or parsing errors
-      _errorMessage = 'An error occurred while fetching leagues: $e';
-    } finally {
-      // Data fetching is complete, either successfully or with an error
       _isLoading = false;
-      
-      // Notify the UI to rebuild with the new data or error message
+      _errorMessage = 'An error occurred while fetching leagues: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Private helper to load all remaining pages in the background
+  Future<void> _loadRemainingPages() async {
+    while (_nextUrl != null) {
+      try {
+        final response = await http.get(Uri.parse(_nextUrl!));
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> newLeagues = data['data'] ?? [];
+          _leagues.addAll(newLeagues);
+          
+          // Update next URL
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            _nextUrl = pagination['next_page'];
+            if (_nextUrl != null && !_nextUrl!.contains('api_token=')) {
+              _nextUrl = _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
+            }
+          } else {
+            _nextUrl = null;
+          }
+          
+          // Notify listeners so UI updates with new data (new countries/leagues appearing)
+          notifyListeners();
+        } else {
+          break; // Stop on error
+        }
+      } catch (e) {
+        break; // Stop on error
+      }
+    }
+  }
+
+  /// Keep this for compatibility, but fetchLeagues now handles background loading
+  Future<void> loadMoreLeagues() async {
+    // This is now handled automatically by _loadRemainingPages in the background
+    // but we can keep the logic if needed for manual triggers
+    if (_isFetchingMore || _nextUrl == null) return;
+    _isFetchingMore = true;
+    notifyListeners();
+    try {
+      final response = await http.get(Uri.parse(_nextUrl!));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List<dynamic> newLeagues = data['data'] ?? [];
+        _leagues.addAll(newLeagues);
+        final pagination = data['pagination'];
+        if (pagination != null && pagination['has_more'] == true) {
+          _nextUrl = pagination['next_page'];
+          if (_nextUrl != null && !_nextUrl!.contains('api_token=')) {
+            _nextUrl = _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
+          }
+        } else {
+          _nextUrl = null;
+        }
+      }
+    } finally {
+      _isFetchingMore = false;
       notifyListeners();
     }
   }
