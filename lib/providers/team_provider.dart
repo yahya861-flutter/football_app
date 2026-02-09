@@ -54,8 +54,8 @@ class TeamProvider with ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final startDate = DateFormat('yyyy-MM-dd').format(now.subtract(const Duration(days: 30)));
-      final endDate = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 30)));
+      final startDate = DateFormat('yyyy-MM-dd').format(now);
+      final endDate = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 365)));
 
       // Update URL to match user's provided format: fixtures/between/{start_date}/{end_date}/{team_id}
       final url = '$_baseUrl/fixtures/between/$startDate/$endDate/$teamId?include=participants;scores;venue';
