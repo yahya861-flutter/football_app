@@ -254,20 +254,53 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       return const Center(child: Text("No fixtures found", style: TextStyle(color: Colors.white38)));
     }
 
+    // Group fixtures by local date using timestamps
+    Map<String, List<dynamic>> grouped = {};
+    for (var fixture in provider.teamFixtures) {
+      final timestamp = fixture['starting_at_timestamp'];
+      if (timestamp != null) {
+        final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+        final dateKey = "${localDate.year}-${localDate.month.toString().padLeft(2, '0')}-${localDate.day.toString().padLeft(2, '0')}";
+        if (!grouped.containsKey(dateKey)) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey]!.add(fixture);
+      }
+    }
+
+    final dates = grouped.keys.toList()..sort();
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: provider.teamFixtures.length,
+      itemCount: dates.length,
       itemBuilder: (context, index) {
-        final fixture = provider.teamFixtures[index];
-        // Reuse some styles if possible, or build basic fixture row
-        return _buildFixtureItem(fixture, accentColor);
+        final date = dates[index];
+        final fixtures = grouped[date]!;
+        
+        DateTime dt = DateTime.parse(date);
+        String formattedDate = DateFormat('EEEE, MMM d').format(dt);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              child: Text(
+                formattedDate,
+                style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
+              ),
+            ),
+            ...fixtures.map((f) => _buildFixtureItem(f, accentColor)).toList(),
+          ],
+        );
       },
     );
   }
 
   Widget _buildFixtureItem(dynamic fixture, Color accentColor) {
-    final startTime = fixture['starting_at'] ?? '';
     final participants = fixture['participants'] as List? ?? [];
+    final scores = fixture['scores'] as List? ?? [];
+    
     dynamic homeTeam;
     dynamic awayTeam;
     if (participants.isNotEmpty) {
@@ -277,12 +310,37 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       }
     }
 
+    String homeScore = "";
+    String awayScore = "";
+    
+    if (scores.isNotEmpty) {
+      final homeId = homeTeam?['id'];
+      final awayId = awayTeam?['id'];
+      
+      final hScoreObj = scores.firstWhere((s) => s['participant_id'] == homeId && s['description'] == 'CURRENT', orElse: () => null);
+      final aScoreObj = scores.firstWhere((s) => s['participant_id'] == awayId && s['description'] == 'CURRENT', orElse: () => null);
+      
+      if (hScoreObj != null) homeScore = hScoreObj['score']?['goals']?.toString() ?? "0";
+      if (aScoreObj != null) awayScore = aScoreObj['score']?['goals']?.toString() ?? "0";
+    }
+
+    final timestamp = fixture['starting_at_timestamp'];
+    String timeStr = "--:--";
+    if (timestamp != null) {
+      final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+      timeStr = DateFormat('HH:mm').format(localDate);
+    }
+    
+    final stateId = fixture['state_id'];
+    String stateLabel = _getMatchState(stateId);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E1E),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.03)),
       ),
       child: Row(
         children: [
@@ -290,21 +348,26 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTeamMiniRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? ''),
-                const SizedBox(height: 8),
-                _buildTeamMiniRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? ''),
+                _buildTeamMiniRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
+                const SizedBox(height: 12),
+                _buildTeamMiniRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
               ],
             ),
           ),
+          const SizedBox(width: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2D2D2D),
+              color: Colors.black.withOpacity(0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              startTime.split(' ')[1].substring(0, 5),
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              stateLabel == "NS" ? timeStr : stateLabel,
+              style: TextStyle(
+                color: stateLabel == "NS" ? Colors.white70 : accentColor, 
+                fontSize: 11, 
+                fontWeight: FontWeight.w600
+              ),
             ),
           ),
         ],
@@ -312,15 +375,42 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
-  Widget _buildTeamMiniRow(String name, String img) {
+  String _getMatchState(dynamic stateId) {
+    switch (stateId) {
+      case 1: return "NS";
+      case 2: return "1st";
+      case 3: return "HT";
+      case 4: return "BRK";
+      case 5: return "FT";
+      case 6: return "ET";
+      case 7: return "AET";
+      case 8: return "FTP";
+      case 9: return "PEN";
+      default: return "";
+    }
+  }
+
+  Widget _buildTeamMiniRow(String name, String img, String score) {
     return Row(
       children: [
         if (img.isNotEmpty)
-          Image.network(img, width: 20, height: 20)
+          Image.network(img, width: 22, height: 22)
         else
-          const Icon(Icons.shield, size: 20, color: Colors.white24),
+          const Icon(Icons.shield, size: 22, color: Colors.white24),
         const SizedBox(width: 12),
-        Text(name, style: const TextStyle(color: Colors.white, fontSize: 14)),
+        Expanded(
+          child: Text(
+            name, 
+            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (score.isNotEmpty)
+          Text(
+            score,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          ),
       ],
     );
   }
