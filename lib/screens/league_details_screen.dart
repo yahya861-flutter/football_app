@@ -5,6 +5,7 @@ import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
+import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 /// This screen shows detailed information for a single football league.
@@ -499,19 +500,38 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // TEAM LOGO
-          if (teamImg.isNotEmpty)
-            Image.network(teamImg, width: 24, height: 24)
-          else
-            const Icon(Icons.shield, size: 24, color: Colors.white24),
-          const SizedBox(width: 12),
-          // TEAM NAME
+          // TEAM LOGO & NAME (Clickable)
           Expanded(
-            child: Text(
-              teamName,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TeamDetailsScreen(
+                      teamId: team['id'],
+                      teamName: teamName,
+                      teamLogo: teamImg,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  if (teamImg.isNotEmpty)
+                    Image.network(teamImg, width: 24, height: 24)
+                  else
+                    const Icon(Icons.shield, size: 24, color: Colors.white24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      teamName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           // STATS

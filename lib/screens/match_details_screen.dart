@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -64,16 +65,30 @@ class MatchDetailsScreen extends StatelessWidget {
                     children: [
                       // Home Team
                       Expanded(
-                        child: Column(
-                          children: [
-                            _buildTeamLogo(homeImg),
-                            const SizedBox(height: 12),
-                            Text(
-                              homeName,
-                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeamDetailsScreen(
+                                  teamId: homeTeam?['id'] ?? 0,
+                                  teamName: homeName,
+                                  teamLogo: homeImg,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              _buildTeamLogo(homeImg),
+                              const SizedBox(height: 12),
+                              Text(
+                                homeName,
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                       // Match Info Center
@@ -92,16 +107,30 @@ class MatchDetailsScreen extends StatelessWidget {
                       ),
                       // Away Team
                       Expanded(
-                        child: Column(
-                          children: [
-                            _buildTeamLogo(awayImg),
-                            const SizedBox(height: 12),
-                            Text(
-                              awayName,
-                              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TeamDetailsScreen(
+                                  teamId: awayTeam?['id'] ?? 0,
+                                  teamName: awayName,
+                                  teamLogo: awayImg,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              _buildTeamLogo(awayImg),
+                              const SizedBox(height: 12),
+                              Text(
+                                awayName,
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -256,7 +285,7 @@ class MatchDetailsScreen extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 itemCount: leagueProvider.standings.length,
                 itemBuilder: (context, index) {
-                  return _buildTableStandingRow(leagueProvider.standings[index]);
+                  return _buildTableStandingRow(context, leagueProvider.standings[index]);
                 },
               ),
             ),
@@ -295,7 +324,7 @@ class MatchDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTableStandingRow(dynamic standing) {
+  Widget _buildTableStandingRow(BuildContext context, dynamic standing) {
     final team = standing['participant'] ?? {};
     final position = standing['position'] ?? '-';
     final points = standing['points'] ?? 0;
@@ -333,14 +362,39 @@ class MatchDetailsScreen extends StatelessWidget {
             child: Text(position.toString(), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
           ),
           const SizedBox(width: 12),
-          // TEAM LOGO
-          if (teamImg.isNotEmpty)
-            Image.network(teamImg, width: 24, height: 24)
-          else
-            const Icon(Icons.shield, size: 24, color: Colors.white24),
-          const SizedBox(width: 12),
+          // TEAM LOGO & NAME (Clickable)
           Expanded(
-            child: Text(teamName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TeamDetailsScreen(
+                      teamId: team['id'],
+                      teamName: teamName,
+                      teamLogo: teamImg,
+                    ),
+                  ),
+                );
+              },
+              child: Row(
+                children: [
+                  if (teamImg.isNotEmpty)
+                    Image.network(teamImg, width: 24, height: 24)
+                  else
+                    const Icon(Icons.shield, size: 24, color: Colors.white24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      teamName,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
           _buildStatColumn(mp),
           _buildStatColumn(gd),
