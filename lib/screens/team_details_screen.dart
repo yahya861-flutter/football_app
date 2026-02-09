@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/team_provider.dart';
+import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -333,75 +334,82 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     
     final stateId = fixture['state_id'];
     String stateLabel = _getMatchState(stateId);
+    String displayTime = stateLabel == "NS" ? timeStr : stateLabel;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.03)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildTeamMiniRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
-                const SizedBox(height: 12),
-                _buildTeamMiniRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
-              ],
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchDetailsScreen(
+              fixture: fixture, 
+              leagueId: fixture['league_id'] ?? 0,
             ),
           ),
-          const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              stateLabel == "NS" ? timeStr : stateLabel,
-              style: TextStyle(
-                color: stateLabel == "NS" ? Colors.white70 : accentColor, 
-                fontSize: 11, 
-                fontWeight: FontWeight.w600
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            // Match Time Box
+            Container(
+              width: 70,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF262626),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                displayTime,
+                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 16),
+            // Vertical Line
+            Container(width: 1, height: 40, color: Colors.white10),
+            const SizedBox(width: 16),
+            // Teams
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTeamMiniRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
+                  const SizedBox(height: 12),
+                  _buildTeamMiniRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
+                ],
+              ),
+            ),
+            // Alarm Icon
+            Column(
+              children: [
+                const Icon(Icons.alarm, color: Colors.white60, size: 28),
+                const SizedBox(height: 4),
+                const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  String _getMatchState(dynamic stateId) {
-    switch (stateId) {
-      case 1: return "NS";
-      case 2: return "1st";
-      case 3: return "HT";
-      case 4: return "BRK";
-      case 5: return "FT";
-      case 6: return "ET";
-      case 7: return "AET";
-      case 8: return "FTP";
-      case 9: return "PEN";
-      default: return "";
-    }
-  }
-
-  Widget _buildTeamMiniRow(String name, String img, String score) {
+  Widget _buildTeamMiniRow(String name, String img, [String score = ""]) {
     return Row(
       children: [
         if (img.isNotEmpty)
-          Image.network(img, width: 22, height: 22)
+          Image.network(img, width: 24, height: 24)
         else
-          const Icon(Icons.shield, size: 22, color: Colors.white24),
+          const Icon(Icons.shield, size: 24, color: Colors.white24),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             name, 
-            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -414,6 +422,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       ],
     );
   }
+
 
   Widget _buildSquadTab(TeamProvider provider, Color accentColor) {
     if (provider.teamSquad.isEmpty) {
@@ -467,5 +476,20 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
         );
       },
     );
+  }
+}
+
+String _getMatchState(dynamic stateId) {
+  switch (stateId) {
+    case 1: return "NS";
+    case 2: return "1st";
+    case 3: return "HT";
+    case 4: return "BRK";
+    case 5: return "FT";
+    case 6: return "ET";
+    case 7: return "AET";
+    case 8: return "FTP";
+    case 9: return "PEN";
+    default: return "";
   }
 }
