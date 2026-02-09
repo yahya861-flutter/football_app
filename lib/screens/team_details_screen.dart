@@ -270,31 +270,50 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     }
 
     final dates = grouped.keys.toList()..sort();
-
+    
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: dates.length,
       itemBuilder: (context, index) {
-        final date = dates[index];
-        final fixtures = grouped[date]!;
+        final dateKey = dates[index];
+        final fixtures = grouped[dateKey]!;
         
-        DateTime dt = DateTime.parse(date);
-        String formattedDate = DateFormat('EEEE, MMM d').format(dt);
+        String displayDate = dateKey;
+        try {
+          final parsedLocal = DateTime.parse(dateKey);
+          displayDate = DateFormat('yyyy-MM-dd').format(parsedLocal);
+        } catch (_) {}
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        return _buildDateGroup(displayDate, fixtures, accentColor);
+      },
+    );
+  }
+
+  Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
+          title: Text(
+            date,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+          ),
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              child: Text(
-                formattedDate,
-                style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 0.5),
-              ),
-            ),
+            const Divider(color: Colors.white10, height: 1),
             ...fixtures.map((f) => _buildFixtureItem(f, accentColor)).toList(),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -329,7 +348,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     String timeStr = "--:--";
     if (timestamp != null) {
       final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
-      timeStr = DateFormat('HH:mm').format(localDate);
+      timeStr = DateFormat('h:mm a').format(localDate).toLowerCase();
     }
     
     final stateId = fixture['state_id'];
