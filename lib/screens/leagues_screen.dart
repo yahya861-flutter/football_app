@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/providers/team_list_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/league_details_screen.dart';
+import 'package:football_app/screens/team_details_screen.dart';
 
 class LeaguesScreen extends StatefulWidget {
   const LeaguesScreen({super.key});
@@ -13,18 +15,39 @@ class LeaguesScreen extends StatefulWidget {
 
 class _LeaguesScreenState extends State<LeaguesScreen> {
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _teamSearchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _teamScrollController = ScrollController();
   String _searchQuery = "";
+  String _teamSearchQuery = "";
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<LeagueProvider>().fetchLeagues();
+      context.read<TeamListProvider>().fetchTeams();
+    });
+    
+    _teamScrollController.addListener(() {
+      if (_teamScrollController.position.pixels >= _teamScrollController.position.maxScrollExtent - 200) {
+        context.read<TeamListProvider>().loadMoreTeams();
+      }
+    });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        context.read<LeagueProvider>().loadMoreLeagues();
+      }
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _teamScrollController.dispose();
     _searchController.dispose();
+    _teamSearchController.dispose();
     super.dispose();
   }
 
@@ -54,7 +77,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               child: TabBarView(
                 children: [
                   _buildLeaguesTab(accentColor, cardColor),
-                  _buildTeamsTab(accentColor),
+                  _buildTeamsTab(accentColor, cardColor),
                 ],
               ),
             ),
@@ -222,10 +245,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white10,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(count.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                child: Text(count.toString(), style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)),
               ),
               const SizedBox(width: 8),
               const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
@@ -336,15 +359,153 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildTeamsTab(Color accentColor) {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildTeamsTab(Color accentColor, Color cardColor) {
+    return Consumer2<TeamListProvider, FollowProvider>(
+      builder: (context, teamProvider, followProvider, _) {
+        if (teamProvider.isLoading && teamProvider.teams.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Colors.blueGrey));
+        }
+
+        // Apply search filtering
+        final filteredTeams = teamProvider.teams.where((t) {
+          final name = t['name']?.toLowerCase() ?? "";
+          return name.contains(_teamSearchQuery.toLowerCase());
+        }).toList();
+
+        final followedTeams = filteredTeams.where((t) => followProvider.isTeamFollowed(t['id'])).toList();
+
+        return SingleChildScrollView(
+          controller: _teamScrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              // Team-specific Search Bar
+              _buildTeamSearchBar(cardColor),
+              const SizedBox(height: 24),
+              
+              // Following Teams Section
+              _buildExpandableSection(
+                icon: Icons.star,
+                iconColor: Colors.tealAccent,
+                title: "Following",
+                count: followedTeams.length,
+                content: followedTeams.isEmpty 
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text("You are not following any teams", style: TextStyle(color: Colors.white38)),
+                    )
+                  : Column(children: followedTeams.map((t) => _buildTeamItem(t, accentColor, followProvider)).toList()),
+              ),
+              const SizedBox(height: 12),
+
+              // All Teams Section (Labeled "All Leagues" per screenshot)
+              _buildExpandableSection(
+                icon: Icons.thumb_up, // Using thumb_up for "All Leagues" icon as per screenshot grouping look
+                iconColor: Colors.tealAccent,
+                title: "All Leagues",
+                count: teamProvider.teams.length, // Total count usually goes here
+                content: Column(children: filteredTeams.map((t) => _buildTeamItem(t, accentColor, followProvider)).toList()),
+              ),
+              
+              // Small indicator if we are still loading pages in the background
+              if (teamProvider.hasMore)
+                 Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Column(
+                      children: [
+                         CircularProgressIndicator(color: accentColor, strokeWidth: 2),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Loading more teams (${teamProvider.teams.length} loaded)...",
+                          style: const TextStyle(color: Colors.white38, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTeamSearchBar(Color cardColor) {
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: _teamSearchController,
+        style: const TextStyle(color: Colors.white),
+        onChanged: (val) {
+          setState(() => _teamSearchQuery = val);
+        },
+        onSubmitted: (val) {
+          if (val.isNotEmpty) {
+            context.read<TeamListProvider>().searchTeams(val);
+          } else {
+            context.read<TeamListProvider>().fetchTeams(); // Reset
+          }
+        },
+        decoration: const InputDecoration(
+          hintText: "Type to search teams",
+          hintStyle: TextStyle(color: Colors.white38),
+          prefixIcon: Icon(Icons.search, color: Colors.white38),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTeamItem(dynamic team, Color accentColor, FollowProvider followProvider) {
+    final isFollowed = followProvider.isTeamFollowed(team['id']);
+    
+    return ListTile(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TeamDetailsScreen(
+              teamId: team['id'],
+              teamName: team['name'] ?? 'Unknown',
+              teamLogo: team['image_path'] ?? '',
+            ),
+          ),
+        );
+      },
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: team['image_path'] != null 
+          ? Image.network(team['image_path'], width: 35, height: 35, fit: BoxFit.cover)
+          : Container(
+              width: 35, 
+              height: 35, 
+              color: Colors.white10, 
+              child: Icon(Icons.shield, color: accentColor, size: 24)
+            ),
+      ),
+      title: Text(team['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.groups, size: 80, color: Colors.white10),
-          SizedBox(height: 16),
-          Text("Follow Teams", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          Text("Search for your favorite teams to follow them", style: TextStyle(color: Colors.white38, fontSize: 12)),
+          IconButton(
+            icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
+                 color: isFollowed ? accentColor : Colors.white38),
+            onPressed: () => followProvider.toggleFollowTeam(team['id']),
+          ),
+          IconButton(
+            icon: Icon(isFollowed ? Icons.notifications : Icons.notifications_none, 
+                 color: isFollowed ? Colors.tealAccent : Colors.white38, size: 22),
+            onPressed: () {}, // Notification toggle placeholder
+          ),
         ],
       ),
     );
