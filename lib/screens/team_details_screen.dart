@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/squad_provider.dart';
 import 'package:football_app/providers/team_provider.dart';
+import 'package:football_app/screens/player_details_screen.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -455,49 +456,62 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       padding: const EdgeInsets.all(16),
       itemCount: provider.squad.length,
       itemBuilder: (context, index) {
-        final squadItem = provider.squad[index];
-        final player = squadItem['player'] ?? {};
+        final player = provider.squad[index];
         
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              if (player['image_path'] != null)
-                CircleAvatar(
-                  radius: 25,
-                  backgroundImage: NetworkImage(player['image_path']),
-                )
-              else
-                 CircleAvatar(
-                  radius: 25,
-                  child: Icon(Icons.person, color: Colors.grey),
-                ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      player['display_name'] ?? player['name'] ?? 'Player',
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    if (squadItem['jersey_number'] != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          "Jersey: #${squadItem['jersey_number']}",
-                          style: const TextStyle(color: Colors.white38, fontSize: 13),
-                        ),
-                      ),
-                  ],
+        return InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlayerDetailsScreen(
+                  squadItem: player,
+                  teamName: widget.teamName,
+                  teamLogo: widget.teamLogo,
                 ),
               ),
-            ],
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1E1E),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                if (player['image_path'] != null)
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundImage: NetworkImage(player['image_path']),
+                  )
+                else
+                   CircleAvatar(
+                    radius: 25,
+                    child: Icon(Icons.person, color: Colors.grey),
+                  ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        player['display_name'] ?? player['name'] ?? 'Player',
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      if (player['jersey_number'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            "Jersey: #${player['jersey_number']}",
+                            style: const TextStyle(color: Colors.white38, fontSize: 13),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
