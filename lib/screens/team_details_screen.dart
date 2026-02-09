@@ -6,6 +6,7 @@ import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/follow_provider.dart';
 import '../providers/transfer_provider.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
@@ -67,9 +68,17 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.star_border, color: Colors.white60),
-                    onPressed: () {},
+                  Consumer<FollowProvider>(
+                    builder: (context, followProvider, child) {
+                      final isFollowed = followProvider.isTeamFollowed(widget.teamId);
+                      return IconButton(
+                        icon: Icon(
+                          isFollowed ? Icons.star : Icons.star_border, 
+                          color: isFollowed ? accentColor : Colors.white60,
+                        ),
+                        onPressed: () => followProvider.toggleFollowTeam(widget.teamId),
+                      );
+                    },
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
