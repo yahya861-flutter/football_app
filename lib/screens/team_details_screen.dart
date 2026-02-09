@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:football_app/providers/squad_provider.dart';
 import 'package:football_app/providers/team_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
@@ -37,7 +38,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
         teamProvider.fetchTeamStats(widget.teamId, _selectedSeasonId!);
       }
       teamProvider.fetchTeamFixtures(widget.teamId);
-      teamProvider.fetchTeamSquad(widget.teamId);
+      context.read<SquadProvider>().fetchSquad(widget.teamId);
       teamProvider.fetchTeamTransfers(widget.teamId);
     });
   }
@@ -155,7 +156,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                 children: [
                   _buildStatsTab(teamProvider, seasons, accentColor),
                   _buildFixturesTab(teamProvider, accentColor),
-                  _buildSquadTab(teamProvider, accentColor),
+                  Consumer<SquadProvider>(builder: (context, squadProvider, _) => _buildSquadTab(squadProvider, accentColor)),
                   _buildTransfersTab(teamProvider, accentColor),
                 ],
               ),
@@ -443,21 +444,61 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
 
-  Widget _buildSquadTab(TeamProvider provider, Color accentColor) {
-    if (provider.teamSquad.isEmpty) {
+  Widget _buildSquadTab(SquadProvider provider, Color accentColor) {
+    if (provider.isLoading && provider.squad.isEmpty) {
+      return Center(child: CircularProgressIndicator(color: accentColor));
+    }
+    if (provider.squad.isEmpty) {
       return const Center(child: Text("Squad list upcoming", style: TextStyle(color: Colors.white38)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: provider.teamSquad.length,
+      itemCount: provider.squad.length,
       itemBuilder: (context, index) {
-        final player = provider.teamSquad[index]['player'];
-        return ListTile(
-          leading: player['image_path'] != null 
-            ? CircleAvatar(backgroundImage: NetworkImage(player['image_path']))
-            : const CircleAvatar(child: Icon(Icons.person)),
-          title: Text(player['display_name'] ?? 'Player', style: const TextStyle(color: Colors.white)),
-          subtitle: Text(player['position']?['name'] ?? 'Unknown Position', style: const TextStyle(color: Colors.white38)),
+        final squadItem = provider.squad[index];
+        final player = squadItem['player'] ?? {};
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              if (player['image_path'] != null)
+                CircleAvatar(
+                  radius: 25,
+                  backgroundImage: NetworkImage(player['image_path']),
+                )
+              else
+                 CircleAvatar(
+                  radius: 25,
+                  child: Icon(Icons.person, color: Colors.grey),
+                ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      player['display_name'] ?? player['name'] ?? 'Player',
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    if (squadItem['jersey_number'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          "Jersey: #${squadItem['jersey_number']}",
+                          style: const TextStyle(color: Colors.white38, fontSize: 13),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
