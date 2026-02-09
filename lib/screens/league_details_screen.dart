@@ -77,7 +77,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               headerSliverBuilder: (context, innerBoxIsScrolled) {
                 return [
                   SliverAppBar(
-                    expandedHeight: 280,
+                    expandedHeight: 160,
                     pinned: true,
                     backgroundColor: const Color(0xFF121212),
                     elevation: 0,
@@ -96,37 +96,57 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                     ],
                     flexibleSpace: FlexibleSpaceBar(
                       collapseMode: CollapseMode.pin,
-                      background: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 60),
-                          // League Logo
-                          if (imagePath.isNotEmpty)
-                            Image.network(imagePath, height: 80, width: 80, fit: BoxFit.contain)
-                          else
-                            const Icon(Icons.emoji_events, size: 80, color: Colors.white24),
-                          const SizedBox(height: 16),
-                          // League Name
-                          Text(
-                            name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                      background: Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // League Logo in a rounded container - Smaller
+                            Container(
+                              width: 60,
+                              height: 60,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2D2D44).withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: imagePath.isNotEmpty
+                                  ? Image.network(imagePath, fit: BoxFit.contain)
+                                  : const Icon(Icons.emoji_events, size: 30, color: Colors.white24),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 4),
-                          // Country Name
-                          Text(
-                            country,
-                            style: const TextStyle(
-                              color: Colors.white60,
-                              fontSize: 16,
+                            const SizedBox(width: 16),
+                            // Name and Country
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    country,
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 14,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     bottom: PreferredSize(
