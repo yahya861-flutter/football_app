@@ -8,6 +8,7 @@ import 'package:football_app/screens/match_details_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 /// This screen shows detailed information for a single football league.
 /// It also fetches and displays live (in-play) matches specifically for this league.
 class LeagueDetailsScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     // Start all fetches concurrently on initialization
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      
+
       final leagueProvider = context.read<LeagueProvider>();
       final fixtureProvider = context.read<FixtureProvider>();
       final matchProvider = context.read<MatchProvider>();
@@ -34,7 +35,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       // 1. Fetch fixtures immediately (don't wait for league details)
       fixtureProvider.fetchFixturesByDateRange(widget.leagueId);
       fixtureProvider.fetchResultsByLeague(widget.leagueId);
-      
+
       // 2. Fetch league metadata and follow-up data (standings)
       leagueProvider.fetchLeagueById(widget.leagueId).then((_) {
         if (!mounted) return;
@@ -44,7 +45,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           leagueProvider.fetchTopScorers(seasonId);
         }
       });
-      
+
       // 3. Catch-all background fetches
       leagueProvider.fetchLiveLeagues();
       matchProvider.fetchInPlayMatches();
@@ -61,143 +62,163 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
         body: NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  SliverAppBar(
-                    expandedHeight: 160,
-                    pinned: true,
-                    backgroundColor: const Color(0xFF121212),
-                    elevation: 0,
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 160,
+                pinned: true,
+                backgroundColor: const Color(0xFF121212),
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
                 actions: [
                   Consumer<FollowProvider>(
                     builder: (context, followProvider, _) {
-                      final isFollowed = followProvider.isLeagueFollowed(widget.leagueId);
+                      final isFollowed = followProvider.isLeagueFollowed(
+                        widget.leagueId,
+                      );
                       return IconButton(
                         icon: Icon(
                           isFollowed ? Icons.star : Icons.star_border,
                           color: isFollowed ? accentColor : Colors.white60,
                         ),
-                        onPressed: () => followProvider.toggleFollowLeague(widget.leagueId),
+                        onPressed: () =>
+                            followProvider.toggleFollowLeague(widget.leagueId),
                       );
                     },
                   ),
                 ],
-                    flexibleSpace: FlexibleSpaceBar(
-                      collapseMode: CollapseMode.pin,
-                      background: Padding(
-                        padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
-                        child: Selector<LeagueProvider, Map<String, dynamic>?>(
-                          selector: (_, p) => p.selectedLeague,
-                          builder: (context, league, _) {
-                            final name = league?['name'] ?? 'Loading...';
-                            final imagePath = league?['image_path'] ?? '';
-                            final country = league?['country']?['name'] ?? '...';
-                            
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                // League Logo in a rounded container - Smaller
-                                Container(
-                                  width: 60,
-                                  height: 60,
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF2D2D44).withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: Colors.white10),
-                                  ),
-                                  child: imagePath.isNotEmpty
-                                      ? Image.network(imagePath, fit: BoxFit.contain)
-                                      : const Icon(Icons.emoji_events, size: 30, color: Colors.white24),
-                                ),
-                                const SizedBox(width: 16),
-                                // Name and Country
-                                Expanded(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'Poppins',
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        country,
-                                        style: const TextStyle(
-                                          color: Colors.white60,
-                                          fontSize: 14,
-                                          fontFamily: 'Poppins',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
+                flexibleSpace: FlexibleSpaceBar(
+                  collapseMode: CollapseMode.pin,
+                  background: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 60,
+                      bottom: 48,
                     ),
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(48),
-                      child: Container(
-                        alignment: Alignment.centerLeft,
-                        child: TabBar(
-                          isScrollable: true,
-                          indicatorColor: accentColor,
-                          labelColor: accentColor,
-                          unselectedLabelColor: Colors.white38,
-                          indicatorWeight: 3,
-                          indicatorSize: TabBarIndicatorSize.label,
-                          labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                          tabs: const [
-                            Tab(text: "Fixtures"),
-                            Tab(text: "Table"),
+                    child: Selector<LeagueProvider, Map<String, dynamic>?>(
+                      selector: (_, p) => p.selectedLeague,
+                      builder: (context, league, _) {
+                        final name = league?['name'] ?? 'Loading...';
+                        final imagePath = league?['image_path'] ?? '';
+                        final country = league?['country']?['name'] ?? '...';
+
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // League Logo in a rounded container - Smaller
+                            Container(
+                              width: 60,
+                              height: 60,
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2D2D44).withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: imagePath.isNotEmpty
+                                  ? Image.network(
+                                      imagePath,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : const Icon(
+                                      Icons.emoji_events,
+                                      size: 30,
+                                      color: Colors.white24,
+                                    ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Name and Country
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    country,
+                                    style: const TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 16,
+                                      fontFamily: 'Poppins',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
-                        ),
-                      ),
+                        );
+                      },
                     ),
                   ),
-                ];
-              },
-              body: TabBarView(
-                children: [
-                  // FIXTURES TAB
-                  _buildFixturesTabContent(accentColor),
-                  
-                  // TABLE TAB
-                  Consumer<LeagueProvider>(
-                    builder: (context, lp, _) => _buildTableTabContent(lp, accentColor),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(48),
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    child: TabBar(
+                      isScrollable: true,
+                      indicatorColor: accentColor,
+                      labelColor: accentColor,
+                      unselectedLabelColor: Colors.white38,
+                      indicatorWeight: 3,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      tabs: const [
+                        Tab(text: "Fixtures"),
+                        Tab(text: "Table"),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
-            ),
+            ];
+          },
+          body: TabBarView(
+            children: [
+              // FIXTURES TAB
+              _buildFixturesTabContent(accentColor),
+
+              // TABLE TAB
+              Consumer<LeagueProvider>(
+                builder: (context, lp, _) =>
+                    _buildTableTabContent(lp, accentColor),
+              ),
+            ],
           ),
-        );
-      }
+        ),
+      ),
+    );
+  }
 
   /// Builds the "Fixtures" tab content with grouping by date
   Widget _buildFixturesTabContent(Color accentColor) {
     return Consumer<FixtureProvider>(
       builder: (context, fixtureProvider, child) {
         if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
-          return  Center(child: CircularProgressIndicator(color: accentColor));
+          return Center(child: CircularProgressIndicator(color: accentColor));
         }
 
         if (fixtureProvider.fixtures.isEmpty) {
-          return _buildPlaceholderTab("No Fixtures Found", Icons.calendar_month, accentColor);
+          return _buildPlaceholderTab(
+            "No Fixtures Found",
+            Icons.calendar_month,
+            accentColor,
+          );
         }
 
         // Group fixtures by local date using timestamps
@@ -207,9 +228,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           if (timestamp != null) {
             try {
               // Convert UTC timestamp to local DateTime
-              final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+              final localDate = DateTime.fromMillisecondsSinceEpoch(
+                timestamp * 1000,
+              ).toLocal();
               final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
-              
+
               if (!groupedFixtures.containsKey(dateKey)) {
                 groupedFixtures[dateKey] = [];
               }
@@ -228,7 +251,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           itemBuilder: (context, index) {
             final dateKey = sortedDates[index];
             final fixtures = groupedFixtures[dateKey]!;
-            
+
             // Format header date nicely: e.g. "Monday, Feb 9"
             String displayDate = dateKey;
             try {
@@ -244,7 +267,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   /// Builds a group of fixtures for a specific date
-  Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
+  Widget _buildDateGroup(
+    String date,
+    List<dynamic> fixtures,
+    Color accentColor,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -261,11 +288,17 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
           title: Text(
             date,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
           children: [
             const Divider(color: Colors.white10, height: 1),
-            ...fixtures.map((f) => _buildRedesignedFixtureItem(f, accentColor)).toList(),
+            ...fixtures
+                .map((f) => _buildRedesignedFixtureItem(f, accentColor))
+                .toList(),
           ],
         ),
       ),
@@ -278,7 +311,9 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     String time = "N/A";
     if (timestamp != null) {
       try {
-        final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+        final localDate = DateTime.fromMillisecondsSinceEpoch(
+          timestamp * 1000,
+        ).toLocal();
         time = DateFormat('h:mm a').format(localDate);
       } catch (e) {
         time = "N/A";
@@ -288,11 +323,17 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final participants = fixture['participants'] as List? ?? [];
     dynamic homeTeam;
     dynamic awayTeam;
-    
+
     if (participants.isNotEmpty) {
-      homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      homeTeam = participants.firstWhere(
+        (p) => p['meta']?['location'] == 'home',
+        orElse: () => participants[0],
+      );
       if (participants.length > 1) {
-        awayTeam = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+        awayTeam = participants.firstWhere(
+          (p) => p['meta']?['location'] == 'away',
+          orElse: () => participants[1],
+        );
       }
     }
 
@@ -306,7 +347,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId),
+            builder: (context) =>
+                MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId),
           ),
         );
       },
@@ -327,7 +369,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               ),
               child: Text(
                 time,
-                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -351,7 +397,10 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               children: [
                 const Icon(Icons.alarm, color: Colors.white60, size: 28),
                 const SizedBox(height: 4),
-                const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                const Text(
+                  "Alarm",
+                  style: TextStyle(color: Colors.white38, fontSize: 10),
+                ),
               ],
             ),
           ],
@@ -371,7 +420,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
         Expanded(
           child: Text(
             name,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -381,13 +434,20 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   /// Builds the content for the "Table" tab (League Standings)
-  Widget _buildTableTabContent(LeagueProvider leagueProvider, Color accentColor) {
+  Widget _buildTableTabContent(
+    LeagueProvider leagueProvider,
+    Color accentColor,
+  ) {
     if (leagueProvider.isLoading && leagueProvider.standings.isEmpty) {
-      return  Center(child: CircularProgressIndicator(color: accentColor));
+      return Center(child: CircularProgressIndicator(color: accentColor));
     }
 
     if (leagueProvider.standings.isEmpty) {
-      return _buildPlaceholderTab("League Table", Icons.table_chart, accentColor);
+      return _buildPlaceholderTab(
+        "League Table",
+        Icons.table_chart,
+        accentColor,
+      );
     }
 
     return Container(
@@ -402,7 +462,10 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               padding: EdgeInsets.zero,
               itemCount: leagueProvider.standings.length,
               itemBuilder: (context, index) {
-                return _buildTableStandingRow(leagueProvider.standings[index], accentColor);
+                return _buildTableStandingRow(
+                  leagueProvider.standings[index],
+                  accentColor,
+                );
               },
             ),
           ),
@@ -436,7 +499,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       width: 35,
       child: Text(
         label,
-        style: const TextStyle(color: Colors.white60, fontSize: 12, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          color: Colors.white60,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -457,11 +524,16 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     for (var detail in details) {
       final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
       final value = detail['value']?.toString() ?? '0';
-      if (type.contains('played')) mp = value;
-      else if (type.contains('won')) w = value;
-      else if (type.contains('draw')) d = value;
-      else if (type.contains('lost')) l = value;
-      else if (type.contains('goals-difference')) gd = value;
+      if (type.contains('played'))
+        mp = value;
+      else if (type.contains('won'))
+        w = value;
+      else if (type.contains('draw'))
+        d = value;
+      else if (type.contains('lost'))
+        l = value;
+      else if (type.contains('goals-difference'))
+        gd = value;
     }
 
     if (mp == "0" && standing['overall'] != null) {
@@ -491,7 +563,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             ),
             child: Text(
               position.toString(),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -520,7 +596,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                   Expanded(
                     child: Text(
                       teamName,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -543,7 +623,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             ),
             child: Text(
               points.toString(),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
             ),
           ),
         ],
@@ -557,7 +641,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       width: 35,
       child: Text(
         value,
-        style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w400),
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -572,9 +660,19 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           children: [
             Icon(icon, size: 80, color: Colors.white10),
             const SizedBox(height: 16),
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            const Text("Content coming soon", style: TextStyle(color: Colors.white38, fontSize: 16)),
+            const Text(
+              "Content coming soon",
+              style: TextStyle(color: Colors.white38, fontSize: 16),
+            ),
           ],
         ),
       ),

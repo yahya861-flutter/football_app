@@ -195,7 +195,7 @@ class LeagueProvider with ChangeNotifier {
     try {
       final response = await http.get(
         // Include currentSeason and its teams to show them in the Home tab
-        Uri.parse('$_baseUrl/$id?include=currentSeason.teams'),
+        Uri.parse('$_baseUrl/$id?include=currentSeason.teams;country'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
