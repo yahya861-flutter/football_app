@@ -79,16 +79,17 @@ class LeagueProvider with ChangeNotifier {
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
 
   /// Fetches the first page of football leagues and then loads the rest in the background
-  Future<void> fetchLeagues() async {
+  Future<void> fetchLeagues({bool forceRefresh = false}) async {
+    if (_leagues.isNotEmpty && !forceRefresh) return;
+
     _isLoading = true;
     _errorMessage = null;
-    _leagues = [];
     _nextUrl = null;
     notifyListeners();
 
     try {
       // Increase per_page to load more data faster
-      final String firstPageUrl = '$_baseUrl?include=country&per_page=50&api_token=$_apiKey';
+      final String firstPageUrl = '$_baseUrl?include=country&per_page=100&select=name,image_path,category&api_token=$_apiKey';
       final response = await http.get(Uri.parse(firstPageUrl));
 
       if (response.statusCode == 200) {
@@ -104,11 +105,10 @@ class LeagueProvider with ChangeNotifier {
           }
         }
         
-        // KEY: Set loading to false after the first page so the UI is usable immediately
         _isLoading = false;
         notifyListeners();
 
-        // Continue loading the rest in the background without blocking the UI
+        // Start controlled background loading
         if (_nextUrl != null) {
           _loadRemainingPages();
         }
@@ -124,34 +124,39 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Private helper to load all remaining pages in the background
+  /// Controlled background loading to prevent network saturation and UI jank
   Future<void> _loadRemainingPages() async {
     while (_nextUrl != null) {
+      // Small delay to yield to the UI and prevent saturating the network
+      await Future.delayed(const Duration(seconds: 2));
+      
       try {
-        final response = await http.get(Uri.parse(_nextUrl!));
+        String url = _nextUrl!;
+        if (!url.contains('select=')) {
+          url += '&select=name,image_path,category';
+        }
+        if (!url.contains('api_token=')) {
+          url += '&api_token=$_apiKey';
+        }
+
+        final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> newLeagues = data['data'] ?? [];
           _leagues.addAll(newLeagues);
           
-          // Update next URL
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
             _nextUrl = pagination['next_page'];
-            if (_nextUrl != null && !_nextUrl!.contains('api_token=')) {
-              _nextUrl = _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
-            }
           } else {
             _nextUrl = null;
           }
-          
-          // Notify listeners so UI updates with new data (new countries/leagues appearing)
           notifyListeners();
         } else {
-          break; // Stop on error
+          break; 
         }
       } catch (e) {
-        break; // Stop on error
+        break;
       }
     }
   }
@@ -164,7 +169,11 @@ class LeagueProvider with ChangeNotifier {
     _isFetchingMore = true;
     notifyListeners();
     try {
-      final response = await http.get(Uri.parse(_nextUrl!));
+      String url = _nextUrl!;
+      if (!url.contains('select=')) {
+        url += '&select=name,image_path,category';
+      }
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> newLeagues = data['data'] ?? [];
