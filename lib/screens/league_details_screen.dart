@@ -21,27 +21,31 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch league details and current in-play matches on initialization
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    // Start all fetches concurrently on initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      
       final leagueProvider = context.read<LeagueProvider>();
-      await leagueProvider.fetchLeagueById(widget.leagueId);
+      final fixtureProvider = context.read<FixtureProvider>();
+      final matchProvider = context.read<MatchProvider>();
+
+      // 1. Fetch fixtures immediately (don't wait for league details)
+      fixtureProvider.fetchFixturesByDateRange(widget.leagueId);
+      fixtureProvider.fetchResultsByLeague(widget.leagueId);
       
-      // Fetch standings once we have the season ID
-      final seasonId = leagueProvider.currentSeasonId;
-      if (seasonId != null) {
-        leagueProvider.fetchStandings(seasonId);
-        leagueProvider.fetchTopScorers(seasonId);
-      }
+      // 2. Fetch league metadata and follow-up data (standings)
+      leagueProvider.fetchLeagueById(widget.leagueId).then((_) {
+        if (!mounted) return;
+        final seasonId = leagueProvider.currentSeasonId;
+        if (seasonId != null) {
+          leagueProvider.fetchStandings(seasonId);
+          leagueProvider.fetchTopScorers(seasonId);
+        }
+      });
       
-      await leagueProvider.fetchLiveLeagues();
-      
-      if (mounted) {
-        final fixtureProvider = context.read<FixtureProvider>();
-        fixtureProvider.fetchFixturesByDateRange(widget.leagueId);
-        fixtureProvider.fetchResultsByLeague(widget.leagueId);
-      }
-      
-      context.read<MatchProvider>().fetchInPlayMatches();
+      // 3. Catch-all background fetches
+      leagueProvider.fetchLiveLeagues();
+      matchProvider.fetchInPlayMatches();
     });
   }
 
