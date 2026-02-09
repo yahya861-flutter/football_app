@@ -65,7 +65,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                expandedHeight: 160,
+                expandedHeight: 200,
                 pinned: true,
                 backgroundColor: const Color(0xFF121212),
                 elevation: 0,
@@ -96,7 +96,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                     padding: const EdgeInsets.only(
                       left: 16,
                       right: 16,
-                      top: 60,
+                      top: 80,
                       bottom: 48,
                     ),
                     child: Selector<LeagueProvider, Map<String, dynamic>?>(

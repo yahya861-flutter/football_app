@@ -58,7 +58,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                expandedHeight: 180,
+                expandedHeight: 200,
                 pinned: true,
                 backgroundColor: const Color(0xFF121212),
                 elevation: 0,
@@ -75,7 +75,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
                   background: Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 16, top: 40, bottom: 48),
+                    padding: const EdgeInsets.only(left: 16, right: 16, top: 80, bottom: 48),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
