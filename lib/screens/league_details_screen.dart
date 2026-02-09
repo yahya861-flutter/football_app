@@ -199,16 +199,23 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           return _buildPlaceholderTab("No Fixtures Found", Icons.calendar_month, accentColor);
         }
 
-        // Group fixtures by date
+        // Group fixtures by local date using timestamps
         Map<String, List<dynamic>> groupedFixtures = {};
         for (var fixture in fixtureProvider.fixtures) {
-          final startTime = fixture['starting_at'] ?? '';
-          if (startTime.isNotEmpty) {
-            final date = startTime.split(' ')[0]; // Extract YYYY-MM-DD
-            if (!groupedFixtures.containsKey(date)) {
-              groupedFixtures[date] = [];
+          final timestamp = fixture['starting_at_timestamp'];
+          if (timestamp != null) {
+            try {
+              // Convert UTC timestamp to local DateTime
+              final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+              final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
+              
+              if (!groupedFixtures.containsKey(dateKey)) {
+                groupedFixtures[dateKey] = [];
+              }
+              groupedFixtures[dateKey]!.add(fixture);
+            } catch (e) {
+              debugPrint("Error parsing timestamp: $e");
             }
-            groupedFixtures[date]!.add(fixture);
           }
         }
 
@@ -218,9 +225,17 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           itemCount: sortedDates.length,
           itemBuilder: (context, index) {
-            final date = sortedDates[index];
-            final fixtures = groupedFixtures[date]!;
-            return _buildDateGroup(date, fixtures, accentColor);
+            final dateKey = sortedDates[index];
+            final fixtures = groupedFixtures[dateKey]!;
+            
+            // Format header date nicely: e.g. "Monday, Feb 9"
+            String displayDate = dateKey;
+            try {
+              final parsedLocal = DateTime.parse(dateKey);
+              displayDate = DateFormat('EEEE, MMM d').format(parsedLocal);
+            } catch (_) {}
+
+            return _buildDateGroup(displayDate, fixtures, accentColor);
           },
         );
       },
@@ -258,14 +273,14 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
 
   /// Redesigned fixture item to match screenshot
   Widget _buildRedesignedFixtureItem(dynamic fixture, Color accentColor) {
-    final startTime = fixture['starting_at'] ?? '';
+    final timestamp = fixture['starting_at_timestamp'];
     String time = "N/A";
-    if (startTime.isNotEmpty) {
+    if (timestamp != null) {
       try {
-        final parsedDate = DateTime.parse(startTime);
-        time = DateFormat('h:mm a').format(parsedDate);
+        final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+        time = DateFormat('h:mm a').format(localDate);
       } catch (e) {
-        time = startTime;
+        time = "N/A";
       }
     }
 
