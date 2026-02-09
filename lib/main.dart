@@ -7,6 +7,7 @@ import 'package:football_app/providers/team_provider.dart';
 import 'package:football_app/providers/team_list_provider.dart';
 import 'package:football_app/providers/squad_provider.dart';
 import 'package:football_app/providers/transfer_provider.dart';
+import 'package:football_app/providers/inplay_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => TeamListProvider()),
         ChangeNotifierProvider(create: (_) => SquadProvider()),
         ChangeNotifierProvider(create: (_) => TransferProvider()),
+        ChangeNotifierProvider(create: (_) => InPlayProvider()),
       ],
       child: const MyApp(),
     ),

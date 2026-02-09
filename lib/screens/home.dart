@@ -6,6 +6,7 @@ import 'package:football_app/screens/leagues_screen.dart';
 import 'package:football_app/screens/shorts_screen.dart';
 import 'package:football_app/screens/highlights_screen.dart';
 import 'package:football_app/screens/news_screen.dart';
+import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
 import '../providers/live_score_provider.dart';
 
@@ -29,13 +30,14 @@ class _HomeState extends State<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LiveScoreProvider>().fetchLiveScores();
       context.read<LeagueProvider>().fetchLeagues();
+      context.read<InPlayProvider>().fetchInPlayMatches();
     });
   }
 
   // List of titles for each tab, used in the AppBar
   final List<String> _titles = [
     "Matches",
-    "Following",
+    "Leagues",
     "Shorts",
     "Highlights",
     "News"
@@ -63,14 +65,38 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
-        title: Text(
-          _titles[_selectedIndex],
-          style: const TextStyle(
-            color: textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
+        title: _selectedIndex == 0
+            ? Row(
+                children: [
+                  const Text(
+                    "LiveScore",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orangeAccent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      "PRO",
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                _titles[_selectedIndex],
+                style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+              ),
+        actions: _selectedIndex == 0
+            ? [
+                IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: () {}),
+                IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
+                IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+              ]
+            : null,
       ),
       // Display the screen corresponding to the current selection
       body: _screens[_selectedIndex],
