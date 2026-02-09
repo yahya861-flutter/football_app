@@ -37,8 +37,9 @@ class PlayerDetailsScreen extends StatelessWidget {
 
     final String height = player['height'] != null ? "${player['height']} CM" : "N/A";
     final String weight = player['weight'] != null ? "${player['weight']} KG" : "N/A";
-    final String foot = player['preferred_foot'] ?? "N/A";
-    final String shirt = squadItem['jersey_number']?.toString() ?? "N/A";
+    final String foot = player['preferred_foot'] ?? player['foot'] ?? "N/A";
+    final dynamic jerseyNum = squadItem['jersey_number'] ?? player['jersey_number'];
+    final String shirt = jerseyNum?.toString() ?? "N/A";
 
     return Scaffold(
       backgroundColor: const Color(0xFF121212),

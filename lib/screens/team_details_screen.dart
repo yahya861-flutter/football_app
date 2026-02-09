@@ -456,7 +456,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       padding: const EdgeInsets.all(16),
       itemCount: provider.squad.length,
       itemBuilder: (context, index) {
-        final player = provider.squad[index];
+        final squadItem = provider.squad[index];
+        final player = squadItem['player'] ?? {};
         
         return InkWell(
           onTap: () {
@@ -464,7 +465,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => PlayerDetailsScreen(
-                  squadItem: player,
+                  squadItem: squadItem,
                   teamName: widget.teamName,
                   teamLogo: widget.teamLogo,
                 ),
@@ -486,7 +487,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     backgroundImage: NetworkImage(player['image_path']),
                   )
                 else
-                   CircleAvatar(
+                  const CircleAvatar(
                     radius: 25,
                     child: Icon(Icons.person, color: Colors.grey),
                   ),
@@ -499,11 +500,11 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                         player['display_name'] ?? player['name'] ?? 'Player',
                         style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      if (player['jersey_number'] != null)
+                      if (squadItem['jersey_number'] != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            "Jersey: #${player['jersey_number']}",
+                            "Jersey: #${squadItem['jersey_number']}",
                             style: const TextStyle(color: Colors.white38, fontSize: 13),
                           ),
                         ),

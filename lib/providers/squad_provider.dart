@@ -20,8 +20,8 @@ class SquadProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch extended squad data with player details directly
-      final url = '$_baseUrl/squads/teams/$teamId/extended?include=position;country';
+      // Fetch squad records (contains jersey_number) and include player details
+      final url = '$_baseUrl/squads/teams/$teamId?include=player.country;player.position';
       final response = await http.get(
         Uri.parse(url),
         headers: {
