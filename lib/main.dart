@@ -1,4 +1,3 @@
-import 'package:football_app/providers/live_score_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
@@ -16,7 +15,6 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => LiveScoreProvider()),
         ChangeNotifierProvider(create: (_) => LeagueProvider()),
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => FixtureProvider()),

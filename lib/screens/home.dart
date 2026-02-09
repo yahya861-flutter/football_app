@@ -8,7 +8,6 @@ import 'package:football_app/screens/highlights_screen.dart';
 import 'package:football_app/screens/news_screen.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
-import '../providers/live_score_provider.dart';
 
 /// The Home screen acts as the main shell for the application.
 /// It manages the bottom navigation bar and switches between specialized screens.
@@ -28,7 +27,6 @@ class _HomeState extends State<Home> {
     super.initState();
     // Fetch initial data from providers once the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<LiveScoreProvider>().fetchLiveScores();
       context.read<LeagueProvider>().fetchLeagues();
       context.read<InPlayProvider>().fetchInPlayMatches();
     });
