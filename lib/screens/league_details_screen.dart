@@ -4,6 +4,7 @@ import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
+import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 /// This screen shows detailed information for a single football league.
@@ -304,51 +305,61 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final homeImg = homeTeam?['image_path'] ?? '';
     final awayImg = awayTeam?['image_path'] ?? '';
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
-      ),
-      child: Row(
-        children: [
-          // Match Time
-          Container(
-            width: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF262626),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              time,
-              style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
-              textAlign: TextAlign.center,
-            ),
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId),
           ),
-          const SizedBox(width: 16),
-          // Vertical Line
-          Container(width: 1, height: 40, color: Colors.white10),
-          const SizedBox(width: 16),
-          // Teams
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            // Match Time
+            Container(
+              width: 70,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF262626),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                time,
+                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Vertical Line
+            Container(width: 1, height: 40, color: Colors.white10),
+            const SizedBox(width: 16),
+            // Teams
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTeamRow(homeName, homeImg),
+                  const SizedBox(height: 12),
+                  _buildTeamRow(awayName, awayImg),
+                ],
+              ),
+            ),
+            // Alarm Icon
+            Column(
               children: [
-                _buildTeamRow(homeName, homeImg),
-                const SizedBox(height: 12),
-                _buildTeamRow(awayName, awayImg),
+                const Icon(Icons.alarm, color: Colors.white60, size: 28),
+                const SizedBox(height: 4),
+                const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
               ],
             ),
-          ),
-          // Alarm Icon
-          Column(
-            children: [
-              const Icon(Icons.alarm, color: Colors.white60, size: 28),
-              const SizedBox(height: 4),
-              const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -415,10 +426,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
         children: [
           const SizedBox(width: 40),
           const Expanded(child: SizedBox()),
-          _buildHeaderColumn("MP"),
-          _buildHeaderColumn("W"),
-          _buildHeaderColumn("D"),
-          _buildHeaderColumn("L"),
+          _buildHeaderColumn("PL"),
           _buildHeaderColumn("GD"),
           _buildHeaderColumn("PTS", isLast: true),
         ],
@@ -444,6 +452,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final position = standing['position'] ?? '-';
     final points = standing['points'] ?? 0;
     final teamName = team['name'] ?? 'Unknown';
+    final teamImg = team['image_path'] ?? '';
 
     // Extracting stats
     final details = standing['details'] as List? ?? [];
@@ -490,6 +499,12 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             ),
           ),
           const SizedBox(width: 12),
+          // TEAM LOGO
+          if (teamImg.isNotEmpty)
+            Image.network(teamImg, width: 24, height: 24)
+          else
+            const Icon(Icons.shield, size: 24, color: Colors.white24),
+          const SizedBox(width: 12),
           // TEAM NAME
           Expanded(
             child: Text(
@@ -501,9 +516,6 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           ),
           // STATS
           _buildStatColumn(mp),
-          _buildStatColumn(w),
-          _buildStatColumn(d),
-          _buildStatColumn(l),
           _buildStatColumn(gd),
           // POINTS
           Container(
