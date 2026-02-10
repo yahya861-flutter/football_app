@@ -27,6 +27,7 @@ class MatchProvider with ChangeNotifier {
   Future<void> fetchInPlayMatches() async {
     _isLoading = true;
     _errorMessage = null;
+    _inPlayMatches = []; // Clear the list to prevent duplicates
     notifyListeners();
 
     try {
