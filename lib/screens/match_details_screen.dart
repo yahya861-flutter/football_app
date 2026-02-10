@@ -84,17 +84,46 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final homeImg = homeTeam?['image_path'] ?? '';
     final awayImg = awayTeam?['image_path'] ?? '';
 
+    final scores = widget.fixture['scores'] as List? ?? [];
+    String homeScoreStr = "0";
+    String awayScoreStr = "0";
+    
+    if (homeTeam != null && awayTeam != null) {
+      // Find current scores
+      for (var score in scores) {
+        final type = score['description']?.toString().toUpperCase() ?? '';
+        // In v3, could be 'CURRENT', 'HOME', 'AWAY', etc.
+        if (type == 'CURRENT' || type == 'FT' || type.isEmpty) {
+          if (score['participant_id'] == homeTeam['id']) {
+            // Try different possible score locations in v3
+            final goals = score['score']?['goals'] ?? score['goals'];
+            if (goals != null) homeScoreStr = goals.toString();
+          }
+          if (score['participant_id'] == awayTeam['id']) {
+            final goals = score['score']?['goals'] ?? score['goals'];
+            if (goals != null) awayScoreStr = goals.toString();
+          }
+        }
+      }
+    }
+
+    final stateCode = widget.fixture['state']?['state'] ?? 'NS';
+    final stateName = widget.fixture['state']?['name'] ?? '';
+    final isLive = ['INPLAY', 'INPLAY_1ST_HALF', 'INPLAY_2ND_HALF', 'HT', 'INPLAY_ET'].contains(stateCode);
+    final isFinished = ['FT', 'AET', 'FT_PEN'].contains(stateCode);
+    final isUpcoming = stateCode == 'NS' || stateCode == 'TBA';
+
     final timestamp = widget.fixture['starting_at_timestamp'];
-    String time = "N/A";
-    String date = "N/A";
+    String matchTime = "N/A";
+    String matchDate = "N/A";
     if (timestamp != null) {
       final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
-      time = DateFormat('HH:mm').format(localDate);
-      date = DateFormat('yyyy-MM-dd').format(localDate);
+      matchTime = DateFormat('HH:mm').format(localDate);
+      matchDate = DateFormat('yyyy-MM-dd').format(localDate);
     }
 
     return DefaultTabController(
-      length: 7,
+      length: 6,
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
         appBar: AppBar(
@@ -145,15 +174,42 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                       // Match Info Center
                       Column(
                         children: [
-                          Text(
-                            time,
-                            style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            date,
-                            style: const TextStyle(color: Colors.white38, fontSize: 12),
-                          ),
+                          if (isUpcoming) ...[
+                            Text(
+                              matchTime,
+                              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              matchDate,
+                              style: const TextStyle(color: Colors.white38, fontSize: 12),
+                            ),
+                          ] else ...[
+                            Text(
+                              "$homeScoreStr - $awayScoreStr",
+                              style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isLive)
+                                  Container(
+                                    width: 8, height: 8,
+                                    margin: const EdgeInsets.only(right: 6),
+                                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                  ),
+                                Text(
+                                  isLive ? "LIVE - $stateName" : stateName,
+                                  style: TextStyle(
+                                    color: isLive ? Colors.red : Colors.white38,
+                                    fontSize: 12,
+                                    fontWeight: isLive ? FontWeight.bold : FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                       // Away Team
@@ -201,7 +257,6 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                     Tab(text: "Stats"),
                     Tab(text: "Lineup"),
                     Tab(text: "Table"),
-                    Tab(text: "Fixtures"),
                     Tab(text: "Comments"),
                   ],
                 ),
@@ -216,7 +271,6 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             _buildStatsTab(accentColor),
             _buildLineupTab(accentColor),
             _buildTableTab(context),
-            _buildFixturesTabContent(accentColor),
             _buildCommentsTab(),
           ],
         ),
