@@ -9,6 +9,8 @@ import 'package:football_app/screens/news_screen.dart';
 import '../providers/fixture_provider.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
+import '../providers/team_list_provider.dart';
+import 'team_details_screen.dart';
 
 /// The Home screen acts as the main shell for the application.
 /// It manages the bottom navigation bar and switches between specialized screens.
@@ -22,6 +24,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   // Current index of the selected tab
   int _selectedIndex = 0;
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -66,41 +76,86 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
-        title: _selectedIndex == 0
-            ? Row(
-                children: [
-                  const Text(
-                    "LiveScore",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+        title: _isSearching
+            ? Container(
+                height: 40,
+                decoration: BoxDecoration(
+                  color: secondaryColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: const InputDecoration(
+                    hintText: "Search teams...",
+                    hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
+                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(vertical: 13),
                   ),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orangeAccent,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      "PRO",
-                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
-                    ),
-                  ),
-                ],
+                  onSubmitted: (value) {
+                    if (value.isNotEmpty) {
+                      context.read<TeamListProvider>().searchTeams(value);
+                    }
+                  },
+                ),
               )
-            : Text(
-                _titles[_selectedIndex],
-                style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
-              ),
-        actions: _selectedIndex == 0
+            : _selectedIndex == 0
+                ? Row(
+                    children: [
+                      const Text(
+                        "LiveScore",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.orangeAccent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          "PRO",
+                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  )
+                : Text(
+                    _titles[_selectedIndex],
+                    style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+                  ),
+        actions: _isSearching
             ? [
-                IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.search, color: Colors.white), onPressed: () {}),
-                IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = false;
+                      _searchController.clear();
+                    });
+                  },
+                ),
               ]
-            : null,
+            : [
+                IconButton(
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  onPressed: _handleRefresh,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search, color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _isSearching = true;
+                    });
+                  },
+                ),
+                IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+              ],
       ),
       // Display the screen corresponding to the current selection
-      body: _screens[_selectedIndex],
+      body: _isSearching ? _buildSearchResultsTab(accentColor) : _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: secondaryColor,
         selectedItemColor: accentColor,
@@ -121,6 +176,72 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: "News"),
         ],
       ),
+    );
+  }
+
+  void _handleRefresh() {
+    switch (_selectedIndex) {
+      case 0: // Matches
+        context.read<InPlayProvider>().fetchInPlayMatches();
+        context.read<FixtureProvider>().fetchTodayFixtures();
+        break;
+      case 1: // Leagues
+        context.read<LeagueProvider>().fetchLeagues();
+        context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
+        break;
+      default:
+        // Other tabs refresh if needed
+        break;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Refreshing data..."), duration: Duration(seconds: 1)),
+    );
+  }
+
+  Widget _buildSearchResultsTab(Color accentColor) {
+    return Consumer<TeamListProvider>(
+      builder: (context, provider, _) {
+        if (provider.isLoading) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (provider.teams.isEmpty && _searchController.text.isNotEmpty) {
+          return const Center(
+            child: Text("No teams found", style: TextStyle(color: Colors.white38)),
+          );
+        }
+
+        if (_searchController.text.isEmpty) {
+          return const Center(
+            child: Text("Start typing to search teams", style: TextStyle(color: Colors.white38)),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: provider.teams.length,
+          itemBuilder: (context, index) {
+            final team = provider.teams[index];
+            return ListTile(
+              leading: team['image_path'] != null
+                  ? Image.network(team['image_path'], width: 30, height: 30)
+                  : Icon(Icons.shield, color: accentColor, size: 30),
+              title: Text(team['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TeamDetailsScreen(
+                      teamId: team['id'],
+                      teamName: team['name'],
+                      teamLogo: team['image_path'] ?? '',
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
