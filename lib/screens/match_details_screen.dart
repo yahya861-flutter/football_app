@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-class MatchDetailsScreen extends StatelessWidget {
+class MatchDetailsScreen extends StatefulWidget {
   final dynamic fixture;
   final int leagueId;
 
@@ -15,9 +16,22 @@ class MatchDetailsScreen extends StatelessWidget {
   });
 
   @override
+  State<MatchDetailsScreen> createState() => _MatchDetailsScreenState();
+}
+
+class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<FixtureProvider>().fetchFixturesByDateRange(widget.leagueId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     const Color accentColor = Color(0xFFD4FF00);
-    final participants = fixture['participants'] as List? ?? [];
+    final participants = widget.fixture['participants'] as List? ?? [];
     
     dynamic homeTeam;
     dynamic awayTeam;
@@ -33,7 +47,7 @@ class MatchDetailsScreen extends StatelessWidget {
     final homeImg = homeTeam?['image_path'] ?? '';
     final awayImg = awayTeam?['image_path'] ?? '';
 
-    final timestamp = fixture['starting_at_timestamp'];
+    final timestamp = widget.fixture['starting_at_timestamp'];
     String time = "N/A";
     String date = "N/A";
     if (timestamp != null) {
@@ -43,7 +57,7 @@ class MatchDetailsScreen extends StatelessWidget {
     }
 
     return DefaultTabController(
-      length: 6,
+      length: 7,
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
         appBar: AppBar(
@@ -150,6 +164,7 @@ class MatchDetailsScreen extends StatelessWidget {
                     Tab(text: "Stats"),
                     Tab(text: "Lineup"),
                     Tab(text: "Table"),
+                    Tab(text: "Fixtures"),
                     Tab(text: "Comments"),
                   ],
                 ),
@@ -159,11 +174,12 @@ class MatchDetailsScreen extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            _buildInfoTab(fixture),
+            _buildInfoTab(widget.fixture),
             _buildPlaceholderTab("H2H"),
             _buildPlaceholderTab("Stats"),
             _buildPlaceholderTab("Lineup"),
             _buildTableTab(context),
+            _buildFixturesTabContent(accentColor),
             _buildCommentsTab(),
           ],
         ),
@@ -417,6 +433,182 @@ class MatchDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildFixturesTabContent(Color accentColor) {
+    return Consumer<FixtureProvider>(
+      builder: (context, fixtureProvider, child) {
+        if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
+          return Center(child: CircularProgressIndicator(color: accentColor));
+        }
+
+        if (fixtureProvider.fixtures.isEmpty) {
+          return _buildPlaceholderTab("No Fixtures Found");
+        }
+
+        // Group fixtures by local date using timestamps
+        Map<String, List<dynamic>> groupedFixtures = {};
+        for (var fixture in fixtureProvider.fixtures) {
+          final timestamp = fixture['starting_at_timestamp'];
+          if (timestamp != null) {
+            try {
+              final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+              final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
+
+              if (!groupedFixtures.containsKey(dateKey)) {
+                groupedFixtures[dateKey] = [];
+              }
+              groupedFixtures[dateKey]!.add(fixture);
+            } catch (e) {
+              debugPrint("Error parsing timestamp: $e");
+            }
+          }
+        }
+
+        final sortedDates = groupedFixtures.keys.toList()..sort();
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          itemCount: sortedDates.length,
+          itemBuilder: (context, index) {
+            final dateKey = sortedDates[index];
+            final fixtures = groupedFixtures[dateKey]!;
+
+            String displayDate = dateKey;
+            try {
+              final parsedLocal = DateTime.parse(dateKey);
+              displayDate = DateFormat('EEEE, MMM d').format(parsedLocal);
+            } catch (_) {}
+
+            return _buildDateGroup(displayDate, fixtures, accentColor);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
+          title: Text(
+            date,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          children: [
+            const Divider(color: Colors.white10, height: 1),
+            ...fixtures.map((f) => _buildFixtureItem(f, accentColor)).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFixtureItem(dynamic fixture, Color accentColor) {
+    final timestamp = fixture['starting_at_timestamp'];
+    String time = "N/A";
+    if (timestamp != null) {
+      try {
+        final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+        time = DateFormat('h:mm a').format(localDate);
+      } catch (_) {}
+    }
+
+    final participants = fixture['participants'] as List? ?? [];
+    dynamic home;
+    dynamic away;
+
+    if (participants.isNotEmpty) {
+      home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      if (participants.length > 1) {
+        away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+      }
+    }
+
+    final hName = home?['name'] ?? 'Home';
+    final aName = away?['name'] ?? 'Away';
+    final hImg = home?['image_path'] ?? '';
+    final aImg = away?['image_path'] ?? '';
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 65,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D44),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                time,
+                style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                children: [
+                  _buildMiniTeamRow(hName, hImg),
+                  const SizedBox(height: 8),
+                  _buildMiniTeamRow(aName, aImg),
+                ],
+              ),
+            ),
+            const Icon(Icons.notifications_none, color: Colors.white24, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMiniTeamRow(String name, String img) {
+    return Row(
+      children: [
+        if (img.isNotEmpty)
+          Image.network(img, width: 20, height: 20)
+        else
+          const Icon(Icons.shield, size: 20, color: Colors.white24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCommentsTab() {
     return const Center(
       child: Column(
@@ -439,3 +631,4 @@ class MatchDetailsScreen extends StatelessWidget {
     );
   }
 }
+

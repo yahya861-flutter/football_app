@@ -6,6 +6,7 @@ import 'package:football_app/screens/leagues_screen.dart';
 import 'package:football_app/screens/shorts_screen.dart';
 import 'package:football_app/screens/highlights_screen.dart';
 import 'package:football_app/screens/news_screen.dart';
+import '../providers/fixture_provider.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
 
@@ -29,6 +30,8 @@ class _HomeState extends State<Home> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LeagueProvider>().fetchLeagues();
       context.read<InPlayProvider>().fetchInPlayMatches();
+      context.read<FixtureProvider>().fetchTodayFixtures();
+      context.read<FixtureProvider>().fetchAllFixturesByDateRange();
     });
   }
 
