@@ -64,7 +64,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [

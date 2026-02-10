@@ -140,7 +140,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return DefaultTabController(
       length: 6,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: headerColor,
         appBar: AppBar(
           backgroundColor: headerColor,
           elevation: 0,

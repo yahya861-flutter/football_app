@@ -57,7 +57,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
-    final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor;
     final Color headerColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFD4FF00); // Premium Lime accent
 

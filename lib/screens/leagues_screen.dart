@@ -28,7 +28,14 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LeagueProvider>().fetchLeagues();
-      context.read<TeamListProvider>().fetchTeams();
+      final teamProvider = context.read<TeamListProvider>();
+      if (teamProvider.currentSearchQuery != null) {
+        setState(() {
+          _teamSearchController.text = teamProvider.currentSearchQuery!;
+          _teamSearchQuery = teamProvider.currentSearchQuery!;
+        });
+      }
+      teamProvider.fetchTeams();
     });
     
     _teamScrollController.addListener(() {
@@ -61,10 +68,9 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color primaryColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor;
     const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
-    final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
     return Scaffold(

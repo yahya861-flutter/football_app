@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeamListProvider with ChangeNotifier {
   List<dynamic> _teams = [];
@@ -14,9 +15,24 @@ class TeamListProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isFetchingMore => _isFetchingMore;
   bool get hasMore => _nextUrl != null;
+  String? get currentSearchQuery => _currentSearchQuery;
 
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
   final String _baseUrl = 'https://api.sportmonks.com/v3/football/teams';
+
+  TeamListProvider() {
+    _loadLastSearch();
+  }
+
+  Future<void> _loadLastSearch() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastQuery = prefs.getString('lastTeamSearch');
+    if (lastQuery != null && lastQuery.isNotEmpty) {
+      searchTeams(lastQuery);
+    } else {
+      fetchTeams();
+    }
+  }
 
   Future<void> fetchTeams({bool forceRefresh = false}) async {
     if (_isLoading) return;
@@ -140,11 +156,15 @@ class TeamListProvider with ChangeNotifier {
   Future<void> searchTeams(String query) async {
     if (query.isEmpty) {
       _currentSearchQuery = null;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('lastTeamSearch');
       fetchTeams(forceRefresh: true);
       return;
     }
     
     _currentSearchQuery = query;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastTeamSearch', query);
     _isLoading = true;
     _teams = []; 
     notifyListeners();
