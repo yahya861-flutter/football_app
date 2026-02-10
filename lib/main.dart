@@ -1,3 +1,4 @@
+import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
@@ -10,7 +11,7 @@ import 'package:football_app/providers/inplay_provider.dart';
 import 'package:football_app/providers/h2h_provider.dart';
 import 'package:football_app/providers/stats_provider.dart';
 import 'package:football_app/providers/lineup_provider.dart';
-import 'package:football_app/providers/commentary_provider.dart';
+import 'package:football_app/providers/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,7 @@ void main() {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => LeagueProvider()),
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => FixtureProvider()),
@@ -43,12 +45,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF121212),
-      ),
-      home: Home(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: themeProvider.lightTheme,
+          darkTheme: themeProvider.darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const Home(),
+        );
+      },
     );
   }
 }

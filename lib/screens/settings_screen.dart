@@ -1,34 +1,147 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
 
-/// This screen handles application settings and user profiles.
-/// It is a placeholder where future preferences will be managed.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFFD4FF00); // High-visibility Lime accent
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final bool isDark = themeProvider.isDarkMode;
+    
+    // Theme aware colors
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white70 : Colors.black87;
+    final Color sectionColor = isDark ? Colors.white38 : Colors.black38;
+    final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
 
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Settings"),
+        centerTitle: false,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // PREMIUM BANNER
+            _buildPremiumBanner(),
+            const SizedBox(height: 32),
+            
+            // GENERAL SECTION
+            Text("General", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            _buildToggleTile(
+              icon: Icons.dark_mode,
+              title: "Dark Mode",
+              value: isDark,
+              onChanged: (val) => themeProvider.toggleTheme(),
+              textColor: textColor,
+            ),
+            const SizedBox(height: 32),
+
+            // OTHERS SECTION
+            Text("Others", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 16),
+            _buildActionTile(icon: Icons.share, title: "Share", textColor: textColor),
+            _buildActionTile(icon: Icons.star_border, title: "Rate Us", textColor: textColor),
+            _buildActionTile(icon: Icons.feedback_outlined, title: "Feedback", textColor: textColor),
+            _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumBanner() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF001F33), Color(0xFF004D40)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
         children: [
-          // Gear icon typically used for settings
-          Icon(
-            Icons.settings,
-            size: 80,
-            color: accentColor.withOpacity(0.5),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Unlock the World of Premium",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Elevate your football experience,\nBecome a VIP Member Today.",
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              const CircleAvatar(
+                radius: 25,
+                backgroundColor: Colors.white10,
+                child: Icon(Icons.workspace_premium, color: Color(0xFFD4FF00), size: 30),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          // Main label for the Settings tab
-          const Text(
-            "Settings Content",
-            style: TextStyle(color: Colors.white70, fontSize: 18),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "Customize your experience and manage account.",
-            style: TextStyle(color: Colors.white38, fontSize: 14),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleTile({
+    required IconData icon,
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    required Color textColor,
+  }) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF00BFA5)),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: const Color(0xFF00BFA5),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionTile({
+    required IconData icon,
+    required String title,
+    required Color textColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF00BFA5)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
           ),
         ],
       ),

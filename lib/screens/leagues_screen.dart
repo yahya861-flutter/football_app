@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/league_provider.dart';
@@ -20,6 +21,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   final ScrollController _teamScrollController = ScrollController();
   String _searchQuery = "";
   String _teamSearchQuery = "";
+  Timer? _teamDebounce;
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     _teamScrollController.dispose();
     _searchController.dispose();
     _teamSearchController.dispose();
+    _teamDebounce?.cancel();
     super.dispose();
   }
 
@@ -57,9 +60,12 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1E1E2C);
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color primaryColor = Theme.of(context).scaffoldBackgroundColor;
     const Color accentColor = Color(0xFFD4FF00);
-    const Color cardColor = Color(0xFF2D2D44);
+    final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -68,11 +74,11 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         child: Column(
           children: [
             // Sub Tabs: Leagues | Teams
-            const TabBar(
+            TabBar(
               indicatorColor: accentColor,
-              labelColor: accentColor,
-              unselectedLabelColor: Colors.white38,
-              tabs: [
+              labelColor: isDark ? accentColor : Colors.black,
+              unselectedLabelColor: subTextColor,
+              tabs: const [
                 Tab(text: "Leagues"),
                 Tab(text: "Teams"),
               ],
@@ -92,6 +98,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   }
 
   Widget _buildLeaguesTab(Color accentColor, Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Consumer2<LeagueProvider, FollowProvider>(
       builder: (context, leagueProvider, followProvider, child) {
         if (leagueProvider.isLoading && leagueProvider.leagues.isEmpty) {
@@ -135,9 +145,9 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         ));
         if (_isLeaguesFollowingExpanded) {
           if (followedLeagues.isEmpty) {
-            items.add(const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text("You are not following any leagues", style: TextStyle(color: Colors.white38)),
+            items.add(Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text("You are not following any leagues", style: TextStyle(color: subTextColor)),
             ));
           } else {
             items.addAll(followedLeagues.map((l) => _buildLeagueItem(l, accentColor)));
@@ -167,17 +177,16 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           ),
         ));
         if (_isLeaguesSuggestionsExpanded) {
-          items.add(_buildSuggestionsRow(accentColor, cardColor, leagueProvider.leagues));
+          items.add(_buildSuggestionsRow(accentColor, cardColor, leagueProvider.leagues, textColor));
         }
 
-        // All Leagues Title
-        items.add(const Padding(
-          padding: EdgeInsets.only(top: 32, bottom: 16),
-          child: Text("All Leagues", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        items.add(Padding(
+          padding: const EdgeInsets.only(top: 32, bottom: 16),
+          child: Text("All Leagues", style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
         ));
 
         // Country Groups
-        items.addAll(countryEntries.map((entry) => _buildCountryExpandable(entry.key, entry.value, accentColor)));
+        items.addAll(countryEntries.map((entry) => _buildCountryExpandable(entry.key, entry.value, accentColor, textColor, subTextColor, isDark)));
 
         // Loading Indicator
         if (leagueProvider.hasMore) {
@@ -188,7 +197,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 children: [
                   CircularProgressIndicator(color: accentColor, strokeWidth: 2),
                   const SizedBox(height: 8),
-                  Text("Loading more leagues (${leagueProvider.leagues.length} loaded)...", style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                  Text("Loading more leagues (${leagueProvider.leagues.length} loaded)...", style: TextStyle(color: subTextColor, fontSize: 12)),
                 ],
               ),
             ),
@@ -207,102 +216,12 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildSearchBar(Color cardColor) {
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: TextField(
-        controller: _searchController,
-        style: const TextStyle(color: Colors.white),
-        onChanged: (val) => setState(() => _searchQuery = val),
-        decoration: const InputDecoration(
-          hintText: "Type to search leagues",
-          hintStyle: TextStyle(color: Colors.white38),
-          prefixIcon: Icon(Icons.search, color: Colors.white38),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-      ),
-    );
-  }
-// Expandable content
-// Expandable content is now handled by _buildSectionHeader and manual list management for better performance.
-// suggestion area
-  Widget _buildSuggestionsRow(Color accentColor, Color cardColor, List<dynamic> leagues) {
-    // Pick a few leagues for suggestions
-    final suggestions = leagues.take(3).toList();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: suggestions.map((l) {
-          return Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.blueGrey,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Row(
-              children: [
-                if (l['image_path'] != null)
-                  Image.network(l['image_path'], width: 24, height: 24)
-                else
-                  Icon(Icons.emoji_events, color: accentColor, size: 20),
-                const SizedBox(width: 8),
-                Text(l['name'] ?? 'League', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                const SizedBox(width: 8),
-                const Icon(Icons.star_border, color: Colors.white38, size: 18),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-// all leageus area by country
-  Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, Color accentColor) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D44),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          leading: Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white10),
-            child: const Icon(Icons.public, color: Colors.blue, size: 20),
-          ),
-          title: Text(countryName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white10,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(leagues.length.toString(), style: const TextStyle(color: Colors.white, fontSize: 12)),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
-            ],
-          ),
-          children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
-        ),
-      ),
-    );
-  }
-
   Widget _buildLeagueItem(dynamic league, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
+    final String name = league['name'] ?? 'League';
     return ListTile(
       onTap: () {
         Navigator.push(
@@ -315,13 +234,13 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
       leading: league['image_path'] != null 
         ? Image.network(league['image_path'], width: 30, height: 30)
         : Icon(Icons.emoji_events, color: accentColor, size: 30),
-      title: Text(league['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 14)),
+      title: Text(name, style: TextStyle(color: textColor, fontSize: 14)),
       trailing: Consumer<FollowProvider>(
         builder: (context, follow, child) {
           final isFollowed = follow.isLeagueFollowed(league['id']);
           return IconButton(
             icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
-                 color: isFollowed ? accentColor : Colors.white38),
+                 color: isFollowed ? accentColor : subTextColor),
             onPressed: () => follow.toggleFollowLeague(league['id']),
           );
         },
@@ -329,10 +248,116 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
+  Widget _buildSearchBar(Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(color: textColor),
+        onChanged: (val) => setState(() => _searchQuery = val),
+        decoration: InputDecoration(
+          hintText: "Type to search leagues",
+          hintStyle: TextStyle(color: subTextColor),
+          prefixIcon: Icon(Icons.search, color: subTextColor),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
+// Expandable content
+// Expandable content is now handled by _buildSectionHeader and manual list management for better performance.
+// suggestion area
+  Widget _buildSuggestionsRow(Color accentColor, Color cardColor, List<dynamic> leagues, Color textColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    // Pick a few leagues for suggestions
+    final suggestions = leagues.take(3).toList();
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: suggestions.map((l) {
+          return Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF26BC94).withOpacity(0.2) : Colors.teal[50], // Premium teal style
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+            ),
+            child: Row(
+              children: [
+                if (l['image_path'] != null)
+                  Image.network(l['image_path'], width: 24, height: 24)
+                else
+                  Icon(Icons.emoji_events, color: accentColor, size: 20),
+                const SizedBox(width: 8),
+                Text(l['name'] ?? 'League', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                const SizedBox(width: 8),
+                Icon(Icons.star_border, color: subTextColor, size: 18),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, Color accentColor, Color textColor, Color subTextColor, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2D2D44) : Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.white10 : Colors.black12),
+            child: const Icon(Icons.public, color: Colors.blue, size: 20),
+          ),
+          title: Text(countryName, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white10 : Colors.black12,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(leagues.length.toString(), style: TextStyle(color: textColor, fontSize: 12)),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.keyboard_arrow_down, color: subTextColor),
+            ],
+          ),
+          children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
+        ),
+      ),
+    );
+  }
+
+
   bool _isFollowingExpanded = true;
   bool _isAllTeamsExpanded = true;
 
   Widget _buildTeamsTab(Color accentColor, Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Consumer2<TeamListProvider, FollowProvider>(
       builder: (context, teamProvider, followProvider, _) {
         if (teamProvider.isLoading && teamProvider.teams.isEmpty) {
@@ -391,9 +416,9 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
             // Following Content
             if (_isFollowingExpanded && index > followingHeaderIndex && index < allHeaderIndex) {
               if (followedTeams.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text("You are not following any teams", style: TextStyle(color: Colors.white38)),
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text("You are not following any teams", style: TextStyle(color: subTextColor)),
                 );
               }
               final teamIdx = index - (followingHeaderIndex + 1);
@@ -436,7 +461,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                       const SizedBox(height: 8),
                       Text(
                         "Loading more teams (${teamProvider.teams.length} loaded)...",
-                        style: const TextStyle(color: Colors.white38, fontSize: 12),
+                        style: TextStyle(color: subTextColor, fontSize: 12),
                       ),
                     ],
                   ),
@@ -464,6 +489,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     required bool isExpanded,
     required VoidCallback onToggle,
   }) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return GestureDetector(
       onTap: onToggle,
       child: Container(
@@ -477,23 +506,23 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
             Icon(icon, color: iconColor),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+              child: Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDark ? Colors.white10 : Colors.black12,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 count.toString(), 
-                style: const TextStyle(color: Colors.black, fontSize: 10, fontWeight: FontWeight.bold)
+                style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.bold)
               ),
             ),
             const SizedBox(width: 8),
             Icon(
               isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-              color: Colors.white38,
+              color: subTextColor,
             ),
           ],
         ),
@@ -502,6 +531,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   }
 
   Widget _buildTeamSearchBar(Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
@@ -509,29 +542,41 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
       ),
       child: TextField(
         controller: _teamSearchController,
-        style: const TextStyle(color: Colors.white),
+        style: TextStyle(color: textColor),
         onChanged: (val) {
           setState(() => _teamSearchQuery = val);
+          if (_teamDebounce?.isActive ?? false) _teamDebounce!.cancel();
+          _teamDebounce = Timer(const Duration(milliseconds: 500), () {
+            if (val.isNotEmpty) {
+              context.read<TeamListProvider>().searchTeams(val);
+            } else {
+              context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
+            }
+          });
         },
         onSubmitted: (val) {
           if (val.isNotEmpty) {
             context.read<TeamListProvider>().searchTeams(val);
           } else {
-            context.read<TeamListProvider>().fetchTeams(); // Reset
+            context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
           }
         },
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           hintText: "Type to search teams",
-          hintStyle: TextStyle(color: Colors.white38),
-          prefixIcon: Icon(Icons.search, color: Colors.white38),
+          hintStyle: TextStyle(color: subTextColor),
+          prefixIcon: Icon(Icons.search, color: subTextColor),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
       ),
     );
   }
 
   Widget _buildTeamItem(dynamic team, Color accentColor, FollowProvider followProvider) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     final isFollowed = followProvider.isTeamFollowed(team['id']);
     
     return ListTile(
@@ -554,22 +599,22 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           : Container(
               width: 35, 
               height: 35, 
-              color: Colors.white10, 
+              color: isDark ? Colors.white10 : Colors.black12, 
               child: Icon(Icons.shield, color: accentColor, size: 24)
             ),
       ),
-      title: Text(team['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500)),
+      title: Text(team['name'] ?? 'Unknown', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
             icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
-                 color: isFollowed ? accentColor : Colors.white38),
+                 color: isFollowed ? accentColor : subTextColor),
             onPressed: () => followProvider.toggleFollowTeam(team['id']),
           ),
           IconButton(
             icon: Icon(isFollowed ? Icons.notifications : Icons.notifications_none, 
-                 color: isFollowed ? Colors.tealAccent : Colors.white38, size: 22),
+                 color: isFollowed ? Colors.tealAccent : subTextColor, size: 22),
             onPressed: () {}, // Notification toggle placeholder
           ),
         ],

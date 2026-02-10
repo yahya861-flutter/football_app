@@ -23,14 +23,22 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFD4FF00),
-              onPrimary: Colors.black,
-              surface: Color(0xFF1E1E2C),
-              onSurface: Colors.white,
-            ),
+            colorScheme: isDark 
+              ? const ColorScheme.dark(
+                  primary: Color(0xFFD4FF00),
+                  onPrimary: Colors.black,
+                  surface: Color(0xFF1E1E2C),
+                  onSurface: Colors.white,
+                )
+              : const ColorScheme.light(
+                  primary: Color(0xFF1E1E2C),
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: Colors.black,
+                ),
           ),
           child: child!,
         );
@@ -53,19 +61,28 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardColor = isDark ? const Color(0xFF1E1E2C) : Colors.grey[200]!;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
     const Color accentColor = Color(0xFFD4FF00);
 
     return Column(
       children: [
-        _buildFilterHeader(accentColor),
+        _buildFilterHeader(),
         Expanded(
-          child: _buildMatchesForDateList(accentColor),
+          child: _buildMatchesForDateList(),
         ),
       ],
     );
   }
 
-  Widget _buildFilterHeader(Color accentColor) {
+  Widget _buildFilterHeader() {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardColor = isDark ? const Color(0xFF1E1E2C) : Colors.grey[200]!;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) == DateFormat('yyyy-MM-dd').format(DateTime.now());
     final dateStr = isToday ? "Today" : DateFormat('EEE d MMM yyyy').format(_selectedDate);
 
@@ -80,22 +97,22 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LiveMatchesScreen()),
+                    MaterialPageRoute(builder: (context) =>  LiveMatchesScreen()),
                   );
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E1E2C),
+                    color: cardColor,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white12),
+                    border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
                   ),
                   child: Row(
                     children: [
-                      const Text(
+                      Text(
                         "Live",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: textColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -103,8 +120,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                       const SizedBox(width: 4),
                       Text(
                         "(${inPlay.inPlayMatches.length})",
-                        style: const TextStyle(
-                          color: Colors.white38,
+                        style: TextStyle(
+                          color: subTextColor,
                           fontSize: 12,
                         ),
                       ),
@@ -117,23 +134,23 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.white70),
+                    icon: Icon(Icons.chevron_left, color: textColor),
                     onPressed: () => _adjustDate(-1),
                   ),
                   Column(
                     children: [
                       Text(
                         dateStr,
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
                       ),
                       Text(
                         DateFormat('d MMM yyyy').format(_selectedDate),
-                        style: const TextStyle(color: Colors.white38, fontSize: 10),
+                        style: TextStyle(color: subTextColor, fontSize: 10),
                       ),
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right, color: Colors.white70),
+                    icon: Icon(Icons.chevron_right, color: textColor),
                     onPressed: () => _adjustDate(1),
                   ),
                 ],
@@ -141,7 +158,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               const Spacer(),
               // Calendar Icon
               IconButton(
-                icon: const Icon(Icons.calendar_month_outlined, color: Colors.white70),
+                icon: Icon(Icons.calendar_month_outlined, color: subTextColor),
                 onPressed: () => _selectDate(context),
               ),
             ],
@@ -151,7 +168,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     );
   }
 
-  Widget _buildMatchesForDateList(Color accentColor) {
+  Widget _buildMatchesForDateList() {
     return Consumer<FixtureProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.todayFixtures.isEmpty) {
@@ -168,18 +185,22 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   }
 
   Widget _buildEmptyState(String message, VoidCallback onRefresh) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.sports_soccer, color: Colors.white10, size: 64),
+          Icon(Icons.sports_soccer, color: isDark ? Colors.white10 : Colors.black12, size: 64),
           const SizedBox(height: 16),
-          Text(message, style: const TextStyle(color: Colors.white38)),
+          Text(message, style: TextStyle(color: subTextColor)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: onRefresh,
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.white10),
-            child: const Text("Refresh", style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.white10 : Colors.black12),
+            child: Text("Refresh", style: TextStyle(color: textColor)),
           ),
         ],
       ),
@@ -210,10 +231,15 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   }
 
   Widget _buildModernLeagueGroup(String name, String? logo, List<dynamic> matches) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color cardColor = isDark ? const Color(0xFF1E1E2C) : Colors.grey[200]!;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E2C),
+        color: cardColor,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Theme(
@@ -224,20 +250,20 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
           leading: logo != null 
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(4),
-                child: Image.network(logo, width: 24, height: 24, errorBuilder: (_, __, ___) => const Icon(Icons.emoji_events, color: Colors.white24, size: 24)),
+                child: Image.network(logo, width: 24, height: 24, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: subTextColor, size: 24)),
               )
-            : const Icon(Icons.emoji_events, color: Colors.white24, size: 24),
-          title: Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+            : Icon(Icons.emoji_events, color: subTextColor, size: 24),
+          title: Text(name, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle),
-                child: Text("${matches.length}", style: const TextStyle(color: Colors.white, fontSize: 10)),
+                decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.black12, shape: BoxShape.circle),
+                child: Text("${matches.length}", style: TextStyle(color: textColor, fontSize: 10)),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down, color: Colors.white38),
+              Icon(Icons.keyboard_arrow_down, color: subTextColor),
             ],
           ),
           children: matches.map((m) => _buildModernMatchRow(m)).toList(),
@@ -247,6 +273,10 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   }
 
   Widget _buildModernMatchRow(dynamic match) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     final participants = match['participants'] as List? ?? [];
     final scores = match['scores'] as List? ?? [];
     
@@ -293,8 +323,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black12, width: 0.5)),
         ),
         child: Row(
           children: [
@@ -303,13 +333,13 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               width: 50,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF2D2D44),
+                color: isDark ? const Color(0xFF2D2D44) : Colors.grey[300],
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 period == "Sch" || period == "NS" ? time : period,
                 style: TextStyle(
-                  color: isLive ? const Color(0xFFD4FF00) : Colors.white60, 
+                  color: isLive ? const Color(0xFFD4FF00) : subTextColor, 
                   fontSize: 10, 
                   fontWeight: FontWeight.bold
                 ),
@@ -331,9 +361,9 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
             // Alarm Button
             Column(
               children: [
-                const Icon(Icons.notifications_none, color: Colors.white24, size: 20),
+                Icon(Icons.notifications_none, color: subTextColor, size: 20),
                 const SizedBox(height: 2),
-                const Text("Alarm", style: TextStyle(color: Colors.white24, fontSize: 8)),
+                Text("Alarm", style: TextStyle(color: subTextColor, fontSize: 8)),
               ],
             ),
           ],
@@ -343,28 +373,31 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   }
 
   Widget _buildModernTeamRow(String name, String img, String score) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Row(
       children: [
         if (img.isNotEmpty)
-          Image.network(img, width: 22, height: 22, errorBuilder: (_, __, ___) => const Icon(Icons.shield, size: 22, color: Colors.white24))
+          Image.network(img, width: 22, height: 22, errorBuilder: (_, __, ___) => Icon(Icons.shield, size: 22, color: subTextColor))
         else
-          const Icon(Icons.shield, size: 22, color: Colors.white24),
+          Icon(Icons.shield, size: 22, color: subTextColor),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             name,
-            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+            style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           score,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+          style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.bold),
         ),
       ],
     );
   }
 }
-
-

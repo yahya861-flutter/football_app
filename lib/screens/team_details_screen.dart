@@ -57,20 +57,24 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   Widget build(BuildContext context) {
     const Color accentColor = Color(0xFFD4FF00);
     
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
+
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
                 expandedHeight: 200,
                 pinned: true,
-                backgroundColor: const Color(0xFF121212),
+                backgroundColor: isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: Icon(Icons.arrow_back, color: textColor),
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
@@ -80,7 +84,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                       return IconButton(
                         icon: Icon(
                           isFollowed ? Icons.star : Icons.star_border, 
-                          color: isFollowed ? accentColor : Colors.white60,
+                          color: isFollowed ? accentColor : subTextColor,
                         ),
                         onPressed: () => followProvider.toggleFollowTeam(widget.teamId),
                       );
@@ -99,13 +103,13 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                           height: 70,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2D2D44).withOpacity(0.5),
+                            color: isDark ? const Color(0xFF2D2D44).withOpacity(0.5) : Colors.black12,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white10),
+                            border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
                           ),
                           child: widget.teamLogo.isNotEmpty
                               ? Image.network(widget.teamLogo, fit: BoxFit.contain)
-                              : const Icon(Icons.shield, size: 40, color: Colors.white24),
+                              : Icon(Icons.shield, size: 40, color: subTextColor),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -115,8 +119,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                             children: [
                               Text(
                                 widget.teamName,
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style: TextStyle(
+                                  color: textColor,
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                   fontFamily: 'Poppins',
@@ -129,8 +133,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                                 selector: (_, p) => p.selectedTeam?['country']?['name'] ?? 'Loading...',
                                 builder: (_, country, __) => Text(
                                   country,
-                                  style: const TextStyle(
-                                    color: Colors.white60,
+                                  style: TextStyle(
+                                    color: subTextColor,
                                     fontSize: 16,
                                     fontFamily: 'Poppins',
                                   ),
@@ -150,8 +154,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     child: TabBar(
                       isScrollable: true,
                       indicatorColor: accentColor,
-                      labelColor: accentColor,
-                      unselectedLabelColor: Colors.white38,
+                      labelColor: isDark ? accentColor : textColor,
+                      unselectedLabelColor: subTextColor,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
                       labelPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -250,7 +254,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           const SizedBox(height: 24),
           const Text(
             "Stats not found for this season",
-            style: TextStyle(color: Colors.white38, fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -281,24 +285,25 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Widget _buildStatCategory(String title, List<dynamic> details, Color accentColor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E2C),
+        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: true,
-          iconColor: Colors.white,
-          collapsedIconColor: Colors.white,
+          iconColor: isDark ? Colors.white : Colors.black,
+          collapsedIconColor: isDark ? Colors.white : Colors.black,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: const Icon(Icons.bar_chart, color: Color(0xFF26BC94), size: 24),
           title: Text(
             title,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           children: [
             const Divider(color: Colors.white10, height: 1),
@@ -324,6 +329,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Widget _buildStatRow(String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
@@ -332,7 +340,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           Expanded(
             child: Text(
               label, 
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
+              style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w400),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -340,7 +348,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           const SizedBox(width: 16),
           Text(
             value, 
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 16),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.w400, fontSize: 16),
           ),
         ],
       ),
@@ -349,9 +357,10 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
 
 
   void _showCompetitionSelector(BuildContext context, List seasons, TeamProvider provider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E1E2C),
+      backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         // Reverse to show newest first
@@ -378,7 +387,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                       title: Text(
                         name,
                         style: TextStyle(
-                          color: _selectedSeasonId == season['id'] ? const Color(0xFF26BC94) : Colors.white70,
+                          color: _selectedSeasonId == season['id'] ? const Color(0xFF26BC94) : (isDark ? Colors.white70 : Colors.black87),
                           fontWeight: _selectedSeasonId == season['id'] ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
@@ -455,23 +464,25 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
+        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: true,
-          iconColor: Colors.white,
-          collapsedIconColor: Colors.white,
+          iconColor: isDark ? Colors.white : Colors.black,
+          collapsedIconColor: isDark ? Colors.white : Colors.black,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
           title: Text(
             date,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           children: [
             const Divider(color: Colors.white10, height: 1),
@@ -537,6 +548,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       nsDateTime = "${DateFormat('d MMM').format(localDate)}\n${DateFormat('h:mm a').format(localDate).toLowerCase()}";
     }
 
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -551,8 +565,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black12, width: 0.5)),
         ),
         child: Row(
           children: [
@@ -561,7 +575,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               width: 70,
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               decoration: BoxDecoration(
-                color: isLive ? Colors.redAccent.withOpacity(0.1) : const Color(0xFF262626),
+                color: isLive ? Colors.redAccent.withOpacity(0.1) : (isDark ? const Color(0xFF262626) : Colors.grey[300]),
                 borderRadius: BorderRadius.circular(6),
                 border: isLive ? Border.all(color: Colors.redAccent.withOpacity(0.3)) : null,
               ),
@@ -583,7 +597,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                 : Text(
                     isFinished ? "FT" : nsDateTime,
                     style: TextStyle(
-                      color: isFinished ? Colors.white38 : Colors.white70, 
+                      color: isFinished ? (isDark ? Colors.white38 : Colors.black38) : (isDark ? Colors.white70 : Colors.black87), 
                       fontSize: isFinished ? 12 : 10, 
                       fontWeight: FontWeight.w500
                     ),
@@ -592,7 +606,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             ),
             const SizedBox(width: 16),
             // Vertical Line
-            Container(width: 1, height: 40, color: Colors.white10),
+            Container(width: 1, height: 40, color: isDark ? Colors.white10 : Colors.black12),
             const SizedBox(width: 16),
             // Teams
             Expanded(
@@ -617,9 +631,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             if (isNotStarted)
               Column(
                 children: [
-                  const Icon(Icons.alarm, color: Colors.white60, size: 28),
+                  Icon(Icons.alarm, color: isDark ? Colors.white60 : Colors.black54, size: 28),
                   const SizedBox(height: 4),
-                  const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                  Text("Alarm", style: TextStyle(color: subTextColor, fontSize: 10)),
                 ],
               ),
           ],
@@ -629,17 +643,20 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Widget _buildTeamMiniRow(String name, String img, [String score = ""]) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+
     return Row(
       children: [
         if (img.isNotEmpty)
           Image.network(img, width: 24, height: 24)
         else
-          const Icon(Icons.shield, size: 24, color: Colors.white24),
+          Icon(Icons.shield, size: 24, color: isDark ? Colors.white24 : Colors.black26),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             name, 
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w500),
+            style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -647,7 +664,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
         if (score.isNotEmpty)
           Text(
             score,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16),
           ),
       ],
     );
@@ -655,11 +672,14 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
 
 
   Widget _buildSquadTab(SquadProvider provider, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (provider.isLoading && provider.squad.isEmpty) {
       return Center(child: CircularProgressIndicator(color: accentColor));
     }
     if (provider.squad.isEmpty) {
-      return const Center(child: Text("Squad list upcoming", style: TextStyle(color: Colors.white38)));
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      return Center(child: Text("Squad list upcoming", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -685,8 +705,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
             ),
             child: Row(
               children: [
@@ -696,9 +717,10 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     backgroundImage: NetworkImage(player['image_path']),
                   )
                 else
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 25,
-                    child: Icon(Icons.person, color: Colors.grey),
+                    backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                    child: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.black54),
                   ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -707,14 +729,14 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     children: [
                       Text(
                         player['display_name'] ?? player['name'] ?? 'Player',
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       if (squadItem['jersey_number'] != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             "Jersey: #${squadItem['jersey_number']}",
-                            style: const TextStyle(color: Colors.white38, fontSize: 13),
+                            style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13),
                           ),
                         ),
                     ],

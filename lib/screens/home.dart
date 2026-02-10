@@ -12,6 +12,7 @@ import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
 import '../providers/team_list_provider.dart';
 import 'team_details_screen.dart';
+import 'settings_screen.dart';
 
 /// The Home screen acts as the main shell for the application.
 /// It manages the bottom navigation bar and switches between specialized screens.
@@ -69,11 +70,12 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    // Custom color palette for the Sports App theme
-    const Color primaryColor = Color(0xFF1E1E2C);
-    const Color accentColor = Color(0xFFD4FF00); // Lime/Neon Yellow
-    const Color secondaryColor = Color(0xFF2D2D44);
-    const Color textPrimary = Colors.white;
+    // Theme aware colors
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).appBarTheme.backgroundColor;
+    const Color accentColor = Color(0xFFFF8700); // Lime/Neon Yellow
+    final secondaryColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
+    final textPrimary = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.white;
 
     return PopScope(
       canPop: !_isSearching,
@@ -101,13 +103,13 @@ class _HomeState extends State<Home> {
                 child: TextField(
                   controller: _searchController,
                   autofocus: true,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: textPrimary, fontSize: 14),
+                  decoration: InputDecoration(
                     hintText: "Search teams...",
-                    hintStyle: TextStyle(color: Colors.white38, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Colors.white38, size: 20),
+                    hintStyle: TextStyle(color: textPrimary.withOpacity(0.4), fontSize: 14),
+                    prefixIcon: Icon(Icons.search, color: textPrimary.withOpacity(0.4), size: 20),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 13),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
                   ),
                   onChanged: (value) {
                     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -127,9 +129,9 @@ class _HomeState extends State<Home> {
             : _selectedIndex == 0
                 ? Row(
                     children: [
-                      const Text(
+                      Text(
                         "LiveScore",
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
+                        style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 22),
                       ),
                       const SizedBox(width: 12),
                       Container(
@@ -147,12 +149,12 @@ class _HomeState extends State<Home> {
                   )
                 : Text(
                     _titles[_selectedIndex],
-                    style: const TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
                   ),
         actions: _isSearching
             ? [
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(Icons.close, color: textPrimary),
                   onPressed: () {
                     setState(() {
                       _isSearching = false;
@@ -163,18 +165,23 @@ class _HomeState extends State<Home> {
               ]
             : [
                 IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  icon: Icon(Icons.refresh, color: textPrimary),
                   onPressed: _handleRefresh,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.search, color: Colors.white),
+                  icon: Icon(Icons.search, color: textPrimary),
                   onPressed: () {
                     setState(() {
                       _isSearching = true;
                     });
                   },
                 ),
-                IconButton(icon: const Icon(Icons.settings, color: Colors.white), onPressed: () {}),
+                IconButton(
+                  icon: Icon(Icons.settings, color: textPrimary), 
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
+                  },
+                ),
               ],
       ),
       // Display the screen corresponding to the current selection
@@ -182,7 +189,7 @@ class _HomeState extends State<Home> {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: secondaryColor,
         selectedItemColor: accentColor,
-        unselectedItemColor: Colors.white38,
+        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed, // Shows all labels even with 5 items
         onTap: (index) {

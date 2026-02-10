@@ -54,23 +54,27 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF1E1E2C);
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
+    final Color backgroundColor = Theme.of(context).scaffoldBackgroundColor;
+    final Color headerColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFD4FF00); // Premium Lime accent
 
     return DefaultTabController(
       length: 2, // Fixtures and Table
       child: Scaffold(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: backgroundColor,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
                 expandedHeight: 200,
                 pinned: true,
-                backgroundColor: const Color(0xFF121212),
+                backgroundColor: headerColor,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  icon: Icon(Icons.arrow_back, color: textColor),
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
@@ -82,7 +86,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       return IconButton(
                         icon: Icon(
                           isFollowed ? Icons.star : Icons.star_border,
-                          color: isFollowed ? accentColor : Colors.white60,
+                          color: isFollowed ? accentColor : subTextColor,
                         ),
                         onPressed: () =>
                             followProvider.toggleFollowLeague(widget.leagueId),
@@ -115,19 +119,19 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                               height: 60,
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2D2D44).withOpacity(0.5),
+                                color: isDark ? const Color(0xFF2D2D44).withOpacity(0.5) : Colors.black12,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.white10),
+                                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
                               ),
                               child: imagePath.isNotEmpty
                                   ? Image.network(
                                       imagePath,
                                       fit: BoxFit.contain,
                                     )
-                                  : const Icon(
+                                  : Icon(
                                       Icons.emoji_events,
                                       size: 30,
-                                      color: Colors.white24,
+                                      color: subTextColor,
                                     ),
                             ),
                             const SizedBox(width: 16),
@@ -139,8 +143,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                                 children: [
                                   Text(
                                     name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: textColor,
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'Poppins',
@@ -151,8 +155,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                                   const SizedBox(height: 4),
                                   Text(
                                     country,
-                                    style: const TextStyle(
-                                      color: Colors.white60,
+                                    style: TextStyle(
+                                      color: subTextColor,
                                       fontSize: 16,
                                       fontFamily: 'Poppins',
                                     ),
@@ -173,8 +177,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                     child: TabBar(
                       isScrollable: true,
                       indicatorColor: accentColor,
-                      labelColor: accentColor,
-                      unselectedLabelColor: Colors.white38,
+                      labelColor: isDark ? accentColor : textColor,
+                      unselectedLabelColor: subTextColor,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
                       labelPadding: const EdgeInsets.symmetric(horizontal: 20),

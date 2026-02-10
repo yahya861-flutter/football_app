@@ -41,13 +41,17 @@ class PlayerDetailsScreen extends StatelessWidget {
     final dynamic jerseyNum = squadItem['jersey_number'] ?? player['jersey_number'];
     final String shirt = jerseyNum?.toString() ?? "N/A";
 
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -72,12 +76,12 @@ class PlayerDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Text(
                     name,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     nationality,
-                    style: const TextStyle(color: Colors.white38, fontSize: 16),
+                    style: TextStyle(color: subTextColor, fontSize: 16),
                   ),
                 ],
               ),
@@ -88,8 +92,9 @@ class PlayerDetailsScreen extends StatelessWidget {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1E1E),
+                color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,15 +111,15 @@ class PlayerDetailsScreen extends StatelessWidget {
                         child: const Icon(Icons.info_outline, color: Colors.black, size: 16),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
+                      Text(
                         "Info",
-                        style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Divider(color: Colors.white10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Divider(color: isDark ? Colors.white10 : Colors.black12),
                   ),
                   
                   // Details Grid
@@ -127,7 +132,7 @@ class PlayerDetailsScreen extends StatelessWidget {
                     _InfoItem("Weight", weight),
                     _InfoItem("Position", position),
                     _InfoItem("Nationality", nationality),
-                  ]),
+                  ], isDark),
                 ],
               ),
             ),
@@ -137,7 +142,7 @@ class PlayerDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoGrid(List<_InfoItem> items) {
+  Widget _buildInfoGrid(List<_InfoItem> items, bool isDark) {
     return Wrap(
       spacing: 0,
       runSpacing: 24,
@@ -149,7 +154,7 @@ class PlayerDetailsScreen extends StatelessWidget {
             children: [
               Text(
                 item.label,
-                style: const TextStyle(color: Colors.white38, fontSize: 13),
+                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13),
               ),
               const SizedBox(height: 6),
               Row(
@@ -163,7 +168,7 @@ class PlayerDetailsScreen extends StatelessWidget {
                   Expanded(
                     child: Text(
                       item.value,
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
