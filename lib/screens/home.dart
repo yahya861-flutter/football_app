@@ -42,6 +42,7 @@ class _HomeState extends State<Home> {
       context.read<InPlayProvider>().fetchInPlayMatches();
       context.read<FixtureProvider>().fetchTodayFixtures();
       context.read<FixtureProvider>().fetchAllFixturesByDateRange();
+      context.read<TeamListProvider>().fetchTeams();
     });
   }
 

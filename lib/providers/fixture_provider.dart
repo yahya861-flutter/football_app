@@ -19,6 +19,7 @@ class FixtureProvider with ChangeNotifier {
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
 
   Future<void> fetchFixturesByDateRange(int leagueId) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _fixtures = [];
@@ -45,9 +46,11 @@ class FixtureProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageFixtures = data['data'] ?? [];
-          
-          // Filter out finished matches for the Fixtures tab
-          _fixtures.addAll(pageFixtures.where((f) => f['state_id'] != 5));
+          for (var fixture in pageFixtures) {
+            if (fixture['state_id'] != 5 && !_inFixtures(fixture['id'])) {
+              _fixtures.add(fixture);
+            }
+          }
           
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -61,7 +64,6 @@ class FixtureProvider with ChangeNotifier {
         }
       }
       
-      // Sort by date (ascending for upcoming fixtures)
       _fixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
     } catch (e) {
       _errorMessage = 'An error occurred: $e';
@@ -71,8 +73,8 @@ class FixtureProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches upcoming fixtures for ALL leagues (global)
   Future<void> fetchAllFixturesByDateRange() async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _fixtures = [];
@@ -80,7 +82,7 @@ class FixtureProvider with ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final futureDate = now.add(const Duration(days: 3)); // Smaller range for global to avoid huge data
+      final futureDate = now.add(const Duration(days: 3));
       
       final startDateFormatted = DateFormat('yyyy-MM-dd').format(now);
       final endDateFormatted = DateFormat('yyyy-MM-dd').format(futureDate);
@@ -99,8 +101,11 @@ class FixtureProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageFixtures = data['data'] ?? [];
-          
-          _fixtures.addAll(pageFixtures.where((f) => f['state_id'] != 5));
+          for (var fixture in pageFixtures) {
+            if (fixture['state_id'] != 5 && !_inFixtures(fixture['id'])) {
+              _fixtures.add(fixture);
+            }
+          }
 
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -122,8 +127,8 @@ class FixtureProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches ALL fixtures (scheduled, live, finished) for today
   Future<void> fetchTodayFixtures() async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _todayFixtures = [];
@@ -147,7 +152,11 @@ class FixtureProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageFixtures = data['data'] ?? [];
-          _todayFixtures.addAll(pageFixtures);
+          for (var fixture in pageFixtures) {
+            if (!_inTodayFixtures(fixture['id'])) {
+              _todayFixtures.add(fixture);
+            }
+          }
 
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -161,7 +170,6 @@ class FixtureProvider with ChangeNotifier {
         }
       }
       
-      // Sort by starting time
       _todayFixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
     } catch (e) {
       _errorMessage = 'An error occurred fetching today\'s matches: $e';
@@ -171,11 +179,11 @@ class FixtureProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches ALL fixtures for a specific date across all leagues
   Future<void> fetchFixturesByDate(DateTime date) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
-    _todayFixtures = []; // We reuse this list for the current selected date view
+    _todayFixtures = [];
     notifyListeners();
 
     try {
@@ -195,7 +203,11 @@ class FixtureProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageFixtures = data['data'] ?? [];
-          _todayFixtures.addAll(pageFixtures);
+          for (var fixture in pageFixtures) {
+            if (!_inTodayFixtures(fixture['id'])) {
+              _todayFixtures.add(fixture);
+            }
+          }
 
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -217,8 +229,8 @@ class FixtureProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches all finished matches (results) for a specific league
   Future<void> fetchResultsByLeague(int leagueId) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _results = [];
@@ -245,9 +257,11 @@ class FixtureProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageFixtures = data['data'] ?? [];
-          
-          // Filter for finished matches (state_id 5)
-          _results.addAll(pageFixtures.where((f) => f['state_id'] == 5));
+          for (var fixture in pageFixtures) {
+            if (fixture['state_id'] == 5 && !_inResults(fixture['id'])) {
+              _results.add(fixture);
+            }
+          }
 
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -260,10 +274,7 @@ class FixtureProvider with ChangeNotifier {
           break;
         }
       }
-      
-      // Sort by date (descending, most recent results first)
       _results.sort((a, b) => b['starting_at'].compareTo(a['starting_at']));
-      
     } catch (e) {
       _errorMessage = 'An error occurred: $e';
     } finally {
@@ -271,4 +282,8 @@ class FixtureProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  bool _inFixtures(int id) => _fixtures.any((f) => f['id'] == id);
+  bool _inTodayFixtures(int id) => _todayFixtures.any((f) => f['id'] == id);
+  bool _inResults(int id) => _results.any((f) => f['id'] == id);
 }

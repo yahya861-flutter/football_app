@@ -15,6 +15,7 @@ class InPlayProvider with ChangeNotifier {
   final String _apiKey = 'tCaaAbgORG4Czb3byoAN4ywt70oCxMMpfQqVCmRetJp3BYapxRv419koCJQT';
 
   Future<void> fetchInPlayMatches() async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _inPlayMatches = []; // Clear the list to prevent duplicates
@@ -36,7 +37,11 @@ class InPlayProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> pageMatches = data['data'] ?? [];
-          _inPlayMatches.addAll(pageMatches);
+          for (var match in pageMatches) {
+            if (!_inInPlayMatches(match['id'])) {
+              _inPlayMatches.add(match);
+            }
+          }
 
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -55,5 +60,9 @@ class InPlayProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  bool _inInPlayMatches(int id) {
+    return _inPlayMatches.any((m) => m['id'] == id);
   }
 }

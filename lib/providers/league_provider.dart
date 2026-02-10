@@ -62,7 +62,6 @@ class LeagueProvider with ChangeNotifier {
   }
 
   /// Returns the list of teams for the currently selected league
-  /// Extracted from the current season included in the API response
   List<dynamic> get teams {
     if (_selectedLeague != null && _selectedLeague['currentseason'] != null) {
       return _selectedLeague['currentseason']['teams'] ?? [];
@@ -84,21 +83,27 @@ class LeagueProvider with ChangeNotifier {
 
   /// Fetches the first page of football leagues and then loads the rest in the background
   Future<void> fetchLeagues({bool forceRefresh = false}) async {
+    if (_isLoading) return;
     if (_leagues.isNotEmpty && !forceRefresh) return;
 
     _isLoading = true;
     _errorMessage = null;
     _nextUrl = null;
+    _leagues = []; // Clear for fresh load
     notifyListeners();
 
     try {
-      // Increase per_page to load more data faster
       final String firstPageUrl = '$_baseUrl?include=country&per_page=100&select=name,image_path,category&api_token=$_apiKey';
       final response = await http.get(Uri.parse(firstPageUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        _leagues = data['data'] ?? [];
+        final List<dynamic> pageLeagues = data['data'] ?? [];
+        for (var league in pageLeagues) {
+          if (!_inLeagues(league['id'])) {
+            _leagues.add(league);
+          }
+        }
         
         // Find next page
         final pagination = data['pagination'];
@@ -131,23 +136,22 @@ class LeagueProvider with ChangeNotifier {
   /// Controlled background loading to prevent network saturation and UI jank
   Future<void> _loadRemainingPages() async {
     while (_nextUrl != null) {
-      // Small delay to yield to the UI and prevent saturating the network
       await Future.delayed(const Duration(seconds: 2));
       
       try {
         String url = _nextUrl!;
-        if (!url.contains('select=')) {
-          url += '&select=name,image_path,category';
-        }
-        if (!url.contains('api_token=')) {
-          url += '&api_token=$_apiKey';
-        }
+        if (!url.contains('select=')) url += '&select=name,image_path,category';
+        if (!url.contains('api_token=')) url += '&api_token=$_apiKey';
 
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           final data = json.decode(response.body);
           final List<dynamic> newLeagues = data['data'] ?? [];
-          _leagues.addAll(newLeagues);
+          for (var league in newLeagues) {
+            if (!_inLeagues(league['id'])) {
+              _leagues.add(league);
+            }
+          }
           
           final pagination = data['pagination'];
           if (pagination != null && pagination['has_more'] == true) {
@@ -165,29 +169,27 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Keep this for compatibility, but fetchLeagues now handles background loading
   Future<void> loadMoreLeagues() async {
-    // This is now handled automatically by _loadRemainingPages in the background
-    // but we can keep the logic if needed for manual triggers
     if (_isFetchingMore || _nextUrl == null) return;
     _isFetchingMore = true;
     notifyListeners();
     try {
       String url = _nextUrl!;
-      if (!url.contains('select=')) {
-        url += '&select=name,image_path,category';
-      }
+      if (!url.contains('select=')) url += '&select=name,image_path,category';
+      if (!url.contains('api_token=')) url += '&api_token=$_apiKey';
+      
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final List<dynamic> newLeagues = data['data'] ?? [];
-        _leagues.addAll(newLeagues);
+        for (var league in newLeagues) {
+          if (!_inLeagues(league['id'])) {
+            _leagues.add(league);
+          }
+        }
         final pagination = data['pagination'];
         if (pagination != null && pagination['has_more'] == true) {
           _nextUrl = pagination['next_page'];
-          if (_nextUrl != null && !_nextUrl!.contains('api_token=')) {
-            _nextUrl = _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
-          }
         } else {
           _nextUrl = null;
         }
@@ -198,16 +200,15 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches detailed information for a single league by its unique ID
   Future<void> fetchLeagueById(int id) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
-    _selectedLeague = null; // Clear previous selection
+    _selectedLeague = null;
     notifyListeners();
 
     try {
       final response = await http.get(
-        // Include currentSeason and its teams to show them in the Home tab
         Uri.parse('$_baseUrl/$id?include=currentSeason.teams;country'),
         headers: {
           'Content-Type': 'application/json',
@@ -218,7 +219,6 @@ class LeagueProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        // The individual league data is inside the 'data' key
         _selectedLeague = data['data'];
       } else {
         _errorMessage = 'Failed to load league details: ${response.statusCode}';
@@ -231,8 +231,8 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches the top scorers for a specific season
   Future<void> fetchTopScorers(int seasonId) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _topScorers = [];
@@ -240,7 +240,6 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        // Include player and team (participant) details
         Uri.parse('https://api.sportmonks.com/v3/football/topscorers/seasons/$seasonId?include=player;participant'),
         headers: {
           'Content-Type': 'application/json',
@@ -263,8 +262,8 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches the standings for a specific season
   Future<void> fetchStandings(int seasonId) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _standings = [];
@@ -272,7 +271,6 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        // Include participant details (team name, logo)
         Uri.parse('https://api.sportmonks.com/v3/football/standings/seasons/$seasonId?include=participant'),
         headers: {
           'Content-Type': 'application/json',
@@ -280,8 +278,6 @@ class LeagueProvider with ChangeNotifier {
           'Authorization': _apiKey,
         },
       );
-      print("Status Response: ${response.statusCode}");
-      print("Status Body:${response.body}");
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -297,8 +293,8 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches the list of leagues that currently have live matches
   Future<void> fetchLiveLeagues() async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -327,8 +323,8 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Fetches live standings for a specific league
   Future<void> fetchLiveStandings(int leagueId) async {
+    if (_isLoading) return;
     _isLoading = true;
     _errorMessage = null;
     _liveStandings = [];
@@ -357,8 +353,9 @@ class LeagueProvider with ChangeNotifier {
     }
   }
 
-  /// Returns true if the given league ID is currently live
   bool isLeagueLive(int leagueId) {
     return _liveLeagues.any((league) => league['id'] == leagueId);
   }
+
+  bool _inLeagues(int id) => _leagues.any((l) => l['id'] == id);
 }

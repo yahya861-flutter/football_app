@@ -4,6 +4,7 @@ import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/inplay_provider.dart';
+import 'package:football_app/screens/live_matches_screen.dart';
 
 class LiveScoresScreen extends StatefulWidget {
   const LiveScoresScreen({super.key});
@@ -14,20 +15,6 @@ class LiveScoresScreen extends StatefulWidget {
 
 class _LiveScoresScreenState extends State<LiveScoresScreen> {
   DateTime _selectedDate = DateTime.now();
-  bool _showLiveOnly = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchData();
-    });
-  }
-
-  void _fetchData() {
-    context.read<InPlayProvider>().fetchInPlayMatches();
-    context.read<FixtureProvider>().fetchFixturesByDate(_selectedDate);
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -52,7 +39,6 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _showLiveOnly = false;
       });
       context.read<FixtureProvider>().fetchFixturesByDate(_selectedDate);
     }
@@ -61,7 +47,6 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   void _adjustDate(int days) {
     setState(() {
       _selectedDate = _selectedDate.add(Duration(days: days));
-      _showLiveOnly = false;
     });
     context.read<FixtureProvider>().fetchFixturesByDate(_selectedDate);
   }
@@ -74,7 +59,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
       children: [
         _buildFilterHeader(accentColor),
         Expanded(
-          child: _showLiveOnly ? _buildInPlayList() : _buildMatchesForDateList(accentColor),
+          child: _buildMatchesForDateList(accentColor),
         ),
       ],
     );
@@ -93,24 +78,24 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               // Live Button
               InkWell(
                 onTap: () {
-                  setState(() {
-                    _showLiveOnly = !_showLiveOnly;
-                  });
-                  if (_showLiveOnly) inPlay.fetchInPlayMatches();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LiveMatchesScreen()),
+                  );
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: _showLiveOnly ? Colors.white : const Color(0xFF1E1E2C),
+                    color: const Color(0xFF1E1E2C),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.white12),
                   ),
                   child: Row(
                     children: [
-                      Text(
+                      const Text(
                         "Live",
                         style: TextStyle(
-                          color: _showLiveOnly ? Colors.red : Colors.white,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -118,8 +103,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                       const SizedBox(width: 4),
                       Text(
                         "(${inPlay.inPlayMatches.length})",
-                        style: TextStyle(
-                          color: _showLiveOnly ? Colors.red : Colors.white38,
+                        style: const TextStyle(
+                          color: Colors.white38,
                           fontSize: 12,
                         ),
                       ),
@@ -162,22 +147,6 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
             ],
           ),
         );
-      },
-    );
-  }
-
-  Widget _buildInPlayList() {
-    return Consumer<InPlayProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading && provider.inPlayMatches.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
-        }
-
-        if (provider.inPlayMatches.isEmpty) {
-          return _buildEmptyState("No live matches at the moment", provider.fetchInPlayMatches);
-        }
-
-        return _buildGroupedMatchList(provider.inPlayMatches);
       },
     );
   }
