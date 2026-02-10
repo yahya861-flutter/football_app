@@ -26,6 +26,9 @@ class LeagueProvider with ChangeNotifier {
   // Store the live leagues (leagues with active matches)
   List<dynamic> _liveLeagues = [];
 
+  // Store live standings
+  List<dynamic> _liveStandings = [];
+
   // Getters to expose the private state variables to the UI
   List<dynamic> get leagues => _leagues;
   bool get isLoading => _isLoading;
@@ -34,6 +37,7 @@ class LeagueProvider with ChangeNotifier {
   List<dynamic> get topScorers => _topScorers;
   List<dynamic> get standings => _standings;
   List<dynamic> get liveLeagues => _liveLeagues;
+  List<dynamic> get liveStandings => _liveStandings;
 
   // Pagination state
   String? _nextUrl;
@@ -317,6 +321,36 @@ class LeagueProvider with ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = 'An error occurred while fetching live leagues: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetches live standings for a specific league
+  Future<void> fetchLiveStandings(int leagueId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _liveStandings = [];
+    notifyListeners();
+
+    try {
+      final response = await http.get(
+        Uri.parse('https://api.sportmonks.com/v3/football/standings/live/leagues/$leagueId?api_token=$_apiKey&include=participant'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _liveStandings = data['data'] ?? [];
+      } else {
+        _errorMessage = 'Failed to load live standings: ${response.statusCode}';
+      }
+    } catch (e) {
+      _errorMessage = 'An error occurred while fetching live standings: $e';
     } finally {
       _isLoading = false;
       notifyListeners();

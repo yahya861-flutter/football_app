@@ -21,8 +21,10 @@ class StatsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      final url = 'https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=statistics.type;statistics.participant';
+      debugPrint('Fetching Stats via: $url');
       final response = await http.get(
-        Uri.parse('https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=statistics.type;statistics.participant'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -33,8 +35,10 @@ class StatsProvider with ChangeNotifier {
         final data = json.decode(response.body);
         final fixture = data['data'];
         _stats = fixture?['statistics'] ?? [];
+        debugPrint('Stats loaded: ${_stats.length}');
       } else {
         _errorMessage = 'Failed to load statistics: ${response.statusCode}';
+        debugPrint('Stats error: $_errorMessage');
       }
     } catch (e) {
       _errorMessage = 'An error occurred fetching stats: $e';
@@ -50,8 +54,10 @@ class StatsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      final url = 'https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=events.type;events.participant;events.player';
+      debugPrint('Fetching Events via: $url');
       final response = await http.get(
-        Uri.parse('https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=events.type;events.participant;events.player'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -68,8 +74,10 @@ class StatsProvider with ChangeNotifier {
           final minB = b['minute'] ?? 0;
           return minA.compareTo(minB);
         });
+        debugPrint('Events loaded: ${_events.length}');
       } else {
         _errorMessage = 'Failed to load events: ${response.statusCode}';
+        debugPrint('Events error: $_errorMessage');
       }
     } catch (e) {
       _errorMessage = 'An error occurred fetching events: $e';

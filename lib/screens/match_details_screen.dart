@@ -59,6 +59,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         context.read<StatsProvider>().fetchEvents(fixtureId);
         context.read<LineupProvider>().fetchLineupsAndBench(fixtureId);
         context.read<CommentaryProvider>().fetchComments(fixtureId);
+        // Fetch Live Standings for the league
+        context.read<LeagueProvider>().fetchLiveStandings(widget.leagueId);
       }
     });
   }
@@ -614,18 +616,40 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   Widget _buildTableTab(BuildContext context) {
     return Consumer<LeagueProvider>(
       builder: (context, leagueProvider, child) {
-        if (leagueProvider.standings.isEmpty) {
+        final standings = leagueProvider.liveStandings.isNotEmpty 
+            ? leagueProvider.liveStandings 
+            : leagueProvider.standings;
+
+        if (standings.isEmpty) {
+          if (leagueProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          }
           return const Center(child: Text("No table data", style: TextStyle(color: Colors.white38)));
         }
         return Column(
           children: [
+            if (leagueProvider.liveStandings.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 8, height: 8,
+                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text("LIVE STANDINGS", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 10)),
+                  ],
+                ),
+              ),
             _buildTableHeader(),
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.zero,
-                itemCount: leagueProvider.standings.length,
+                itemCount: standings.length,
                 itemBuilder: (context, index) {
-                  return _buildTableStandingRow(context, leagueProvider.standings[index]);
+                  return _buildTableStandingRow(context, standings[index]);
                 },
               ),
             ),

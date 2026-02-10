@@ -21,9 +21,11 @@ class LineupProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch Lineups and Bench via Fixture Include
+      // Fetch Lineups via Fixture Include (v3 standard)
+      final url = 'https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=lineups.player;lineups.position;lineups.type';
+      debugPrint('Fetching Lineups via: $url');
       final response = await http.get(
-        Uri.parse('https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=lineups.player;lineups.position;lineups.type'),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -39,9 +41,10 @@ class LineupProvider with ChangeNotifier {
         _lineups = allLineups.where((l) => l['type_id'] == 11).toList();
         _bench = allLineups.where((l) => l['type_id'] == 12).toList();
         
-        debugPrint('Fetched ${allLineups.length} lineup entries');
+        debugPrint('Fetched ${allLineups.length} lineup entries via include');
       } else {
         _errorMessage = 'Failed to load lineups: ${response.statusCode}';
+        debugPrint('Lineup error: $_errorMessage');
       }
     } catch (e) {
       _errorMessage = 'An error occurred fetching lineups/bench: $e';
