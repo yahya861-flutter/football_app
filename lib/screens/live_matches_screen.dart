@@ -13,7 +13,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
     final Color primaryColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
-    const Color accentColor = Color(0xFFD4FF00);
+    const Color accentColor = Color(0xFFFF8700);
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -203,7 +203,7 @@ class LiveMatchesScreen extends StatelessWidget {
               child: Text(
                 period,
                 style: TextStyle(
-                  color: isLive ? const Color(0xFFD4FF00) : subTextColor, 
+                  color: isLive ? const Color(0xFFFF8700) : subTextColor,
                   fontSize: 10, 
                   fontWeight: FontWeight.bold
                 ),

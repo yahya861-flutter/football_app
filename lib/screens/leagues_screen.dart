@@ -62,7 +62,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color primaryColor = Theme.of(context).scaffoldBackgroundColor;
-    const Color accentColor = Color(0xFFD4FF00);
+    const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
@@ -139,7 +139,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
         // Following
         items.add(_buildSectionHeader(
-          icon: Icons.star, iconColor: Colors.tealAccent, title: "Following", count: followedLeagues.length,
+          icon: Icons.star, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Following", count: followedLeagues.length,
           isExpanded: _isLeaguesFollowingExpanded,
           onToggle: () => setState(() => _isLeaguesFollowingExpanded = !_isLeaguesFollowingExpanded),
         ));
@@ -158,7 +158,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _buildSectionHeader(
-            icon: Icons.thumb_up, iconColor: Colors.tealAccent, title: "Top Leagues", count: topLeagues.length,
+            icon: Icons.thumb_up, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Top Leagues", count: topLeagues.length,
             isExpanded: _isLeaguesTopExpanded,
             onToggle: () => setState(() => _isLeaguesTopExpanded = !_isLeaguesTopExpanded),
           ),
@@ -171,7 +171,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _buildSectionHeader(
-            icon: Icons.lightbulb_outline, iconColor: Colors.tealAccent, title: "Suggestions", count: 3,
+            icon: Icons.lightbulb_outline, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Suggestions", count: 3,
             isExpanded: _isLeaguesSuggestionsExpanded,
             onToggle: () => setState(() => _isLeaguesSuggestionsExpanded = !_isLeaguesSuggestionsExpanded),
           ),
@@ -405,7 +405,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
             if (index == followingHeaderIndex) {
               return _buildSectionHeader(
                 icon: Icons.star,
-                iconColor: Colors.tealAccent,
+                iconColor: isDark ? Colors.tealAccent : Colors.teal,
                 title: "Following",
                 count: followedTeams.length,
                 isExpanded: _isFollowingExpanded,
@@ -433,7 +433,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 padding: const EdgeInsets.only(top: 12),
                 child: _buildSectionHeader(
                   icon: Icons.thumb_up,
-                  iconColor: Colors.tealAccent,
+                  iconColor: isDark ? Colors.tealAccent : Colors.teal,
                   title: "All Teams",
                   count: teamProvider.teams.length,
                   isExpanded: _isAllTeamsExpanded,
@@ -498,7 +498,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D44),
+          color: isDark ? const Color(0xFF2D2D44) : Colors.grey[300],
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -614,7 +614,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           ),
           IconButton(
             icon: Icon(isFollowed ? Icons.notifications : Icons.notifications_none, 
-                 color: isFollowed ? Colors.tealAccent : subTextColor, size: 22),
+                 color: isFollowed ? (isDark ? Colors.tealAccent : Colors.teal) : subTextColor, size: 22),
             onPressed: () {}, // Notification toggle placeholder
           ),
         ],
