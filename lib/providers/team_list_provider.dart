@@ -135,13 +135,16 @@ class TeamListProvider with ChangeNotifier {
     }
   }
 
+  String? _currentSearchQuery;
+
   Future<void> searchTeams(String query) async {
-    if (_isLoading) return;
     if (query.isEmpty) {
+      _currentSearchQuery = null;
       fetchTeams(forceRefresh: true);
       return;
     }
     
+    _currentSearchQuery = query;
     _isLoading = true;
     _teams = []; 
     notifyListeners();
@@ -155,6 +158,8 @@ class TeamListProvider with ChangeNotifier {
           'Accept': 'application/json',
         },
       );
+
+      if (_currentSearchQuery != query) return;
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

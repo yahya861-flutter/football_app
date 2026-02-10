@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,10 +27,12 @@ class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   @override
   void dispose() {
     _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
@@ -72,7 +75,18 @@ class _HomeState extends State<Home> {
     const Color secondaryColor = Color(0xFF2D2D44);
     const Color textPrimary = Colors.white;
 
-    return Scaffold(
+    return PopScope(
+      canPop: !_isSearching,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_isSearching) {
+          setState(() {
+            _isSearching = false;
+            _searchController.clear();
+          });
+        }
+      },
+      child: Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
         backgroundColor: primaryColor,
@@ -95,6 +109,14 @@ class _HomeState extends State<Home> {
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(vertical: 13),
                   ),
+                  onChanged: (value) {
+                    if (_debounce?.isActive ?? false) _debounce!.cancel();
+                    _debounce = Timer(const Duration(milliseconds: 500), () {
+                      if (value.isNotEmpty) {
+                        context.read<TeamListProvider>().searchTeams(value);
+                      }
+                    });
+                  },
                   onSubmitted: (value) {
                     if (value.isNotEmpty) {
                       context.read<TeamListProvider>().searchTeams(value);
@@ -177,8 +199,9 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: "News"),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _handleRefresh() {
     switch (_selectedIndex) {
