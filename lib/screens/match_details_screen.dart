@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
+import 'package:football_app/providers/h2h_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -20,11 +21,34 @@ class MatchDetailsScreen extends StatefulWidget {
 }
 
 class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
+  String _h2hView = "Overall"; // "Overall" or "Last 5"
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<FixtureProvider>().fetchFixturesByDateRange(widget.leagueId);
+      
+      final participants = widget.fixture['participants'] as List? ?? [];
+      int? team1Id;
+      int? team2Id;
+
+      debugPrint('MatchDetails participants: ${participants.length}');
+
+      if (participants.isNotEmpty) {
+        final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+        team1Id = home['id'];
+        if (participants.length > 1) {
+          final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+          team2Id = away['id'];
+        }
+      }
+
+      debugPrint('MatchDetails team1: $team1Id, team2: $team2Id');
+
+      if (team1Id != null && team2Id != null) {
+        context.read<H2HProvider>().fetchH2HMatches(team1Id, team2Id);
+      }
     });
   }
 
@@ -175,7 +199,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         body: TabBarView(
           children: [
             _buildInfoTab(widget.fixture),
-            _buildPlaceholderTab("H2H"),
+            _buildH2HTab(accentColor),
             _buildPlaceholderTab("Stats"),
             _buildPlaceholderTab("Lineup"),
             _buildTableTab(context),
@@ -204,42 +228,81 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
   Widget _buildInfoTab(dynamic fixture) {
     final venueName = fixture['venue']?['name'] ?? 'Unknown Venue';
+    final city = fixture['venue']?['city'] ?? 'Unknown City';
     final timestamp = fixture['starting_at_timestamp'];
     String formattedKickOff = "N/A";
     if (timestamp != null) {
       final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
-      formattedKickOff = "${DateFormat('yyyy-MM-dd').format(localDate)} at ${DateFormat('HH:mm:ss').format(localDate)}";
+      formattedKickOff = DateFormat('EEEE, d MMM yyyy, HH:mm').format(localDate);
     }
 
+    final leagueName = fixture['league']?['name'] ?? 'Competition';
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Poll Section
+          // Section: General Information
           _buildExpansionCard(
-            icon: Icons.poll,
-            title: "Poll",
-            content: const SizedBox(height: 10),
-          ),
-          const SizedBox(height: 12),
-          // Top Stats Section
-          _buildExpansionCard(
-            icon: Icons.bar_chart,
-            title: "Top Stats",
+            icon: Icons.info_outline,
+            title: "Match Information",
             initiallyExpanded: true,
             content: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildInfoRow(Icons.emoji_events_outlined, "Competition", "Premier League"),
-                  _buildInfoRow(Icons.access_time, "Kick off Time", formattedKickOff),
-                  _buildInfoRow(Icons.stadium_outlined, "Venue:", venueName, showMap: true),
+                  _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
+                  _buildInfoRow(Icons.access_time, "Kick off", formattedKickOff),
+                  _buildInfoRow(Icons.location_on_outlined, "Venue", "$venueName, $city", showMap: true),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Poll Section
+          _buildExpansionCard(
+            icon: Icons.poll_outlined,
+            title: "Match Poll",
+            content: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  const Text("Who will win?", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildPollButton("Home", "45%"),
+                      _buildPollButton("Draw", "15%"),
+                      _buildPollButton("Away", "40%"),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPollButton(String label, String percent) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white10),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(percent, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12)),
+      ],
     );
   }
 
@@ -282,6 +345,256 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               decoration: BoxDecoration(color: const Color(0xFF00C853).withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
               child: const Icon(Icons.location_on, color: Color(0xFF00C853), size: 18),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildH2HTab(Color accentColor) {
+    return Consumer<H2HProvider>(
+      builder: (context, h2h, _) {
+        if (h2h.isLoading) {
+          return Center(child: CircularProgressIndicator(color: accentColor));
+        }
+
+        if (h2h.h2hMatches.isEmpty) {
+          return const Center(child: Text("No Head-to-Head data available", style: TextStyle(color: Colors.white38)));
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildH2HToggle(),
+            const SizedBox(height: 16),
+            _buildH2HSummary(h2h.h2hMatches),
+            const SizedBox(height: 24),
+            const Text("Historical Matches", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            ...h2h.h2hMatches.map((m) => _buildH2HMatchRow(m)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildH2HToggle() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildToggleItem("Overall")),
+          Expanded(child: _buildToggleItem("Last 5")),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleItem(String title) {
+    bool isSelected = _h2hView == title;
+    return InkWell(
+      onTap: () => setState(() => _h2hView = title),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF2D2D44) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFFD4FF00) : Colors.white38,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildH2HSummary(List<dynamic> allMatches) {
+    final participants = widget.fixture['participants'] as List? ?? [];
+    if (participants.length < 2) return const SizedBox();
+    
+    // Select matches based on view
+    List<dynamic> matches = _h2hView == "Last 5" 
+      ? allMatches.take(5).toList() 
+      : allMatches;
+
+    final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+    final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+    final homeId = home['id'];
+    final awayId = away['id'];
+    
+    int homeWins = 0;
+    int awayWins = 0;
+    int draws = 0;
+
+    for (var match in matches) {
+      final scores = match['scores'] as List? ?? [];
+      if (scores.isEmpty) continue;
+
+      // Find FT or CURRENT score for home team
+      final hScoreObj = scores.firstWhere(
+        (s) => s['participant_id'] == homeId && 
+               (s['description']?.toString().toUpperCase() == 'FT' || 
+                s['description']?.toString().toUpperCase() == 'CURRENT'), 
+        orElse: () => null
+      );
+      // Find FT or CURRENT score for away team
+      final aScoreObj = scores.firstWhere(
+        (s) => s['participant_id'] == awayId && 
+               (s['description']?.toString().toUpperCase() == 'FT' || 
+                s['description']?.toString().toUpperCase() == 'CURRENT'), 
+        orElse: () => null
+      );
+      
+      if (hScoreObj != null && aScoreObj != null) {
+        int h = hScoreObj['score']?['goals'] ?? 0;
+        int a = aScoreObj['score']?['goals'] ?? 0;
+        if (h > a) homeWins++;
+        else if (a > h) awayWins++;
+        else draws++;
+      } else if (scores.length >= 2) {
+        // Fallback: Just take the goals from any score object for this participant if FT/CURRENT missing
+        final hFallback = scores.firstWhere((s) => s['participant_id'] == homeId, orElse: () => null);
+        final aFallback = scores.firstWhere((s) => s['participant_id'] == awayId, orElse: () => null);
+        if (hFallback != null && aFallback != null) {
+           int h = hFallback['score']?['goals'] ?? 0;
+           int a = aFallback['score']?['goals'] ?? 0;
+           if (h > a) homeWins++;
+           else if (a > h) awayWins++;
+           else draws++;
+        }
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          const Text("Head to Head Summary", style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryStat(homeWins.toString(), "Wins", participants[0]['name']),
+              _buildSummaryStat(draws.toString(), "Draws", "Draw"),
+              _buildSummaryStat(awayWins.toString(), "Wins", participants[1]['name']),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Simple Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: matches.isEmpty ? 0 : homeWins / matches.length,
+              backgroundColor: Colors.red.withOpacity(0.3),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
+              minHeight: 8,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryStat(String value, String label, String teamName) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+        const SizedBox(height: 4),
+        SizedBox(
+          width: 80,
+          child: Text(teamName, style: const TextStyle(color: Colors.white60, fontSize: 10), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildH2HMatchRow(dynamic match) {
+    final participants = match['participants'] as List? ?? [];
+    final scores = match['scores'] as List? ?? [];
+    
+    dynamic home;
+    dynamic away;
+    if (participants.isNotEmpty) {
+      home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      if (participants.length > 1) {
+        away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+      }
+    }
+
+    String hScore = "0";
+    String aScore = "0";
+    final hScoreObj = scores.firstWhere(
+      (s) => s['participant_id'] == home?['id'] && 
+             (s['description']?.toString().toUpperCase() == 'FT' || 
+              s['description']?.toString().toUpperCase() == 'CURRENT'), 
+      orElse: () => null
+    );
+    final aScoreObj = scores.firstWhere(
+      (s) => s['participant_id'] == away?['id'] && 
+             (s['description']?.toString().toUpperCase() == 'FT' || 
+              s['description']?.toString().toUpperCase() == 'CURRENT'), 
+      orElse: () => null
+    );
+    
+    if (hScoreObj != null) {
+      hScore = hScoreObj['score']?['goals']?.toString() ?? "0";
+    } else {
+      final hFallback = scores.firstWhere((s) => s['participant_id'] == home?['id'], orElse: () => null);
+      if (hFallback != null) hScore = hFallback['score']?['goals']?.toString() ?? "0";
+    }
+
+    if (aScoreObj != null) {
+      aScore = aScoreObj['score']?['goals']?.toString() ?? "0";
+    } else {
+      final aFallback = scores.firstWhere((s) => s['participant_id'] == away?['id'], orElse: () => null);
+      if (aFallback != null) aScore = aFallback['score']?['goals']?.toString() ?? "0";
+    }
+
+    final timestamp = match['starting_at_timestamp'];
+    String date = "N/A";
+    if (timestamp != null) {
+      date = DateFormat('dd MMM yyyy').format(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal());
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Text(date, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+          const Expanded(child: SizedBox()),
+          SizedBox(
+            width: 80,
+            child: Text(home?['name'] ?? 'Home', style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.right, overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(4)),
+            child: Text("$hScore - $aScore", style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 80,
+            child: Text(away?['name'] ?? 'Away', style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.left, overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );
