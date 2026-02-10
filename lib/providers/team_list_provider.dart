@@ -26,9 +26,14 @@ class TeamListProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      final url = '$_baseUrl?api_token=$_apiKey&per_page=100&select=name,image_path';
+      debugPrint('Fetching Teams: $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl?per_page=100&select=name,image_path'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -103,18 +108,23 @@ class TeamListProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      String nextUrlWithKey = _nextUrl!.contains('api_token=') 
-          ? _nextUrl! 
-          : _nextUrl! + (_nextUrl!.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
+      String nextUrlWithKey = _nextUrl!;
+      if (!nextUrlWithKey.contains('api_token=')) {
+        nextUrlWithKey += (nextUrlWithKey.contains('?') ? '&' : '?') + 'api_token=$_apiKey';
+      }
       
-      // Ensure select is preserved or added
+      // Ensure select is preserved
       if (!nextUrlWithKey.contains('select=')) {
         nextUrlWithKey += '&select=name,image_path';
       }
 
+      debugPrint('Loading more teams: $nextUrlWithKey');
       final response = await http.get(
         Uri.parse(nextUrlWithKey),
-        headers: {'Authorization': _apiKey},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -148,9 +158,14 @@ class TeamListProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      final url = '$_baseUrl/search/$query?api_token=$_apiKey&select=name,image_path';
+      debugPrint('Searching Teams: $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl/search/$query?select=name,image_path'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {

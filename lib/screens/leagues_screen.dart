@@ -409,7 +409,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 child: _buildSectionHeader(
                   icon: Icons.thumb_up,
                   iconColor: Colors.tealAccent,
-                  title: "All Leagues",
+                  title: "All Teams",
                   count: teamProvider.teams.length,
                   isExpanded: _isAllTeamsExpanded,
                   onToggle: () => setState(() => _isAllTeamsExpanded = !_isAllTeamsExpanded),
