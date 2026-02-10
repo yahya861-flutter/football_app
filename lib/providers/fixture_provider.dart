@@ -133,7 +133,7 @@ class FixtureProvider with ChangeNotifier {
       final now = DateTime.now();
       final dateFormatted = DateFormat('yyyy-MM-dd').format(now);
 
-      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$dateFormatted/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/date/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
       
       while (nextUrl != null) {
         final response = await http.get(
@@ -181,7 +181,7 @@ class FixtureProvider with ChangeNotifier {
     try {
       final dateFormatted = DateFormat('yyyy-MM-dd').format(date);
 
-      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$dateFormatted/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/date/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
       
       while (nextUrl != null) {
         final response = await http.get(
