@@ -517,8 +517,25 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     }
     
     final stateId = fixture['state_id'];
-    String stateLabel = _getMatchState(stateId);
-    String displayTime = stateLabel == "NS" ? timeStr : stateLabel;
+    
+    // Comprehensive state lists for Sportmonks v3
+    // Finished: 5: FT, 7: AET, 8: FT_P (Finished after Penalties), 9: PEN_FT (Finished after Penalties), 25: Abandoned, 26: Postponed
+    final bool isFinished = [5, 7, 8, 9, 25, 26].contains(stateId);
+    
+    // Live: 2: 1st, 3: HT, 4: 2nd, 6: ET, 12: Live, 17: Delayed, 18: Interrupted, 19: Penalties, 21: Extra Time HT
+    final bool isLive = [2, 3, 4, 6, 12, 17, 18, 19, 21].contains(stateId);
+    
+    // Not Started: Everything else (NS, TBA, etc.)
+    final bool isNotStarted = !isFinished && !isLive;
+    
+    final stateLabel = _getMatchState(stateId);
+    
+    // Format for NS: "10 Feb\n04:15 PM"
+    String nsDateTime = "";
+    if (isNotStarted && timestamp != null) {
+      final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+      nsDateTime = "${DateFormat('d MMM').format(localDate)}\n${DateFormat('h:mm a').format(localDate).toLowerCase()}";
+    }
 
     return InkWell(
       onTap: () {
@@ -539,19 +556,39 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
         ),
         child: Row(
           children: [
-            // Match Time Box
+            // Status / Time Box
             Container(
               width: 70,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF262626),
+                color: isLive ? Colors.redAccent.withOpacity(0.1) : const Color(0xFF262626),
                 borderRadius: BorderRadius.circular(6),
+                border: isLive ? Border.all(color: Colors.redAccent.withOpacity(0.3)) : null,
               ),
-              child: Text(
-                displayTime,
-                style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
-                textAlign: TextAlign.center,
-              ),
+              child: isLive 
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "LIVE",
+                        style: TextStyle(color: Colors.redAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        stateLabel,
+                        style: const TextStyle(color: Colors.white70, fontSize: 9),
+                      ),
+                    ],
+                  )
+                : Text(
+                    isFinished ? "FT" : nsDateTime,
+                    style: TextStyle(
+                      color: isFinished ? Colors.white38 : Colors.white70, 
+                      fontSize: isFinished ? 12 : 10, 
+                      fontWeight: FontWeight.w500
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
             ),
             const SizedBox(width: 16),
             // Vertical Line
@@ -562,20 +599,29 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTeamMiniRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
+                  _buildTeamMiniRow(
+                    homeTeam?['name'] ?? 'Home', 
+                    homeTeam?['image_path'] ?? '', 
+                    isNotStarted ? "" : homeScore
+                  ),
                   const SizedBox(height: 12),
-                  _buildTeamMiniRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
+                  _buildTeamMiniRow(
+                    awayTeam?['name'] ?? 'Away', 
+                    awayTeam?['image_path'] ?? '', 
+                    isNotStarted ? "" : awayScore
+                  ),
                 ],
               ),
             ),
-            // Alarm Icon
-            Column(
-              children: [
-                const Icon(Icons.alarm, color: Colors.white60, size: 28),
-                const SizedBox(height: 4),
-                const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
-              ],
-            ),
+            // Alarm Icon (Only for NS)
+            if (isNotStarted)
+              Column(
+                children: [
+                  const Icon(Icons.alarm, color: Colors.white60, size: 28),
+                  const SizedBox(height: 4),
+                  const Text("Alarm", style: TextStyle(color: Colors.white38, fontSize: 10)),
+                ],
+              ),
           ],
         ),
       ),
@@ -689,12 +735,20 @@ String _getMatchState(dynamic stateId) {
     case 1: return "NS";
     case 2: return "1st";
     case 3: return "HT";
-    case 4: return "BRK";
+    case 4: return "2nd";
     case 5: return "FT";
     case 6: return "ET";
     case 7: return "AET";
     case 8: return "FTP";
-    case 9: return "PEN";
+    case 9: return "PEN FT";
+    case 12: return "LIVE";
+    case 13: return "TBA";
+    case 17: return "DEL";
+    case 18: return "INT";
+    case 19: return "PEN";
+    case 21: return "ET HT";
+    case 25: return "ABD";
+    case 26: return "PST";
     default: return "";
   }
 }
