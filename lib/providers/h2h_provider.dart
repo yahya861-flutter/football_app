@@ -20,7 +20,7 @@ class H2HProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/head-to-head/$team1Id/$team2Id?include=participants;scores;league;venue;state';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/head-to-head/$team1Id/$team2Id?api_token=$_apiKey&include=participants;scores;league;venue;state';
       debugPrint('Fetching H2H: $nextUrl');
       
       while (nextUrl != null) {
@@ -29,7 +29,6 @@ class H2HProvider with ChangeNotifier {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
-            'Authorization': _apiKey,
           },
         );
 

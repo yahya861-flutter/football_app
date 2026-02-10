@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/h2h_provider.dart';
+import 'package:football_app/providers/stats_provider.dart';
+import 'package:football_app/providers/lineup_provider.dart';
+import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -48,6 +51,14 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
       if (team1Id != null && team2Id != null) {
         context.read<H2HProvider>().fetchH2HMatches(team1Id, team2Id);
+      }
+
+      final fixtureId = widget.fixture['id'];
+      if (fixtureId != null) {
+        context.read<StatsProvider>().fetchStats(fixtureId);
+        context.read<StatsProvider>().fetchEvents(fixtureId);
+        context.read<LineupProvider>().fetchLineupsAndBench(fixtureId);
+        context.read<CommentaryProvider>().fetchComments(fixtureId);
       }
     });
   }
@@ -200,8 +211,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           children: [
             _buildInfoTab(widget.fixture),
             _buildH2HTab(accentColor),
-            _buildPlaceholderTab("Stats"),
-            _buildPlaceholderTab("Lineup"),
+            _buildStatsTab(accentColor),
+            _buildLineupTab(accentColor),
             _buildTableTab(context),
             _buildFixturesTabContent(accentColor),
             _buildCommentsTab(),
@@ -906,41 +917,387 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Row(
       children: [
         if (img.isNotEmpty)
-          Image.network(img, width: 20, height: 20)
+          Image.network(img, width: 20, height: 20, errorBuilder: (_, __, ___) => const Icon(Icons.shield, size: 20, color: Colors.white24))
         else
           const Icon(Icons.shield, size: 20, color: Colors.white24),
         const SizedBox(width: 12),
         Expanded(
-          child: Text(
-            name,
-            style: const TextStyle(color: Colors.white, fontSize: 13),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          child: Text(name, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
   }
 
-  Widget _buildCommentsTab() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildStatsTab(Color accentColor) {
+    return Consumer<StatsProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.stats.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (provider.errorMessage != null && provider.stats.isEmpty) {
+          return Center(child: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)));
+        }
+
+        if (provider.stats.isEmpty && provider.events.isEmpty) {
+          return const Center(child: Text("No statistics available", style: TextStyle(color: Colors.white38)));
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            if (provider.stats.isNotEmpty) ...[
+              const Text("Match Statistics", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+              ..._generateStatsRows(provider.stats),
+              const SizedBox(height: 32),
+            ],
+            if (provider.events.isNotEmpty) ...[
+              const Text("Match Timeline", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 16),
+              ...provider.events.map((e) => _buildEventRow(e, accentColor)).toList(),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  List<Widget> _generateStatsRows(List<dynamic> stats) {
+    Map<String, List<dynamic>> groupedStats = {};
+    for (var s in stats) {
+      final typeName = s['type']?['name'] ?? 'Unknown';
+      groupedStats.putIfAbsent(typeName, () => []).add(s);
+    }
+
+    return groupedStats.entries.map((entry) {
+      final type = entry.key;
+      final teamStats = entry.value;
+      
+      final participants = widget.fixture['participants'] as List? ?? [];
+      int? homeId;
+      int? awayId;
+      if (participants.isNotEmpty) {
+        final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+        homeId = home['id'];
+        if (participants.length > 1) {
+          final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+          awayId = away['id'];
+        }
+      }
+
+      final homeStat = teamStats.firstWhere((s) => s['participant_id'] == homeId, orElse: () => null);
+      final awayStat = teamStats.firstWhere((s) => s['participant_id'] == awayId, orElse: () => null);
+
+      final hValueStr = homeStat?['data']?['value']?.toString() ?? "0";
+      final aValueStr = awayStat?['data']?['value']?.toString() ?? "0";
+      
+      double hVal = double.tryParse(hValueStr.replaceAll('%', '')) ?? 0;
+      double aVal = double.tryParse(aValueStr.replaceAll('%', '')) ?? 0;
+      double total = hVal + aVal;
+      double hPercent = total == 0 ? 0.5 : hVal / total;
+
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(hValueStr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(type, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                Text(aValueStr, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Stack(
+              children: [
+                Container(height: 4, decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(2))),
+                FractionallySizedBox(
+                  widthFactor: hPercent,
+                  child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD4FF00), borderRadius: BorderRadius.circular(2))),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildEventRow(dynamic event, Color accentColor) {
+    final type = event['type']?['name']?.toString().toLowerCase() ?? '';
+    final minute = event['minute']?.toString() ?? '';
+    final player = event['player']?['display_name'] ?? '';
+    final teamId = event['participant_id'];
+
+    final participants = widget.fixture['participants'] as List? ?? [];
+    bool isHome = false;
+    if (participants.isNotEmpty) {
+      final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+      isHome = teamId == home['id'];
+    }
+
+    IconData icon;
+    Color iconColor = Colors.white60;
+
+    if (type.contains('goal')) {
+      icon = Icons.sports_soccer;
+      iconColor = const Color(0xFFD4FF00);
+    } else if (type.contains('yellow')) {
+      icon = Icons.rectangle;
+      iconColor = Colors.yellow;
+    } else if (type.contains('red')) {
+      icon = Icons.rectangle;
+      iconColor = Colors.red;
+    } else if (type.contains('substitution')) {
+      icon = Icons.swap_vert;
+      iconColor = Colors.orange;
+    } else {
+      icon = Icons.info_outline;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
         children: [
-          Icon(Icons.speaker_notes_off_outlined, size: 64, color: Colors.white10),
-          SizedBox(height: 16),
-          Text(
-            "No comments available at that moments",
-            style: TextStyle(color: Colors.white38, fontSize: 16),
+          if (isHome) ...[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(player, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                  Text(event['type']?['name'] ?? '', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+          ] else const Spacer(),
+          
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.05), shape: BoxShape.circle),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (minute.isNotEmpty) ...[
+                  Text(minute, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                  const Text("'", style: TextStyle(color: Colors.white60, fontSize: 10)),
+                  const SizedBox(width: 4),
+                ],
+                Icon(icon, color: iconColor, size: 14),
+              ],
+            ),
           ),
+
+          if (!isHome) ...[
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(player, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+                  Text(event['type']?['name'] ?? '', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                ],
+              ),
+            ),
+          ] else const Spacer(),
         ],
       ),
     );
   }
 
+  Widget _buildLineupTab(Color accentColor) {
+    return Consumer<LineupProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.lineups.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (provider.errorMessage != null && provider.lineups.isEmpty) {
+          return Center(child: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)));
+        }
+
+        if (provider.lineups.isEmpty) {
+          return const Center(child: Text("Lineup not available yet", style: TextStyle(color: Colors.white38)));
+        }
+
+        final participants = widget.fixture['participants'] as List? ?? [];
+        int? homeId;
+        int? awayId;
+        String homeName = "Home";
+        String awayName = "Away";
+        if (participants.isNotEmpty) {
+          final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+          homeId = home['id'];
+          homeName = home['name'] ?? 'Home';
+          if (participants.length > 1) {
+            final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+            awayId = away['id'];
+            awayName = away['name'] ?? 'Away';
+          }
+        }
+
+        final homeXI = provider.lineups.where((l) => l['participant_id'] == homeId).toList();
+        final awayXI = provider.lineups.where((l) => l['participant_id'] == awayId).toList();
+        final homeBench = provider.bench.where((b) => b['participant_id'] == homeId).toList();
+        final awayBench = provider.bench.where((b) => b['participant_id'] == awayId).toList();
+
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildLineupSection("Starting XI", homeName, awayName, homeXI, awayXI, accentColor),
+            const SizedBox(height: 32),
+            _buildLineupSection("Substitutes", homeName, awayName, homeBench, awayBench, accentColor),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLineupSection(String title, String homeName, String awayName, List<dynamic> homePlayers, List<dynamic> awayPlayers, Color accentColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        const SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: homePlayers.map((p) => _buildPlayerRow(p, true)).toList(),
+              ),
+            ),
+            Container(width: 1, height: 400, color: Colors.white10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: awayPlayers.map((p) => _buildPlayerRow(p, false)).toList(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlayerRow(dynamic player, bool isHome) {
+    final playerName = player['player']?['display_name'] ?? 'Unknown';
+    final number = player['jersey_number']?.toString() ?? '';
+    final position = player['position']?['name'] ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      child: Row(
+        mainAxisAlignment: isHome ? MainAxisAlignment.start : MainAxisAlignment.end,
+        children: [
+          if (isHome) ...[
+            if (number.isNotEmpty)
+              Text(number, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(playerName, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(position, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                ],
+              ),
+            ),
+          ] else ...[
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(playerName, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(position, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (number.isNotEmpty)
+              Text(number, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentsTab() {
+    return Consumer<CommentaryProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.comments.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+        }
+
+        if (provider.errorMessage != null && provider.comments.isEmpty) {
+          return Center(child: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)));
+        }
+
+        if (provider.comments.isEmpty) {
+          return const Center(child: Text("No commentary available", style: TextStyle(color: Colors.white38)));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: provider.comments.length,
+          itemBuilder: (context, index) {
+            final comment = provider.comments[index];
+            final minute = comment['minute']?.toString() ?? '';
+            final text = comment['comment'] ?? '';
+            final isImportant = comment['important'] == true;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 35,
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isImportant ? const Color(0xFFD4FF00) : Colors.white10,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      "$minute'", 
+                      style: TextStyle(color: isImportant ? Colors.black : Colors.white60, fontSize: 10, fontWeight: FontWeight.bold), 
+                      textAlign: TextAlign.center
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.02),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        text,
+                        style: TextStyle(
+                          color: isImportant ? Colors.white : Colors.white70,
+                          fontSize: 13,
+                          fontWeight: isImportant ? FontWeight.bold : FontWeight.normal,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildPlaceholderTab(String title) {
     return Center(
-      child: Text("$title Content Surface", style: const TextStyle(color: Colors.white38)),
+      child: Text("$title tab implementation coming soon", style: const TextStyle(color: Colors.white38)),
     );
   }
 }

@@ -8,6 +8,9 @@ import 'package:football_app/providers/squad_provider.dart';
 import 'package:football_app/providers/transfer_provider.dart';
 import 'package:football_app/providers/inplay_provider.dart';
 import 'package:football_app/providers/h2h_provider.dart';
+import 'package:football_app/providers/stats_provider.dart';
+import 'package:football_app/providers/lineup_provider.dart';
+import 'package:football_app/providers/commentary_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +29,9 @@ void main() {
         ChangeNotifierProvider(create: (_) => TransferProvider()),
         ChangeNotifierProvider(create: (_) => InPlayProvider()),
         ChangeNotifierProvider(create: (_) => H2HProvider()),
+        ChangeNotifierProvider(create: (_) => StatsProvider()),
+        ChangeNotifierProvider(create: (_) => LineupProvider()),
+        ChangeNotifierProvider(create: (_) => CommentaryProvider()),
       ],
       child: const MyApp(),
     ),
