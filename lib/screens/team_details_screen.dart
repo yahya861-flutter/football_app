@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/squad_provider.dart';
 import 'package:football_app/providers/team_provider.dart';
@@ -7,7 +8,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/follow_provider.dart';
-import '../providers/transfer_provider.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
   final int teamId;
@@ -27,8 +27,7 @@ class TeamDetailsScreen extends StatefulWidget {
 
 class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   int? _selectedSeasonId;
-  DateTime? _startDate;
-  DateTime? _endDate;
+  String? _selectedSeasonName;
 
   @override
   void initState() {
@@ -37,24 +36,29 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       final teamProvider = context.read<TeamProvider>();
       await teamProvider.fetchTeamDetails(widget.teamId);
       final seasons = teamProvider.selectedTeam?['seasons'] as List? ?? [];
+      
       if (seasons.isNotEmpty) {
+        // Find most recent season (last in list usually)
+        final mostRecent = seasons.last;
         setState(() {
-          _selectedSeasonId = seasons.last['id'];
+          _selectedSeasonId = mostRecent['id'];
+          _selectedSeasonName = mostRecent['name'];
         });
-        teamProvider.fetchTeamStats(widget.teamId, _selectedSeasonId!);
+        teamProvider.fetchTeamStats(widget.teamId, _selectedSeasonId!.toString());
       }
+      
       teamProvider.fetchTeamFixtures(widget.teamId);
       context.read<SquadProvider>().fetchSquad(widget.teamId);
-      teamProvider.fetchTeamTransfers(widget.teamId);
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
     const Color accentColor = Color(0xFFD4FF00);
     
     return DefaultTabController(
-      length: 4,
+      length: 3,
       child: Scaffold(
         backgroundColor: const Color(0xFF121212),
         body: NestedScrollView(
@@ -155,7 +159,6 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                         Tab(text: "Stats"),
                         Tab(text: "Fixtures"),
                         Tab(text: "Squad"),
-                        Tab(text: "Transfers"),
                       ],
                     ),
                   ),
@@ -177,9 +180,6 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               Consumer<SquadProvider>(
                 builder: (context, provider, _) => _buildSquadTab(provider, accentColor),
               ),
-              Consumer<TransferProvider>(
-                builder: (context, provider, _) => _buildTransfersTab(provider, accentColor),
-              ),
             ],
           ),
         ),
@@ -188,31 +188,32 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   Widget _buildStatsTab(TeamProvider provider, List seasons, Color accentColor) {
-    final currentSeason = seasons.firstWhere((s) => s['id'] == _selectedSeasonId, orElse: () => seasons.isNotEmpty ? seasons.last : null);
-
     final statsEntries = provider.teamStats;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Season Selector
+          // Competition/Season Selector (Teal style from reference)
           if (seasons.isNotEmpty)
-            GestureDetector(
-              onTap: () => _showSeasonSelector(context, seasons, provider),
+            InkWell(
+              onTap: () => _showCompetitionSelector(context, seasons, provider),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: const Color(0xFF26BC94),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   children: [
-                    Text(
-                      currentSeason?['name'] ?? "Select Season",
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: Text(
+                        _selectedSeasonName ?? "Select Competition",
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const Spacer(),
                     const Icon(Icons.keyboard_arrow_down, color: Colors.white),
                   ],
                 ),
@@ -257,67 +258,67 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   List<Widget> _buildStatsContent(List<dynamic> statsEntries, Color accentColor) {
-    // Collect all details across multiple entries (though usually there is 1)
-    final List<dynamic> allDetails = [];
-    for (var entry in statsEntries) {
-      if (entry['details'] != null) {
-        allDetails.addAll(entry['details']);
-      }
-    }
+    if (statsEntries.isEmpty) return [ _buildEmptyStats() ];
 
-    if (allDetails.isEmpty) return [ _buildEmptyStats() ];
+    // Group stats by league/season
+    return statsEntries.map((entry) {
+      final season = entry['season'] ?? {};
+      final league = season['league'] ?? {};
+      final leagueName = league['name'] ?? 'Competition';
+      final seasonName = season['name'] ?? '';
+      
+      // Combined title like "Premier League 2023/2024"
+      final fullTitle = seasonName.isNotEmpty && !leagueName.contains(seasonName)
+          ? "$leagueName $seasonName"
+          : leagueName;
+          
+      final details = entry['details'] as List? ?? [];
+      
+      if (details.isEmpty) return const SizedBox.shrink();
 
-    return [
-      _buildStatCategory("Team Stats", allDetails, accentColor),
-    ];
+      return _buildStatCategory(fullTitle, details, accentColor);
+    }).toList();
   }
 
   Widget _buildStatCategory(String title, List<dynamic> details, Color accentColor) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E2C), // Slightly darker specialized color
+        color: const Color(0xFF1E1E2C),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Icon(Icons.bar_chart, color: Color(0xFF26BC94), size: 24),
-                const SizedBox(width: 12),
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const Spacer(),
-                const Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
-              ],
-            ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: true,
+          iconColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          leading: const Icon(Icons.bar_chart, color: Color(0xFF26BC94), size: 24),
+          title: Text(
+            title,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
           ),
-          const Divider(color: Colors.white10, height: 1),
-          // Sort or filter details for a cleaner list like the screenshot
-          ...details.map((d) {
-            String name = d['type']?['name'] ?? 'Stat';
-            // Clean up common names
-            if (name.contains('Count')) name = name.replaceAll('Count', '').trim();
-            
-            dynamic rawValue = d['value'];
-            String displayValue = "0";
+          children: [
+            const Divider(color: Colors.white10, height: 1),
+            ...details.map((d) {
+              String name = d['type']?['name'] ?? 'Stat';
+              if (name.contains('Count')) name = name.replaceAll('Count', '').trim();
+              
+              dynamic rawValue = d['value'];
+              String displayValue = "0";
 
-            if (rawValue is Map) {
-              // Extract primary value from nested object (count, average, or total)
-              displayValue = (rawValue['count'] ?? rawValue['average'] ?? rawValue['total'] ?? rawValue['all']?['count'] ?? '0').toString();
-            } else {
-              displayValue = rawValue?.toString() ?? "0";
-            }
-            
-            return _buildStatRow(name, displayValue);
-          }).toList(),
-        ],
+              if (rawValue is Map) {
+                displayValue = (rawValue['count'] ?? rawValue['average'] ?? rawValue['total'] ?? rawValue['all']?['count'] ?? '0').toString();
+              } else {
+                displayValue = rawValue?.toString() ?? "0";
+              }
+              
+              return _buildStatRow(name, displayValue);
+            }).toList(),
+          ],
+        ),
       ),
     );
   }
@@ -346,107 +347,64 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
-  void _showSeasonSelector(BuildContext context, List seasons, TeamProvider provider) {
+
+  void _showCompetitionSelector(BuildContext context, List seasons, TeamProvider provider) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: const Color(0xFF1E1E2C),
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
-        return ListView.builder(
-          itemCount: seasons.length,
-          itemBuilder: (context, index) {
-            final season = seasons[seasons.length - 1 - index];
-            final pendingStat = season['pending_metrics'] == true;
-            
-            return ListTile(
-              title: Text(season['name'], style: const TextStyle(color: Colors.white)),
-              subtitle: season['starting_at'] != null 
-                ? Text("${season['starting_at']} to ${season['ending_at'] ?? 'Present'}", 
-                    style: const TextStyle(color: Colors.white38, fontSize: 12))
-                : null,
-              trailing: pendingStat ? const Icon(Icons.hourglass_empty, color: Colors.orange, size: 16) : null,
-              onTap: () {
-                setState(() {
-                  _selectedSeasonId = season['id'];
-                });
-                provider.fetchTeamStats(widget.teamId, _selectedSeasonId!);
-                Navigator.pop(context);
-              },
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _selectDateRange(BuildContext context, TeamProvider provider) async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-      initialDateRange: _startDate != null && _endDate != null
-          ? DateTimeRange(start: _startDate!, end: _endDate!)
-          : null,
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFD4FF00),
-              onPrimary: Colors.black,
-              surface: Color(0xFF1E1E1E),
-              onSurface: Colors.white,
-            ),
+        // Reverse to show newest first
+        final reversedSeasons = seasons.reversed.toList();
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Padding(
+                padding: EdgeInsets.only(bottom: 16),
+                child: Text("Select Competition", style: TextStyle(color: Colors.white70, fontSize: 13)),
+              ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: reversedSeasons.length,
+                  itemBuilder: (context, index) {
+                    final season = reversedSeasons[index];
+                    final name = season['name'] ?? 'Competition';
+                    
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 24),
+                      title: Text(
+                        name,
+                        style: TextStyle(
+                          color: _selectedSeasonId == season['id'] ? const Color(0xFF26BC94) : Colors.white70,
+                          fontWeight: _selectedSeasonId == season['id'] ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _selectedSeasonId = season['id'];
+                          _selectedSeasonName = name;
+                        });
+                        provider.fetchTeamStats(widget.teamId, season['id'].toString());
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          child: child!,
         );
       },
     );
-
-    if (picked != null) {
-      setState(() {
-        _startDate = picked.start;
-        _endDate = picked.end;
-      });
-      provider.fetchTeamFixtures(
-        widget.teamId,
-        startDate: DateFormat('yyyy-MM-dd').format(picked.start),
-        endDate: DateFormat('yyyy-MM-dd').format(picked.end),
-      );
-    }
   }
 
   Widget _buildFixturesTab(TeamProvider provider, Color accentColor) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: InkWell(
-            onTap: () => _selectDateRange(context, provider),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF2D2D44),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today, color: Color(0xFFD4FF00), size: 18),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _startDate != null && _endDate != null
-                          ? "${DateFormat('MMM d, y').format(_startDate!)} - ${DateFormat('MMM d, y').format(_endDate!)}"
-                          : "Select Date Range (Past or Future)",
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                    ),
-                  ),
-                  const Icon(Icons.edit, color: Colors.white38, size: 16),
-                ],
-              ),
-            ),
-          ),
-        ),
+       
         Expanded(
           child: _buildFixturesList(provider, accentColor),
         ),
@@ -723,41 +681,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
       },
     );
   }
-
-  Widget _buildTransfersTab(TransferProvider provider, Color accentColor) {
-    if (provider.transfers.isEmpty) {
-      return const Center(child: Text("No recent transfers", style: TextStyle(color: Colors.white38)));
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: provider.transfers.length,
-      itemBuilder: (context, index) {
-        final transfer = provider.transfers[index];
-        final player = transfer['player'] ?? {};
-        final fromTeam = transfer['fromTeam'] ?? {};
-        final toTeam = transfer['toTeam'] ?? {};
-        final date = transfer['date'] ?? 'N/A';
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(player['display_name'] ?? 'Unknown Player', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text("$date: ${fromTeam['name'] ?? 'N/A'} -> ${toTeam['name'] ?? 'N/A'}", style: const TextStyle(color: Colors.white60, fontSize: 12)),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
+
 
 String _getMatchState(dynamic stateId) {
   switch (stateId) {

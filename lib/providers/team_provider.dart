@@ -85,10 +85,10 @@ class TeamProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchTeamStats(int teamId, int seasonId) async {
+  Future<void> fetchTeamStats(int teamId, String seasonIds) async {
     try {
-      final url = '$_baseUrl/statistics/seasons/teams/$teamId?api_token=$_apiKey&filters=teamStatisticSeasons:$seasonId&include=details.type';
-      debugPrint('Fetching Team Stats (v3): $url');
+      final url = '$_baseUrl/statistics/seasons/teams/$teamId?api_token=$_apiKey&filters=teamStatisticSeasons:$seasonIds&include=details.type;season.league';
+      debugPrint('Fetching Team Stats (Multi-v3): $url');
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -100,7 +100,7 @@ class TeamProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _teamStats = data['data'] ?? [];
-        debugPrint('Team stats loaded: ${_teamStats.length} entries');
+        debugPrint('Team stats loaded: ${_teamStats.length} entries for seasons: $seasonIds');
       } else {
         debugPrint('Team stats error: ${response.statusCode}');
         _teamStats = [];
