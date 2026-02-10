@@ -27,6 +27,8 @@ class TeamDetailsScreen extends StatefulWidget {
 
 class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   int? _selectedSeasonId;
+  DateTime? _startDate;
+  DateTime? _endDate;
 
   @override
   void initState() {
@@ -188,6 +190,8 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   Widget _buildStatsTab(TeamProvider provider, List seasons, Color accentColor) {
     final currentSeason = seasons.firstWhere((s) => s['id'] == _selectedSeasonId, orElse: () => seasons.isNotEmpty ? seasons.last : null);
 
+    final statsEntries = provider.teamStats;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -214,26 +218,128 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                 ),
               ),
             ),
+          const SizedBox(height: 24),
+          
+          if (provider.isLoading)
+            const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
+          else if (statsEntries.isEmpty)
+            _buildEmptyStats()
+          else
+            ..._buildStatsContent(statsEntries, accentColor),
+            
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyStats() {
+    return Center(
+      child: Column(
+        children: [
           const SizedBox(height: 60),
-          // Illustration and Empty State (Matching user screenshot)
-          Center(
-            child: Column(
+          Opacity(
+            opacity: 0.3,
+            child: Image.network(
+              "https://cdni.iconscout.com/illustration/premium/thumb/no-data-found-8867280-7265556.png",
+              height: 200,
+              errorBuilder: (context, error, stackTrace) => const Icon(Icons.bar_chart, size: 100, color: Colors.white10),
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            "Stats not found for this season",
+            style: TextStyle(color: Colors.white38, fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildStatsContent(List<dynamic> statsEntries, Color accentColor) {
+    // Collect all details across multiple entries (though usually there is 1)
+    final List<dynamic> allDetails = [];
+    for (var entry in statsEntries) {
+      if (entry['details'] != null) {
+        allDetails.addAll(entry['details']);
+      }
+    }
+
+    if (allDetails.isEmpty) return [ _buildEmptyStats() ];
+
+    return [
+      _buildStatCategory("Team Stats", allDetails, accentColor),
+    ];
+  }
+
+  Widget _buildStatCategory(String title, List<dynamic> details, Color accentColor) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E2C), // Slightly darker specialized color
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
               children: [
-                Opacity(
-                  opacity: 0.3,
-                  child: Image.network(
-                    "https://cdni.iconscout.com/illustration/premium/thumb/no-data-found-8867280-7265556.png",
-                    height: 200,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.bar_chart, size: 100, color: Colors.white10),
-                  ),
+                const Icon(Icons.bar_chart, color: Color(0xFF26BC94), size: 24),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
-                const SizedBox(height: 24),
-                const Text(
-                  "Stats not found",
-                  style: TextStyle(color: Colors.white38, fontSize: 16, fontWeight: FontWeight.w500),
-                ),
+                const Spacer(),
+                const Icon(Icons.keyboard_arrow_up, color: Colors.white, size: 20),
               ],
             ),
+          ),
+          const Divider(color: Colors.white10, height: 1),
+          // Sort or filter details for a cleaner list like the screenshot
+          ...details.map((d) {
+            String name = d['type']?['name'] ?? 'Stat';
+            // Clean up common names
+            if (name.contains('Count')) name = name.replaceAll('Count', '').trim();
+            
+            dynamic rawValue = d['value'];
+            String displayValue = "0";
+
+            if (rawValue is Map) {
+              // Extract primary value from nested object (count, average, or total)
+              displayValue = (rawValue['count'] ?? rawValue['average'] ?? rawValue['total'] ?? rawValue['all']?['count'] ?? '0').toString();
+            } else {
+              displayValue = rawValue?.toString() ?? "0";
+            }
+            
+            return _buildStatRow(name, displayValue);
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              label, 
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w400),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Text(
+            value, 
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w400, fontSize: 16),
           ),
         ],
       ),
@@ -250,8 +356,15 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           itemCount: seasons.length,
           itemBuilder: (context, index) {
             final season = seasons[seasons.length - 1 - index];
+            final pendingStat = season['pending_metrics'] == true;
+            
             return ListTile(
               title: Text(season['name'], style: const TextStyle(color: Colors.white)),
+              subtitle: season['starting_at'] != null 
+                ? Text("${season['starting_at']} to ${season['ending_at'] ?? 'Present'}", 
+                    style: const TextStyle(color: Colors.white38, fontSize: 12))
+                : null,
+              trailing: pendingStat ? const Icon(Icons.hourglass_empty, color: Colors.orange, size: 16) : null,
               onTap: () {
                 setState(() {
                   _selectedSeasonId = season['id'];
@@ -266,12 +379,87 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
+  Future<void> _selectDateRange(BuildContext context, TeamProvider provider) async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDateRange: _startDate != null && _endDate != null
+          ? DateTimeRange(start: _startDate!, end: _endDate!)
+          : null,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFD4FF00),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E1E1E),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+      provider.fetchTeamFixtures(
+        widget.teamId,
+        startDate: DateFormat('yyyy-MM-dd').format(picked.start),
+        endDate: DateFormat('yyyy-MM-dd').format(picked.end),
+      );
+    }
+  }
+
   Widget _buildFixturesTab(TeamProvider provider, Color accentColor) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: InkWell(
+            onTap: () => _selectDateRange(context, provider),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2D2D44),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today, color: Color(0xFFD4FF00), size: 18),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _startDate != null && _endDate != null
+                          ? "${DateFormat('MMM d, y').format(_startDate!)} - ${DateFormat('MMM d, y').format(_endDate!)}"
+                          : "Select Date Range (Past or Future)",
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                  ),
+                  const Icon(Icons.edit, color: Colors.white38, size: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _buildFixturesList(provider, accentColor),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFixturesList(TeamProvider provider, Color accentColor) {
     if (provider.isLoading && provider.teamFixtures.isEmpty) {
       return Center(child: CircularProgressIndicator(color: accentColor));
     }
     if (provider.teamFixtures.isEmpty) {
-      return const Center(child: Text("No fixtures found", style: TextStyle(color: Colors.white38)));
+      return const Center(child: Text("No fixtures found for selected period", style: TextStyle(color: Colors.white38)));
     }
 
     // Group fixtures by local date using timestamps

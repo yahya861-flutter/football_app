@@ -29,16 +29,20 @@ class TeamProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch general team info including country
+      final url = '$_baseUrl/teams/$teamId?api_token=$_apiKey&include=country;seasons';
+      debugPrint('Fetching Team Details: $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl/teams/$teamId?include=country;seasons'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         _selectedTeam = json.decode(response.body)['data'];
       } else {
-        _errorMessage = 'Failed to load team details';
+        _errorMessage = 'Failed to load team details: ${response.statusCode}';
       }
     } catch (e) {
       _errorMessage = e.toString();
@@ -48,25 +52,30 @@ class TeamProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchTeamFixtures(int teamId) async {
+  Future<void> fetchTeamFixtures(int teamId, {String? startDate, String? endDate}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       final now = DateTime.now();
-      final startDate = DateFormat('yyyy-MM-dd').format(now);
-      final endDate = DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 365)));
+      final start = startDate ?? DateFormat('yyyy-MM-dd').format(now);
+      final end = endDate ?? DateFormat('yyyy-MM-dd').format(now.add(const Duration(days: 365)));
 
-      // Update URL to match user's provided format: fixtures/between/{start_date}/{end_date}/{team_id}
-      final url = '$_baseUrl/fixtures/between/$startDate/$endDate/$teamId?include=participants;scores;venue';
+      final url = '$_baseUrl/fixtures/between/$start/$end/$teamId?api_token=$_apiKey&include=participants;scores;venue';
+      debugPrint('Fetching Team Fixtures: $url');
       final response = await http.get(
         Uri.parse(url),
-        headers: {'Authorization': _apiKey},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
         _teamFixtures = json.decode(response.body)['data'] ?? [];
         _teamFixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
+      } else {
+        debugPrint('Team fixtures error: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint("Error fetching team fixtures: $e");
@@ -78,13 +87,23 @@ class TeamProvider with ChangeNotifier {
 
   Future<void> fetchTeamStats(int teamId, int seasonId) async {
     try {
+      final url = '$_baseUrl/statistics/seasons/teams/$teamId?api_token=$_apiKey&filters=teamStatisticSeasons:$seasonId&include=details.type';
+      debugPrint('Fetching Team Stats (v3): $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl/teams/$teamId/seasons/$seasonId?include=stats'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
-        _teamStats = json.decode(response.body)['data']?['stats'] ?? [];
+        final data = json.decode(response.body);
+        _teamStats = data['data'] ?? [];
+        debugPrint('Team stats loaded: ${_teamStats.length} entries');
+      } else {
+        debugPrint('Team stats error: ${response.statusCode}');
+        _teamStats = [];
       }
     } catch (e) {
       debugPrint("Error fetching team stats: $e");
@@ -95,9 +114,14 @@ class TeamProvider with ChangeNotifier {
 
   Future<void> fetchTeamSquad(int teamId) async {
     try {
+      final url = '$_baseUrl/teams/$teamId?api_token=$_apiKey&include=squad.player';
+      debugPrint('Fetching Team Squad: $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl/teams/$teamId?include=squad.player'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {
@@ -112,9 +136,14 @@ class TeamProvider with ChangeNotifier {
 
   Future<void> fetchTeamTransfers(int teamId) async {
     try {
+      final url = '$_baseUrl/transfers/teams/$teamId?api_token=$_apiKey&include=player;fromTeam;toTeam';
+      debugPrint('Fetching Team Transfers: $url');
       final response = await http.get(
-        Uri.parse('$_baseUrl/transfers/teams/$teamId?include=player;fromTeam;toTeam'),
-        headers: {'Authorization': _apiKey},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode == 200) {

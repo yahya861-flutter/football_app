@@ -87,21 +87,31 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final scores = widget.fixture['scores'] as List? ?? [];
     String homeScoreStr = "0";
     String awayScoreStr = "0";
+    String htScoreStr = "";
     
     if (homeTeam != null && awayTeam != null) {
-      // Find current scores
+      // Find current and half-time scores
       for (var score in scores) {
         final type = score['description']?.toString().toUpperCase() ?? '';
-        // In v3, could be 'CURRENT', 'HOME', 'AWAY', etc.
+        final goals = score['score']?['goals'] ?? score['goals'];
+        
         if (type == 'CURRENT' || type == 'FT' || type.isEmpty) {
           if (score['participant_id'] == homeTeam['id']) {
-            // Try different possible score locations in v3
-            final goals = score['score']?['goals'] ?? score['goals'];
             if (goals != null) homeScoreStr = goals.toString();
           }
           if (score['participant_id'] == awayTeam['id']) {
-            final goals = score['score']?['goals'] ?? score['goals'];
             if (goals != null) awayScoreStr = goals.toString();
+          }
+        }
+        
+        if (type == 'HT' || type == '1ST_HALF') {
+          final hScore = scores.firstWhere((s) => s['participant_id'] == homeTeam['id'] && (s['description'] == 'HT' || s['description'] == '1ST_HALF'), orElse: () => null);
+          final aScore = scores.firstWhere((s) => s['participant_id'] == awayTeam['id'] && (s['description'] == 'HT' || s['description'] == '1ST_HALF'), orElse: () => null);
+          
+          if (hScore != null && aScore != null) {
+            final hG = hScore['score']?['goals'] ?? hScore['goals'] ?? 0;
+            final aG = aScore['score']?['goals'] ?? aScore['goals'] ?? 0;
+            htScoreStr = "$hG - $aG";
           }
         }
       }
@@ -266,7 +276,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         ),
         body: TabBarView(
           children: [
-            _buildInfoTab(widget.fixture),
+            _buildInfoTab(widget.fixture, htScoreStr),
             _buildH2HTab(accentColor),
             _buildStatsTab(accentColor),
             _buildLineupTab(accentColor),
@@ -293,7 +303,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     );
   }
 
-  Widget _buildInfoTab(dynamic fixture) {
+  Widget _buildInfoTab(dynamic fixture, String htScore) {
     final venueName = fixture['venue']?['name'] ?? 'Unknown Venue';
     final city = fixture['venue']?['city'] ?? 'Unknown City';
     final timestamp = fixture['starting_at_timestamp'];
@@ -321,6 +331,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 children: [
                   _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
                   _buildInfoRow(Icons.access_time, "Kick off", formattedKickOff),
+                  if (htScore.isNotEmpty)
+                    _buildInfoRow(Icons.timer_outlined, "Half Time Result", htScore),
                   _buildInfoRow(Icons.location_on_outlined, "Venue", "$venueName, $city", showMap: true),
                 ],
               ),
@@ -391,27 +403,40 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value, {bool showMap = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, size: 20, color: Colors.white60),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
+            children: [
+              Icon(icon, size: 20, color: const Color(0xFF26BC94)),
+              const SizedBox(width: 12),
+              Text(
+                label,
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          const SizedBox(width: 24),
+          Flexible(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                const SizedBox(height: 4),
-                Text(value, style: const TextStyle(color: Colors.white, fontSize: 15)),
+                Flexible(
+                  child: Text(
+                    value,
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (showMap) ...[
+                  const SizedBox(width: 8),
+                  const Icon(Icons.location_on, color: Color(0xFF00C853), size: 16),
+                ],
               ],
             ),
           ),
-          if (showMap)
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(color: const Color(0xFF00C853).withOpacity(0.2), borderRadius: BorderRadius.circular(8)),
-              child: const Icon(Icons.location_on, color: Color(0xFF00C853), size: 18),
-            ),
         ],
       ),
     );
