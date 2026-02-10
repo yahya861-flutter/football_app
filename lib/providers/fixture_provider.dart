@@ -31,30 +31,38 @@ class FixtureProvider with ChangeNotifier {
       final startDateFormatted = DateFormat('yyyy-MM-dd').format(now);
       final endDateFormatted = DateFormat('yyyy-MM-dd').format(futureDate);
 
-      // Using the correct SportMonks v3 filtering syntax and includes
-      final url = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&filters=fixtureLeagues:$leagueId&include=participants;scores;venue;league';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&filters=fixtureLeagues:$leagueId&include=participants;scores;venue;league';
       
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> allFixtures = data['data'] ?? [];
-        
-        // Filter out finished matches for the Fixtures tab
-        _fixtures = allFixtures.where((f) => f['state_id'] != 5).toList();
-        
-        // Sort by date (ascending for upcoming fixtures)
-        _fixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
-        
-      } else {
-        _errorMessage = 'Failed to load fixtures: ${response.statusCode}';
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageFixtures = data['data'] ?? [];
+          
+          // Filter out finished matches for the Fixtures tab
+          _fixtures.addAll(pageFixtures.where((f) => f['state_id'] != 5));
+          
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to load fixtures: ${response.statusCode}';
+          break;
+        }
       }
+      
+      // Sort by date (ascending for upcoming fixtures)
+      _fixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
     } catch (e) {
       _errorMessage = 'An error occurred: $e';
     } finally {
@@ -77,26 +85,35 @@ class FixtureProvider with ChangeNotifier {
       final startDateFormatted = DateFormat('yyyy-MM-dd').format(now);
       final endDateFormatted = DateFormat('yyyy-MM-dd').format(futureDate);
 
-      // No league filter for global view
-      final url = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&include=participants;scores;venue;league';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&include=participants;scores;venue;league';
       
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> allFixtures = data['data'] ?? [];
-        
-        _fixtures = allFixtures.where((f) => f['state_id'] != 5).toList();
-        _fixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
-      } else {
-        _errorMessage = 'Failed to load global fixtures: ${response.statusCode}';
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageFixtures = data['data'] ?? [];
+          
+          _fixtures.addAll(pageFixtures.where((f) => f['state_id'] != 5));
+
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to load global fixtures: ${response.statusCode}';
+          break;
+        }
       }
+      _fixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
     } catch (e) {
       _errorMessage = 'An error occurred: $e';
     } finally {
@@ -116,28 +133,84 @@ class FixtureProvider with ChangeNotifier {
       final now = DateTime.now();
       final dateFormatted = DateFormat('yyyy-MM-dd').format(now);
 
-      // Fetch all matches for today across all leagues
-      final url = 'https://api.sportmonks.com/v3/football/fixtures/between/$dateFormatted/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$dateFormatted/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
       
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _todayFixtures = data['data'] ?? [];
-        
-        // Sort by starting time
-        _todayFixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
-      } else {
-        _errorMessage = 'Failed to load today\'s matches: ${response.statusCode}';
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageFixtures = data['data'] ?? [];
+          _todayFixtures.addAll(pageFixtures);
+
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to load today\'s matches: ${response.statusCode}';
+          break;
+        }
       }
+      
+      // Sort by starting time
+      _todayFixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
     } catch (e) {
       _errorMessage = 'An error occurred fetching today\'s matches: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Fetches ALL fixtures for a specific date across all leagues
+  Future<void> fetchFixturesByDate(DateTime date) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _todayFixtures = []; // We reuse this list for the current selected date view
+    notifyListeners();
+
+    try {
+      final dateFormatted = DateFormat('yyyy-MM-dd').format(date);
+
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$dateFormatted/$dateFormatted?api_token=$_apiKey&include=participants;scores;venue;league;state';
+      
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageFixtures = data['data'] ?? [];
+          _todayFixtures.addAll(pageFixtures);
+
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to load matches for $dateFormatted: ${response.statusCode}';
+          break;
+        }
+      }
+      _todayFixtures.sort((a, b) => a['starting_at'].compareTo(b['starting_at']));
+    } catch (e) {
+      _errorMessage = 'An error occurred: $e';
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -158,30 +231,39 @@ class FixtureProvider with ChangeNotifier {
       final startDateFormatted = DateFormat('yyyy-MM-dd').format(thirtyDaysAgo);
       final endDateFormatted = DateFormat('yyyy-MM-dd').format(now);
 
-      // Using the correct SportMonks v3 filtering syntax with date range for last month
-      final url = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&filters=fixtureLeagues:$leagueId&include=participants;scores;venue';
+      String? nextUrl = 'https://api.sportmonks.com/v3/football/fixtures/between/$startDateFormatted/$endDateFormatted?api_token=$_apiKey&filters=fixtureLeagues:$leagueId&include=participants;scores;venue';
       
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> allFixtures = data['data'] ?? [];
-        
-        // Filter for finished matches (state_id 5)
-        _results = allFixtures.where((f) => f['state_id'] == 5).toList();
-        
-        // Sort by date (descending, most recent results first)
-        _results.sort((a, b) => b['starting_at'].compareTo(a['starting_at']));
-        
-      } else {
-        _errorMessage = 'Failed to load results: ${response.statusCode}';
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageFixtures = data['data'] ?? [];
+          
+          // Filter for finished matches (state_id 5)
+          _results.addAll(pageFixtures.where((f) => f['state_id'] == 5));
+
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to load results: ${response.statusCode}';
+          break;
+        }
       }
+      
+      // Sort by date (descending, most recent results first)
+      _results.sort((a, b) => b['starting_at'].compareTo(a['starting_at']));
+      
     } catch (e) {
       _errorMessage = 'An error occurred: $e';
     } finally {

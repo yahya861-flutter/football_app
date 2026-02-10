@@ -30,28 +30,37 @@ class MatchProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await http.get(
-        Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': _apiKey,
-        },
-      );
+      String? nextUrl = _baseUrl;
+      
+      while (nextUrl != null) {
+        final response = await http.get(
+          Uri.parse(nextUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': _apiKey,
+          },
+        );
 
-      // Successfully received data from the server
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _inPlayMatches = data['data'] ?? [];
-      } else {
-        // Handle non-200 responses
-        _errorMessage = 'Failed to fetch in-play matches: ${response.statusCode}';
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final List<dynamic> pageMatches = data['data'] ?? [];
+          _inPlayMatches.addAll(pageMatches);
+
+          final pagination = data['pagination'];
+          if (pagination != null && pagination['has_more'] == true) {
+            nextUrl = pagination['next_page'];
+          } else {
+            nextUrl = null;
+          }
+        } else {
+          _errorMessage = 'Failed to fetch in-play matches: ${response.statusCode}';
+          break;
+        }
       }
     } catch (e) {
-      // Handle network or unexpected runtime errors
       _errorMessage = 'Network error fetching live scores: $e';
     } finally {
-      // End the loading state and notify listeners to rebuild the UI
       _isLoading = false;
       notifyListeners();
     }
