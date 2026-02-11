@@ -70,7 +70,21 @@ class SettingsScreen extends StatelessWidget {
               context.read<NotificationProvider>().scheduleTestAlarm();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Alarm scheduled for 10 seconds from now..."),
+                  content: Text("Loud Alarm scheduled for 10 seconds..."),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+          ),
+          _buildActionTile(
+            icon: Icons.notification_important,
+            title: "Test Scheduled Notification (10s)",
+            textColor: textColor,
+            onTap: () {
+              context.read<NotificationProvider>().scheduleTestNotification();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Standard Notification scheduled for 10 seconds..."),
                   duration: Duration(seconds: 3),
                 ),
               );

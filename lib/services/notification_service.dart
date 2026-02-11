@@ -68,11 +68,21 @@ class NotificationService {
     required DateTime scheduledTime,
     String assetAudioPath = 'assets/marimba.mp3', // Default or user-provided
   }) async {
-    debugPrint("⏰ [ALARM] Scheduling Alarm $id for $scheduledTime");
+    DateTime finalTime = scheduledTime;
+    final now = DateTime.now();
+
+    debugPrint("⏰ [ALARM] System Time: $now");
+    debugPrint("⏰ [ALARM] Request Time: $scheduledTime (ID: $id)");
+
+    // Ensure it's in the future (at least 5 seconds from now)
+    if (finalTime.isBefore(now.add(const Duration(seconds: 5)))) {
+      debugPrint("⚠️ [ALARM] Requested time is in the past or too soon! Adjusting to 10s from now.");
+      finalTime = now.add(const Duration(seconds: 10));
+    }
 
     final alarmSettings = AlarmSettings(
       id: id,
-      dateTime: scheduledTime,
+      dateTime: finalTime,
       assetAudioPath: assetAudioPath,
       loopAudio: true,
       vibrate: true,
@@ -89,7 +99,7 @@ class NotificationService {
 
     try {
       await Alarm.set(alarmSettings: alarmSettings);
-      debugPrint("✅ [ALARM] Success: Alarm $id set.");
+      debugPrint("✅ [ALARM] Success: Alarm $id set for $finalTime.");
     } catch (e) {
       debugPrint("❌ [ALARM] Error: $e");
     }
@@ -107,21 +117,26 @@ class NotificationService {
     required String body,
     required DateTime scheduledDate,
   }) async {
-    // 1. Convert to TZDateTime
-    var tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
+    final androidImplementation = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    
+    // Check if exact alarms are allowed (Android 12+)
+    bool? canScheduleExact = await androidImplementation?.canScheduleExactNotifications();
+    debugPrint("🔔 [NOTIFICATION] Can schedule exact alarms: $canScheduleExact");
+
+    // 1. Convert to TZDateTime safely
+    var tzDateTime = tz.TZDateTime.from(scheduledDate.toUtc(), tz.local);
     final now = tz.TZDateTime.now(tz.local);
 
-    debugPrint("🔔 [DEBUG] System Time: ${DateTime.now()}");
-    debugPrint("🔔 [DEBUG] TZ Local Time: $now");
-    debugPrint("🔔 [DEBUG] Target Time: $tzDateTime");
+    debugPrint("🔔 [NOTIFICATION] System Time: ${DateTime.now()}");
+    debugPrint("🔔 [NOTIFICATION] TZ Local Time: $now");
+    debugPrint("🔔 [NOTIFICATION] Target Time: $tzDateTime (ID: $id)");
 
-    // 2. Ensure it's in the future
-    if (tzDateTime.isBefore(now)) {
-      debugPrint("⚠️ [WARNING] Scheduled time is in the past! Adding 5 seconds offset.");
-      tzDateTime = now.add(const Duration(seconds: 5));
+    // 2. Ensure it's in the future (minimum 5 seconds)
+    if (tzDateTime.isBefore(now.add(const Duration(seconds: 2)))) {
+      debugPrint("⚠️ [WARNING] Time is past or too close! Adjusting to 10s from now.");
+      tzDateTime = now.add(const Duration(seconds: 10));
     }
-
-    debugPrint("🔔 [DEBUG] Final Schedule Time: $tzDateTime (ID: $id)");
 
     try {
       await _notificationsPlugin.zonedSchedule(
@@ -137,9 +152,13 @@ class NotificationService {
             importance: Importance.max,
             priority: Priority.high,
             ticker: 'ticker',
+            showWhen: true,
             playSound: true,
             enableVibration: true,
             visibility: NotificationVisibility.public,
+            // Try with exact permission
+            fullScreenIntent: true,
+            category: AndroidNotificationCategory.alarm,
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
@@ -150,9 +169,23 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
-      debugPrint("✅ [SUCCESS] Notification $id scheduled for $tzDateTime.");
+      debugPrint("✅ [SUCCESS] Notification $id scheduled successfully for $tzDateTime.");
     } catch (e) {
-      debugPrint("❌ [ERROR] Failed to schedule: $e");
+      debugPrint("❌ [ERROR] Failed to schedule notification: $e");
+      
+      // Fallback: If exact fails, try inexact
+      if (e.toString().contains("exact_alms")) {
+         debugPrint("🔄 [FALLBACK] Attempting inexact scheduling...");
+         await _notificationsPlugin.zonedSchedule(
+           id,
+           title,
+           body,
+           tzDateTime,
+           const NotificationDetails(android: AndroidNotificationDetails('match_reminders', 'Match Reminders')),
+           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+           uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+         );
+      }
     }
   }
 

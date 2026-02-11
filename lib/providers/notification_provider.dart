@@ -149,8 +149,19 @@ class NotificationProvider with ChangeNotifier {
     await _notificationService.scheduleAlarm(
       id: 888,
       title: "Scheduled Test Alarm",
-      body: "This alarm was scheduled 10 seconds ago!",
+      body: "This alarm (Loud) was scheduled 10 seconds ago!",
       scheduledTime: scheduledDate,
+    );
+  }
+
+  Future<void> scheduleTestNotification() async {
+    final scheduledDate = DateTime.now().add(const Duration(seconds: 10));
+    // Test using flutter_local_notifications (Standard)
+    await _notificationService.scheduleNotification(
+      id: 777,
+      title: "Scheduled Test Notification",
+      body: "This notification (Standard) was scheduled 10 seconds ago!",
+      scheduledDate: scheduledDate,
     );
   }
 
