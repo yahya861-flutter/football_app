@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import '../providers/theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final bool isTab;
+  const SettingsScreen({super.key, this.isTab = false});
 
   @override
   Widget build(BuildContext context) {
@@ -16,42 +17,51 @@ class SettingsScreen extends StatelessWidget {
     final Color sectionColor = isDark ? Colors.white38 : Colors.black38;
     final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
 
+    final content = SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // PREMIUM BANNER
+          _buildPremiumBanner(),
+          const SizedBox(height: 32),
+          
+          // GENERAL SECTION
+          Text("General", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _buildToggleTile(
+            icon: Icons.dark_mode,
+            title: "Dark Mode",
+            value: isDark,
+            onChanged: (val) => themeProvider.toggleTheme(),
+            textColor: textColor,
+          ),
+          const SizedBox(height: 32),
+
+          // OTHERS SECTION
+          Text("Others", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _buildActionTile(icon: Icons.share, title: "Share", textColor: textColor),
+          _buildActionTile(icon: Icons.star_border, title: "Rate Us", textColor: textColor),
+          _buildActionTile(icon: Icons.feedback_outlined, title: "Feedback", textColor: textColor),
+          _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
+        ],
+      ),
+    );
+
+    if (isTab) {
+      return Scaffold(
+        backgroundColor: Colors.transparent, // Let Home handle background
+        body: content,
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // PREMIUM BANNER
-            _buildPremiumBanner(),
-            const SizedBox(height: 32),
-            
-            // GENERAL SECTION
-            Text("General", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            _buildToggleTile(
-              icon: Icons.dark_mode,
-              title: "Dark Mode",
-              value: isDark,
-              onChanged: (val) => themeProvider.toggleTheme(),
-              textColor: textColor,
-            ),
-            const SizedBox(height: 32),
-
-            // OTHERS SECTION
-            Text("Others", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            _buildActionTile(icon: Icons.share, title: "Share", textColor: textColor),
-            _buildActionTile(icon: Icons.star_border, title: "Rate Us", textColor: textColor),
-            _buildActionTile(icon: Icons.feedback_outlined, title: "Feedback", textColor: textColor),
-            _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
-          ],
-        ),
-      ),
+      body: content,
     );
   }
 

@@ -11,6 +11,7 @@ import '../providers/fixture_provider.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
 import '../providers/team_list_provider.dart';
+import 'live_matches_screen.dart';
 import 'team_details_screen.dart';
 import 'settings_screen.dart';
 
@@ -54,18 +55,18 @@ class _HomeState extends State<Home> {
   final List<String> _titles = [
     "Matches",
     "Leagues",
-    "Shorts",
-    "Highlights",
-    "News"
+    "Live",
+    "News",
+    "Settings"
   ];
 
   // List of actual screen widgets ordered by the bottom navigation items
   final List<Widget> _screens = const [
     LiveScoresScreen(),
     LeaguesScreen(),
-    ShortsScreen(),
-    HighlightsScreen(),
+    LiveMatchesScreen(isTab: true),
     NewsScreen(),
+    SettingsScreen(isTab: true),
   ];
 
   @override
@@ -126,7 +127,7 @@ class _HomeState extends State<Home> {
                   },
                 ),
               )
-            : _selectedIndex == 0
+            : _selectedIndex == 0 // Show PRO header ONLY on Matches tab
                 ? Row(
                     children: [
                       Text(
@@ -163,26 +164,22 @@ class _HomeState extends State<Home> {
                   },
                 ),
               ]
-            : [
-                IconButton(
-                  icon: Icon(Icons.refresh, color: textPrimary),
-                  onPressed: _handleRefresh,
-                ),
-                IconButton(
-                  icon: Icon(Icons.search, color: textPrimary),
-                  onPressed: () {
-                    setState(() {
-                      _isSearching = true;
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.settings, color: textPrimary), 
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsScreen()));
-                  },
-                ),
-              ],
+            : _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
+                ? [
+                    IconButton(
+                      icon: Icon(Icons.refresh, color: textPrimary),
+                      onPressed: _handleRefresh,
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.search, color: textPrimary),
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true;
+                        });
+                      },
+                    ),
+                  ]
+                : [], // No tools for other screens
       ),
       // Display the screen corresponding to the current selection
       body: _isSearching ? _buildSearchResultsTab(accentColor) : _screens[_selectedIndex],
@@ -201,9 +198,9 @@ class _HomeState extends State<Home> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: "Matches"),
           BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: "Leagues"),
-          BottomNavigationBarItem(icon: Icon(Icons.video_library), label: "Shorts"),
-          BottomNavigationBarItem(icon: Icon(Icons.play_circle_outline), label: "Highlights"),
+          BottomNavigationBarItem(icon: Icon(Icons.live_tv), label: "Live"),
           BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: "News"),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
         ],
       ),
     ),
@@ -219,6 +216,9 @@ class _HomeState extends State<Home> {
       case 1: // Leagues
         context.read<LeagueProvider>().fetchLeagues();
         context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
+        break;
+      case 2: // Live
+        context.read<InPlayProvider>().fetchInPlayMatches();
         break;
       default:
         // Other tabs refresh if needed

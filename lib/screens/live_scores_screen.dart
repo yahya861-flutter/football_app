@@ -91,71 +91,31 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Live Button
-              InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  LiveMatchesScreen()),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: cardColor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: isDark ? Colors.white12 : Colors.black12),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        "Live",
-                        style: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "(${inPlay.inPlayMatches.length})",
-                        style: TextStyle(
-                          color: subTextColor,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Date Navigator
+              IconButton(
+                icon: Icon(Icons.chevron_left, color: textColor),
+                onPressed: () => _adjustDate(-1),
               ),
               const Spacer(),
-              // Date Navigator
-              Row(
+              Column(
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.chevron_left, color: textColor),
-                    onPressed: () => _adjustDate(-1),
+                  Text(
+                    dateStr,
+                    style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        dateStr,
-                        style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                      Text(
-                        DateFormat('d MMM yyyy').format(_selectedDate),
-                        style: TextStyle(color: subTextColor, fontSize: 10),
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.chevron_right, color: textColor),
-                    onPressed: () => _adjustDate(1),
+                  Text(
+                    DateFormat('d MMM yyyy').format(_selectedDate),
+                    style: TextStyle(color: subTextColor, fontSize: 10),
                   ),
                 ],
               ),
               const Spacer(),
+              IconButton(
+                icon: Icon(Icons.chevron_right, color: textColor),
+                onPressed: () => _adjustDate(1),
+              ),
               // Calendar Icon
               IconButton(
                 icon: Icon(Icons.calendar_month_outlined, color: subTextColor),

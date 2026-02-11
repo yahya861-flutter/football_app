@@ -5,7 +5,8 @@ import 'package:football_app/providers/inplay_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 
 class LiveMatchesScreen extends StatelessWidget {
-   LiveMatchesScreen({super.key});
+  final bool isTab;
+  const LiveMatchesScreen({super.key, this.isTab = false});
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +15,24 @@ class LiveMatchesScreen extends StatelessWidget {
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
     final Color primaryColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFFF8700);
+
+    final content = Consumer<InPlayProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.inPlayMatches.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: accentColor));
+        }
+
+        if (provider.inPlayMatches.isEmpty) {
+          return _buildEmptyState(context, "No live matches at the moment", provider.fetchInPlayMatches);
+        }
+
+        return _buildGroupedMatchList(context, provider.inPlayMatches);
+      },
+    );
+
+    if (isTab) {
+      return content;
+    }
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -40,19 +59,7 @@ class LiveMatchesScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer<InPlayProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading && provider.inPlayMatches.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: accentColor));
-          }
-
-          if (provider.inPlayMatches.isEmpty) {
-            return _buildEmptyState(context, "No live matches at the moment", provider.fetchInPlayMatches);
-          }
-
-          return _buildGroupedMatchList(context, provider.inPlayMatches);
-        },
-      ),
+      body: content,
     );
   }
 
