@@ -185,7 +185,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _buildSectionHeader(
-            icon: Icons.lightbulb_outline, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Suggestions", count: 3,
+            icon: Icons.lightbulb_outline, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Suggestions", count: 5,
             isExpanded: _isLeaguesSuggestionsExpanded,
             onToggle: () => setState(() => _isLeaguesSuggestionsExpanded = !_isLeaguesSuggestionsExpanded),
           ),
@@ -328,34 +328,60 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
     // Pick 5 leagues for suggestions
     final suggestions = leagues.take(5).toList();
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: suggestions.map((l) {
-          return Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isDark ? accentColor.withOpacity(0.1) : Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
-            ),
-            child: Row(
-              children: [
-                if (l['image_path'] != null)
-                  Image.network(l['image_path'], width: 22, height: 22, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: accentColor, size: 20))
-                else
-                  Icon(Icons.emoji_events, color: accentColor, size: 20),
-                const SizedBox(width: 8),
-                Text(l['name'] ?? 'League', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(width: 8),
-                Icon(Icons.star_outline_rounded, color: subTextColor, size: 18),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
+    
+    return Consumer<FollowProvider>(
+      builder: (context, followProvider, _) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: suggestions.map((l) {
+              final isFollowed = followProvider.isLeagueFollowed(l['id'] ?? 0);
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LeagueDetailsScreen(leagueId: l['id'] ?? 0),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsets.only(left: 14, right: 6, top: 6, bottom: 6),
+                  decoration: BoxDecoration(
+                    color: isDark ? accentColor.withOpacity(0.1) : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
+                  ),
+                  child: Row(
+                    children: [
+                      if (l['image_path'] != null)
+                        Image.network(l['image_path'], width: 22, height: 22, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: accentColor, size: 20))
+                      else
+                        Icon(Icons.emoji_events, color: accentColor, size: 20),
+                      const SizedBox(width: 10),
+                      Text(l['name'] ?? 'League', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        icon: Icon(
+                          isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
+                          color: isFollowed ? accentColor : subTextColor, 
+                          size: 20
+                        ),
+                        onPressed: () => followProvider.toggleFollowLeague(l['id'] ?? 0),
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(8),
+                        splashRadius: 18,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      }
     );
   }
 

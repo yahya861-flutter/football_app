@@ -92,7 +92,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     final textPrimary = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.white;
 
     return PopScope(
-      canPop: !_isSearching,
+      canPop: !_isSearching && _selectedIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_isSearching) {
@@ -100,6 +100,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             _isSearching = false;
             _searchController.clear();
           });
+          return;
+        }
+        if (_selectedIndex != 0) {
+          setState(() => _selectedIndex = 0);
         }
       },
       child: Scaffold(
@@ -107,6 +111,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
+        leading: _selectedIndex != 0 
+          ? IconButton(
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
+              onPressed: () => setState(() => _selectedIndex = 0),
+            )
+          : null,
         title: _isSearching
             ? Container(
                 height: 40,

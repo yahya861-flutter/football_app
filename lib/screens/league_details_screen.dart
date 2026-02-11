@@ -69,40 +69,32 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                expandedHeight: 200,
+                expandedHeight: 220,
                 pinned: true,
                 backgroundColor: headerColor,
                 elevation: 0,
                 leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: textColor),
+                  icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor, size: 20),
                   onPressed: () => Navigator.pop(context),
                 ),
                 actions: [
                   Consumer<FollowProvider>(
                     builder: (context, followProvider, _) {
-                      final isFollowed = followProvider.isLeagueFollowed(
-                        widget.leagueId,
-                      );
+                      final isFollowed = followProvider.isLeagueFollowed(widget.leagueId);
                       return IconButton(
                         icon: Icon(
-                          isFollowed ? Icons.star : Icons.star_border,
+                          isFollowed ? Icons.star_rounded : Icons.star_outline_rounded,
                           color: isFollowed ? accentColor : subTextColor,
                         ),
-                        onPressed: () =>
-                            followProvider.toggleFollowLeague(widget.leagueId),
+                        onPressed: () => followProvider.toggleFollowLeague(widget.leagueId),
                       );
                     },
                   ),
                 ],
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.pin,
-                  background: Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      top: 80,
-                      bottom: 48,
-                    ),
+                  background: Container(
+                    padding: const EdgeInsets.only(left: 20, right: 20, top: 90, bottom: 60),
                     child: Selector<LeagueProvider, Map<String, dynamic>?>(
                       selector: (_, p) => p.selectedLeague,
                       builder: (context, league, _) {
@@ -113,29 +105,23 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // League Logo in a rounded container - Smaller
                             Container(
-                              width: 60,
-                              height: 60,
-                              padding: const EdgeInsets.all(8),
+                              width: 80,
+                              height: 80,
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: isDark ? const Color(0xFF2D2D44).withOpacity(0.5) : Colors.black12,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05)),
                               ),
-                              child: imagePath.isNotEmpty
-                                  ? Image.network(
-                                      imagePath,
-                                      fit: BoxFit.contain,
-                                    )
-                                  : Icon(
-                                      Icons.emoji_events,
-                                      size: 30,
-                                      color: subTextColor,
-                                    ),
+                              child: Hero(
+                                tag: 'league-logo-${widget.leagueId}',
+                                child: imagePath.isNotEmpty
+                                    ? Image.network(imagePath, fit: BoxFit.contain)
+                                    : Icon(Icons.emoji_events, size: 36, color: subTextColor),
+                              ),
                             ),
-                            const SizedBox(width: 16),
-                            // Name and Country
+                            const SizedBox(width: 20),
                             Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -143,23 +129,20 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                                 children: [
                                   Text(
                                     name,
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                    maxLines: 1,
+                                    style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    country,
-                                    style: TextStyle(
-                                      color: subTextColor,
-                                      fontSize: 16,
-                                      fontFamily: 'Poppins',
-                                    ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.public_rounded, size: 14, color: subTextColor),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        country,
+                                        style: TextStyle(color: subTextColor, fontSize: 14, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -173,15 +156,20 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(48),
                   child: Container(
-                    alignment: Alignment.centerLeft,
+                    decoration: BoxDecoration(
+                      color: headerColor,
+                      border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+                    ),
                     child: TabBar(
                       isScrollable: true,
                       indicatorColor: accentColor,
-                      labelColor: isDark ? accentColor : textColor,
+                      labelColor: accentColor,
                       unselectedLabelColor: subTextColor,
                       indicatorWeight: 3,
                       indicatorSize: TabBarIndicatorSize.label,
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 24),
                       tabs: const [
                         Tab(text: "Fixtures"),
                         Tab(text: "Table"),
@@ -271,38 +259,46 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   /// Builds a group of fixtures for a specific date
-  Widget _buildDateGroup(
-    String date,
-    List<dynamic> fixtures,
-    Color accentColor,
-  ) {
+  Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(12),
+        color: isDark ? const Color(0xFF2D2D44).withOpacity(0.3) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 10, offset: const Offset(0, 4))
+        ],
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           initiallyExpanded: true,
-          iconColor: Colors.white,
-          collapsedIconColor: Colors.white,
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: const Icon(Icons.calendar_month, color: Color(0xFF4CAF50)),
+          iconColor: accentColor,
+          collapsedIconColor: isDark ? Colors.white54 : Colors.black54,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.calendar_month_rounded, color: Colors.green, size: 20),
+          ),
           title: Text(
             date,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16),
           ),
           children: [
-            const Divider(color: Colors.white10, height: 1),
-            ...fixtures
-                .map((f) => _buildRedesignedFixtureItem(f, accentColor))
-                .toList(),
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.01) : Colors.grey[50],
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
+              ),
+              child: Column(
+                children: fixtures.map((f) => _buildRedesignedFixtureItem(f, accentColor)).toList(),
+              ),
+            ),
           ],
         ),
       ),
@@ -311,101 +307,63 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
 
   /// Redesigned fixture item to match screenshot
   Widget _buildRedesignedFixtureItem(dynamic fixture, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     final timestamp = fixture['starting_at_timestamp'];
     String time = "N/A";
     if (timestamp != null) {
       try {
-        final localDate = DateTime.fromMillisecondsSinceEpoch(
-          timestamp * 1000,
-        ).toLocal();
-        time = DateFormat('h:mm a').format(localDate);
-      } catch (e) {
-        time = "N/A";
-      }
+        final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+        time = DateFormat('HH:mm').format(localDate);
+      } catch (e) { time = "N/A"; }
     }
 
     final participants = fixture['participants'] as List? ?? [];
-    dynamic homeTeam;
-    dynamic awayTeam;
-
+    dynamic homeTeam, awayTeam;
     if (participants.isNotEmpty) {
-      homeTeam = participants.firstWhere(
-        (p) => p['meta']?['location'] == 'home',
-        orElse: () => participants[0],
-      );
+      homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
       if (participants.length > 1) {
-        awayTeam = participants.firstWhere(
-          (p) => p['meta']?['location'] == 'away',
-          orElse: () => participants[1],
-        );
+        awayTeam = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
       }
     }
 
-    final homeName = homeTeam?['name'] ?? 'Home';
-    final awayName = awayTeam?['name'] ?? 'Away';
-    final homeImg = homeTeam?['image_path'] ?? '';
-    final awayImg = awayTeam?['image_path'] ?? '';
-
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId),
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => MatchDetailsScreen(fixture: fixture, leagueId: widget.leagueId)));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), width: 0.5)),
         ),
         child: Row(
           children: [
-            // Match Time
             Container(
-              width: 70,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              width: 54,
+              padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF262626),
-                borderRadius: BorderRadius.circular(6),
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                time,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              child: Text(time, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
             ),
-            const SizedBox(width: 16),
-            // Vertical Line
-            Container(width: 1, height: 40, color: Colors.white10),
-            const SizedBox(width: 16),
-            // Teams
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTeamRow(homeName, homeImg),
+                  _buildTeamRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? ''),
                   const SizedBox(height: 12),
-                  _buildTeamRow(awayName, awayImg),
+                  _buildTeamRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? ''),
                 ],
               ),
             ),
-            // Alarm Icon
-            Column(
-              children: [
-                const Icon(Icons.alarm, color: Colors.white60, size: 28),
-                const SizedBox(height: 4),
-                const Text(
-                  "Alarm",
-                  style: TextStyle(color: Colors.white38, fontSize: 10),
-                ),
-              ],
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: accentColor.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(Icons.notifications_none_rounded, color: accentColor, size: 20),
             ),
           ],
         ),
@@ -414,21 +372,20 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   Widget _buildTeamRow(String name, String img) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+
     return Row(
       children: [
         if (img.isNotEmpty)
-          Image.network(img, width: 24, height: 24)
+          Image.network(img, width: 22, height: 22, errorBuilder: (_, __, ___) => const Icon(Icons.shield_rounded, size: 22, color: Colors.grey))
         else
-          const Icon(Icons.shield, size: 24, color: Colors.white24),
+          const Icon(Icons.shield_rounded, size: 22, color: Colors.grey),
         const SizedBox(width: 12),
         Expanded(
           child: Text(
             name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -438,60 +395,53 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   }
 
   /// Builds the content for the "Table" tab (League Standings)
-  Widget _buildTableTabContent(
-    LeagueProvider leagueProvider,
-    Color accentColor,
-  ) {
+  Widget _buildTableTabContent(LeagueProvider leagueProvider, Color accentColor) {
     if (leagueProvider.isLoading && leagueProvider.standings.isEmpty) {
       return Center(child: CircularProgressIndicator(color: accentColor));
     }
 
     if (leagueProvider.standings.isEmpty) {
-      return _buildPlaceholderTab(
-        "League Table",
-        Icons.table_chart,
-        accentColor,
-      );
+      return _buildPlaceholderTab("League Table", Icons.table_chart_rounded, accentColor);
     }
 
-    return Container(
-      color: const Color(0xFF121212),
-      child: Column(
-        children: [
-          // Table Header
-          _buildTableHeader(),
-          // Standings List
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: leagueProvider.standings.length,
-              itemBuilder: (context, index) {
-                return _buildTableStandingRow(
-                  leagueProvider.standings[index],
-                  accentColor,
-                );
-              },
-            ),
+    return Column(
+      children: [
+        _buildTableHeader(),
+        Expanded(
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            itemCount: leagueProvider.standings.length,
+            itemBuilder: (context, index) {
+              return _buildTableStandingRow(leagueProvider.standings[index], accentColor);
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   /// Builds the header row for the standings table
   Widget _buildTableHeader() {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.01) : Colors.grey[50],
+        border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 40),
-          const Expanded(child: SizedBox()),
+          SizedBox(
+            width: 30,
+            child: Text("#", style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          ),
+          const SizedBox(width: 14),
+          const Expanded(child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5))),
           _buildHeaderColumn("PL"),
           _buildHeaderColumn("GD"),
-          _buildHeaderColumn("PTS", isLast: true),
+          _buildHeaderColumn("PTS"),
         ],
       ),
     );
@@ -521,90 +471,57 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final teamName = team['name'] ?? 'Unknown';
     final teamImg = team['image_path'] ?? '';
 
-    // Extracting stats
     final details = standing['details'] as List? ?? [];
-    String mp = "0", w = "0", d = "0", l = "0", gd = "0";
+    String mp = "0", gd = "0";
 
     for (var detail in details) {
       final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
       final value = detail['value']?.toString() ?? '0';
-      if (type.contains('played'))
-        mp = value;
-      else if (type.contains('won'))
-        w = value;
-      else if (type.contains('draw'))
-        d = value;
-      else if (type.contains('lost'))
-        l = value;
-      else if (type.contains('goals-difference'))
-        gd = value;
+      if (type.contains('played')) mp = value;
+      else if (type.contains('goals-difference')) gd = value;
     }
 
     if (mp == "0" && standing['overall'] != null) {
       final overall = standing['overall'];
       mp = overall['played']?.toString() ?? "0";
-      w = overall['won']?.toString() ?? "0";
-      d = overall['draw']?.toString() ?? "0";
-      l = overall['lost']?.toString() ?? "0";
       gd = overall['goals_diff']?.toString() ?? "0";
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.white10, width: 0.5)),
-      ),
-      child: Row(
-        children: [
-          // RANK
-          Container(
-            width: 30,
-            height: 30,
-            alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              shape: BoxShape.circle,
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => TeamDetailsScreen(teamId: team['id'], teamName: teamName, teamLogo: teamImg)));
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 30,
+              child: Text(position.toString(), style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
             ),
-            child: Text(
-              position.toString(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // TEAM LOGO & NAME (Clickable)
-          Expanded(
-            child: InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => TeamDetailsScreen(
-                      teamId: team['id'],
-                      teamName: teamName,
-                      teamLogo: teamImg,
-                    ),
-                  ),
-                );
-              },
+            const SizedBox(width: 14),
+            Expanded(
               child: Row(
                 children: [
-                  if (teamImg.isNotEmpty)
-                    Image.network(teamImg, width: 24, height: 24)
-                  else
-                    const Icon(Icons.shield, size: 24, color: Colors.white24),
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+                    child: teamImg.isNotEmpty
+                      ? Image.network(teamImg, width: 22, height: 22, errorBuilder: (_, __, ___) => const Icon(Icons.shield_rounded, size: 20))
+                      : const Icon(Icons.shield_rounded, size: 22),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       teamName,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -612,71 +529,45 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 ],
               ),
             ),
-          ),
-          // STATS
-          _buildStatColumn(mp),
-          _buildStatColumn(gd),
-          // POINTS
-          Container(
-            width: 35,
-            height: 35,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white24),
-              shape: BoxShape.circle,
+            _buildStatColumn(mp),
+            _buildStatColumn(gd),
+            Container(
+              width: 38,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+              child: Text(points.toString(), style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
             ),
-            child: Text(
-              points.toString(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  /// Helper for stat columns in the table row
   Widget _buildStatColumn(String value) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white70 : Colors.black54;
     return SizedBox(
-      width: 35,
-      child: Text(
-        value,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-        ),
-        textAlign: TextAlign.center,
-      ),
+      width: 38,
+      child: Text(value, style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
     );
   }
 
   /// Helper to build a clean placeholder for empty tabs
   Widget _buildPlaceholderTab(String title, IconData icon, Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white12 : Colors.black12;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.only(top: 100),
         child: Column(
           children: [
-            Icon(icon, size: 80, color: Colors.white10),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Content coming soon",
-              style: TextStyle(color: Colors.white38, fontSize: 16),
-            ),
+            Icon(icon, size: 100, color: subTextColor),
+            const SizedBox(height: 24),
+            Text(title, style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
+            Text("Content coming soon", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 16, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

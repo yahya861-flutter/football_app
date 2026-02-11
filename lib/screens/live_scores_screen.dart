@@ -94,6 +94,22 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
       child: Row(
         children: [
           IconButton(
+            icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor.withOpacity(0.7), size: 20),
+            onPressed: () {
+              // This is a tab, so "back" usually means returning to the default view or index 0 handled by Home
+              // But we can also use it to reset the date to Today here
+              if (DateFormat('yyyy-MM-dd').format(_selectedDate) != DateFormat('yyyy-MM-dd').format(DateTime.now())) {
+                setState(() {
+                  _selectedDate = DateTime.now();
+                });
+                context.read<FixtureProvider>().fetchFixturesByDate(_selectedDate);
+              }
+            },
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
             icon: Icon(Icons.chevron_left, color: textColor.withOpacity(0.7), size: 28),
             onPressed: () => _adjustDate(-1),
             padding: EdgeInsets.zero,
