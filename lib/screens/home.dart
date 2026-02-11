@@ -24,7 +24,10 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late AnimationController _pulseController;
+  
   // Current index of the selected tab
   int _selectedIndex = 0;
   bool _isSearching = false;
@@ -32,15 +35,16 @@ class _HomeState extends State<Home> {
   Timer? _debounce;
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    _debounce?.cancel();
-    super.dispose();
-  }
-
-  @override
   void initState() {
     super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
     // Fetch initial data from providers once the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LeagueProvider>().fetchLeagues();
@@ -49,6 +53,15 @@ class _HomeState extends State<Home> {
       context.read<FixtureProvider>().fetchAllFixturesByDateRange();
       context.read<TeamListProvider>().fetchTeams();
     });
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _pulseController.dispose();
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
   }
 
   // List of titles for each tab, used in the AppBar
@@ -138,7 +151,7 @@ class _HomeState extends State<Home> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.orangeAccent,
+                          color: Color(0xFFFF8700),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
@@ -166,9 +179,12 @@ class _HomeState extends State<Home> {
               ]
             : _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
                 ? [
-                    IconButton(
-                      icon: Icon(Icons.refresh, color: textPrimary),
-                      onPressed: _handleRefresh,
+                    RotationTransition(
+                      turns: Tween(begin: 0.0, end: 1.0).animate(_rotationController),
+                      child: IconButton(
+                        icon: Icon(Icons.refresh, color: textPrimary),
+                        onPressed: _handleRefresh,
+                      ),
                     ),
                     IconButton(
                       icon: Icon(Icons.search, color: textPrimary),
@@ -183,31 +199,91 @@ class _HomeState extends State<Home> {
       ),
       // Display the screen corresponding to the current selection
       body: _isSearching ? _buildSearchResultsTab(accentColor) : _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: secondaryColor,
-        selectedItemColor: accentColor,
-        unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor,
-        currentIndex: _selectedIndex,
-        type: BottomNavigationBarType.fixed, // Shows all labels even with 5 items
-        onTap: (index) {
-          // Update selected index to switch screens
-          setState(() {
-            _selectedIndex = index;
-          });
+      floatingActionButton: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          final scale = 1.0 + (_pulseController.value * 0.08); // Pulse between 1.0 and 1.08
+          return Transform.scale(
+            scale: scale,
+            child: FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  _selectedIndex = 2;
+                });
+              },
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              child: Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF8700), Color(0xFFFF4500)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8700).withOpacity(0.4 + (_pulseController.value * 0.2)),
+                      blurRadius: 10 + (_pulseController.value * 5),
+                      spreadRadius: 2 + (_pulseController.value * 2),
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.live_tv, color: Colors.white, size: 28),
+              ),
+            ),
+          );
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.sports_soccer), label: "Matches"),
-          BottomNavigationBarItem(icon: Icon(Icons.emoji_events), label: "Leagues"),
-          BottomNavigationBarItem(icon: Icon(Icons.live_tv), label: "Live"),
-          BottomNavigationBarItem(icon: Icon(Icons.newspaper), label: "News"),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings"),
-        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        color: secondaryColor,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        padding: EdgeInsets.zero,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
+              _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
+              const SizedBox(width: 48), // Space for FAB
+              _buildBottomNavItem(3, Icons.newspaper, "News", accentColor),
+              _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
+            ],
+          ),
+        ),
       ),
     ),
   );
 }
 
+  Widget _buildBottomNavItem(int index, IconData icon, String label, Color accentColor) {
+    final isSelected = _selectedIndex == index;
+    final color = isSelected ? accentColor : Colors.grey;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(color: color, fontSize: 11, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _handleRefresh() {
+    _rotationController.forward(from: 0.0);
     switch (_selectedIndex) {
       case 0: // Matches
         context.read<InPlayProvider>().fetchInPlayMatches();

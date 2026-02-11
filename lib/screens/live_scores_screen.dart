@@ -132,7 +132,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     return Consumer<FixtureProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.todayFixtures.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          return const Center(child: CircularProgressIndicator(color: Color(
+              0xFFFF8700)));
         }
 
         if (provider.todayFixtures.isEmpty) {
@@ -299,7 +300,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               child: Text(
                 period == "Sch" || period == "NS" ? time : period,
                 style: TextStyle(
-                  color: isLive ? const Color(0xFFD4FF00) : subTextColor, 
+                  color: isLive ? const Color(0xFFFF8700) : subTextColor,
                   fontSize: 10, 
                   fontWeight: FontWeight.bold
                 ),
