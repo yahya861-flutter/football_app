@@ -277,7 +277,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 return IconButton(
                   icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
                        color: isFollowed ? accentColor : subTextColor, size: 24),
-                  onPressed: () => follow.toggleFollowLeague(league['id']),
+                  onPressed: () => follow.toggleFollowLeague(league['id'], leagueData: league),
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 );
@@ -369,7 +369,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                           color: isFollowed ? accentColor : subTextColor, 
                           size: 20
                         ),
-                        onPressed: () => followProvider.toggleFollowLeague(l['id'] ?? 0),
+                        onPressed: () => followProvider.toggleFollowLeague(l['id'] ?? 0, leagueData: l),
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(8),
                         splashRadius: 18,
@@ -757,7 +757,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 IconButton(
                   icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
                        color: isFollowed ? accentColor : subTextColor, size: 24),
-                  onPressed: () => followProvider.toggleFollowTeam(team['id']),
+                  onPressed: () => followProvider.toggleFollowTeam(team['id'], teamData: team),
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),

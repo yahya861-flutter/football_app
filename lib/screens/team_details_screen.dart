@@ -86,7 +86,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                           isFollowed ? Icons.star : Icons.star_border, 
                           color: isFollowed ? accentColor : subTextColor,
                         ),
-                        onPressed: () => followProvider.toggleFollowTeam(widget.teamId),
+                        onPressed: () => followProvider.toggleFollowTeam(widget.teamId, teamData: context.read<TeamProvider>().selectedTeam),
                       );
                     },
                   ),

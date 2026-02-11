@@ -88,7 +88,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                           isFollowed ? Icons.star_rounded : Icons.star_outline_rounded,
                           color: isFollowed ? accentColor : subTextColor,
                         ),
-                        onPressed: () => followProvider.toggleFollowLeague(widget.leagueId),
+                        onPressed: () => followProvider.toggleFollowLeague(widget.leagueId, leagueData: context.read<LeagueProvider>().selectedLeague),
                       );
                     },
                   ),
@@ -352,7 +352,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               child: (() {
                 final state = fixture['state'];
                 final String period = state?['short_name'] ?? state?['name'] ?? "Sch";
-                final bool isLive = state['id'] != null && [2, 3, 6, 9, 10, 11, 12, 13, 14, 15, 22].contains(state['id']);
+                final bool isLive = state != null && state['id'] != null && [2, 3, 6, 9, 10, 11, 12, 13, 14, 15, 22].contains(state['id']);
 
                 return Text(
                   (period == "Sch" || period == "NS") ? time : period,
