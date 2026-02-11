@@ -67,7 +67,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFFD4FF00);
+    const Color accentColor = Color(0xFFFF8700);
     final participants = widget.fixture['participants'] as List? ?? [];
     
     dynamic homeTeam;
@@ -390,7 +390,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             border: Border.all(color: Colors.white10),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text(percent, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold)),
+          child: Text(percent, style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 8),
         Text(label, style: TextStyle(color: subTextColor, fontSize: 12)),
@@ -518,7 +518,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? const Color(0xFFD4FF00) : (isDark ? Colors.white38 : Colors.black38),
+            color: isSelected ? const Color(0xFFFF8700) : (isDark ? Colors.white38 : Colors.black38),
             fontWeight: FontWeight.bold,
             fontSize: 12,
           ),
@@ -612,7 +612,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             child: LinearProgressIndicator(
               value: matches.isEmpty ? 0 : homeWins / matches.length,
               backgroundColor: Colors.red.withOpacity(0.3),
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFD4FF00)),
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF8700)),
               minHeight: 8,
             ),
           ),
@@ -710,7 +710,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(color: isDark ? Colors.black : Colors.white, borderRadius: BorderRadius.circular(4)),
-            child: Text("$hScore - $aScore", style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+            child: Text("$hScore - $aScore", style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 12)),
           ),
           const SizedBox(width: 8),
           SizedBox(
@@ -731,7 +731,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
         if (standings.isEmpty) {
           if (leagueProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+            return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
           }
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Center(child: Text("No table data", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
@@ -1078,7 +1078,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Consumer<StatsProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.stats.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
 
         if (provider.errorMessage != null && provider.stats.isEmpty) {
@@ -1169,7 +1169,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 Container(height: 4, decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.black12, borderRadius: BorderRadius.circular(2))),
                 FractionallySizedBox(
                   widthFactor: hPercent,
-                  child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFD4FF00), borderRadius: BorderRadius.circular(2))),
+                  child: Container(height: 4, decoration: BoxDecoration(color: const Color(0xFFFF8700), borderRadius: BorderRadius.circular(2))),
                 ),
               ],
             ),
@@ -1201,7 +1201,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
     if (type.contains('goal')) {
       icon = Icons.sports_soccer;
-      iconColor = const Color(0xFFD4FF00);
+      iconColor = const Color(0xFFFF8700);
     } else if (type.contains('yellow')) {
       icon = Icons.rectangle;
       iconColor = Colors.yellow;
@@ -1269,7 +1269,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Consumer<LineupProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.lineups.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
 
         if (provider.errorMessage != null && provider.lineups.isEmpty) {
@@ -1361,7 +1361,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         children: [
           if (isHome) ...[
             if (number.isNotEmpty)
-              Text(number, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(number, style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 12)),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -1384,7 +1384,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             ),
             const SizedBox(width: 8),
             if (number.isNotEmpty)
-              Text(number, style: const TextStyle(color: Color(0xFFD4FF00), fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(number, style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 12)),
           ],
         ],
       ),
@@ -1395,7 +1395,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Consumer<CommentaryProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.comments.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
 
         if (provider.errorMessage != null && provider.comments.isEmpty) {
@@ -1426,7 +1426,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                     width: 35,
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     decoration: BoxDecoration(
-                      color: isImportant ? const Color(0xFFD4FF00) : (isDark ? Colors.white10 : Colors.grey[300]),
+                      color: isImportant ? const Color(0xFFFF8700) : (isDark ? Colors.white10 : Colors.grey[300]),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(

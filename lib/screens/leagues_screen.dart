@@ -68,10 +68,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor;
+    final Color primaryColor = isDark ? const Color(0xFF131321) : Colors.white;
     const Color accentColor = Color(0xFFFF8700);
-    final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    final Color subTextColor = isDark ? Colors.white54 : Colors.black45;
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -80,14 +80,22 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         child: Column(
           children: [
             // Sub Tabs: Leagues | Teams
-            TabBar(
-              indicatorColor: accentColor,
-              labelColor: isDark ? accentColor : Colors.black,
-              unselectedLabelColor: subTextColor,
-              tabs: const [
-                Tab(text: "Leagues"),
-                Tab(text: "Teams"),
-              ],
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? primaryColor : Colors.white,
+                border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+              ),
+              child: TabBar(
+                indicatorColor: accentColor,
+                indicatorWeight: 3,
+                labelColor: isDark ? Colors.white : Colors.black,
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                unselectedLabelColor: subTextColor,
+                tabs: const [
+                  Tab(text: "Leagues"),
+                  Tab(text: "Teams"),
+                ],
+              ),
             ),
             Expanded(
               child: TabBarView(
@@ -224,11 +232,11 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   Widget _buildLeagueItem(dynamic league, Color accentColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
 
     final String name = league['name'] ?? 'League';
-    return ListTile(
+    return InkWell(
       onTap: () {
         Navigator.push(
           context,
@@ -237,42 +245,77 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           ),
         );
       },
-      leading: league['image_path'] != null 
-        ? Image.network(league['image_path'], width: 30, height: 30)
-        : Icon(Icons.emoji_events, color: accentColor, size: 30),
-      title: Text(name, style: TextStyle(color: textColor, fontSize: 14)),
-      trailing: Consumer<FollowProvider>(
-        builder: (context, follow, child) {
-          final isFollowed = follow.isLeagueFollowed(league['id']);
-          return IconButton(
-            icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
-                 color: isFollowed ? accentColor : subTextColor),
-            onPressed: () => follow.toggleFollowLeague(league['id']),
-          );
-        },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: league['image_path'] != null 
+                ? Image.network(league['image_path'], width: 24, height: 24, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: accentColor, size: 20))
+                : Icon(Icons.emoji_events, color: accentColor, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                name, 
+                style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Consumer<FollowProvider>(
+              builder: (context, follow, child) {
+                final isFollowed = follow.isLeagueFollowed(league['id']);
+                return IconButton(
+                  icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
+                       color: isFollowed ? accentColor : subTextColor, size: 24),
+                  onPressed: () => follow.toggleFollowLeague(league['id']),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildSearchBar(Color cardColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
       ),
       child: TextField(
         controller: _searchController,
-        style: TextStyle(color: textColor),
+        style: TextStyle(color: textColor, fontSize: 14),
         onChanged: (val) => setState(() => _searchQuery = val),
         decoration: InputDecoration(
-          hintText: "Type to search leagues",
-          hintStyle: TextStyle(color: subTextColor),
-          prefixIcon: Icon(Icons.search, color: subTextColor),
+          hintText: "Search leagues...",
+          hintStyle: TextStyle(color: subTextColor, fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
@@ -282,32 +325,32 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 // suggestion area
   Widget _buildSuggestionsRow(Color accentColor, Color cardColor, List<dynamic> leagues, Color textColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
-    // Pick a few leagues for suggestions
-    final suggestions = leagues.take(3).toList();
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
+    // Pick 5 leagues for suggestions
+    final suggestions = leagues.take(5).toList();
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: suggestions.map((l) {
           return Container(
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF26BC94).withOpacity(0.2) : Colors.teal[50], // Premium teal style
+              color: isDark ? accentColor.withOpacity(0.1) : Colors.grey[100],
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+              border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
             ),
             child: Row(
               children: [
                 if (l['image_path'] != null)
-                  Image.network(l['image_path'], width: 24, height: 24)
+                  Image.network(l['image_path'], width: 22, height: 22, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: accentColor, size: 20))
                 else
                   Icon(Icons.emoji_events, color: accentColor, size: 20),
                 const SizedBox(width: 8),
-                Text(l['name'] ?? 'League', style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+                Text(l['name'] ?? 'League', style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(width: 8),
-                Icon(Icons.star_border, color: subTextColor, size: 18),
+                Icon(Icons.star_outline_rounded, color: subTextColor, size: 18),
               ],
             ),
           );
@@ -318,38 +361,71 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, Color accentColor, Color textColor, Color subTextColor, bool isDark) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2D2D44) : Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
         child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: isDark ? Colors.white10 : Colors.black12),
-            child: const Icon(Icons.public, color: Colors.blue, size: 20),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.public_rounded, color: Colors.blue, size: 20),
           ),
-          title: Text(countryName, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.white10 : Colors.black12,
-                  borderRadius: BorderRadius.circular(12),
+          title: Text(
+            countryName, 
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  leagues.length.toString(), 
+                  style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.bold)
                 ),
-                child: Text(leagues.length.toString(), style: TextStyle(color: textColor, fontSize: 12)),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.keyboard_arrow_down, color: subTextColor),
-            ],
+                const SizedBox(width: 4),
+                Icon(Icons.expand_more_rounded, color: subTextColor, size: 18),
+              ],
+            ),
           ),
-          children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.02) : Colors.grey[50],
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+              ),
+              child: Column(
+                children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -496,39 +572,53 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     required VoidCallback onToggle,
   }) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
 
     return GestureDetector(
       onTap: onToggle,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2D2D44) : Colors.grey[300],
-          borderRadius: BorderRadius.circular(12),
+          color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, color: iconColor),
-            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: iconColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 14),
             Expanded(
-              child: Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+              child: Text(
+                title, 
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)
+              ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.black12,
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 count.toString(), 
-                style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.bold)
+                style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.bold)
               ),
             ),
             const SizedBox(width: 8),
             Icon(
-              isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+              isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
               color: subTextColor,
+              size: 24,
             ),
           ],
         ),
@@ -538,17 +628,25 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   Widget _buildTeamSearchBar(Color cardColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
 
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
       ),
       child: TextField(
         controller: _teamSearchController,
-        style: TextStyle(color: textColor),
+        style: TextStyle(color: textColor, fontSize: 14),
         onChanged: (val) {
           setState(() => _teamSearchQuery = val);
           if (_teamDebounce?.isActive ?? false) _teamDebounce!.cancel();
@@ -568,11 +666,11 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           }
         },
         decoration: InputDecoration(
-          hintText: "Type to search teams",
-          hintStyle: TextStyle(color: subTextColor),
-          prefixIcon: Icon(Icons.search, color: subTextColor),
+          hintText: "Search teams...",
+          hintStyle: TextStyle(color: subTextColor, fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
@@ -580,12 +678,12 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   Widget _buildTeamItem(dynamic team, Color accentColor, FollowProvider followProvider) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
 
     final isFollowed = followProvider.isTeamFollowed(team['id']);
     
-    return ListTile(
+    return InkWell(
       onTap: () {
         Navigator.push(
           context,
@@ -598,32 +696,57 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           ),
         );
       },
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: team['image_path'] != null 
-          ? Image.network(team['image_path'], width: 35, height: 35, fit: BoxFit.cover)
-          : Container(
-              width: 35, 
-              height: 35, 
-              color: isDark ? Colors.white10 : Colors.black12, 
-              child: Icon(Icons.shield, color: accentColor, size: 24)
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: team['image_path'] != null 
+                  ? Image.network(team['image_path'], width: 32, height: 32, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.shield_rounded, color: accentColor, size: 28))
+                  : Icon(Icons.shield_rounded, color: accentColor, size: 28),
+              ),
             ),
-      ),
-      title: Text(team['name'] ?? 'Unknown', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: Icon(isFollowed ? Icons.star : Icons.star_border, 
-                 color: isFollowed ? accentColor : subTextColor),
-            onPressed: () => followProvider.toggleFollowTeam(team['id']),
-          ),
-          IconButton(
-            icon: Icon(isFollowed ? Icons.notifications : Icons.notifications_none, 
-                 color: isFollowed ? (isDark ? Colors.tealAccent : Colors.teal) : subTextColor, size: 22),
-            onPressed: () {}, // Notification toggle placeholder
-          ),
-        ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                team['name'] ?? 'Unknown', 
+                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
+                       color: isFollowed ? accentColor : subTextColor, size: 24),
+                  onPressed: () => followProvider.toggleFollowTeam(team['id']),
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+                const SizedBox(width: 12),
+                IconButton(
+                  icon: Icon(isFollowed ? Icons.notifications_active_rounded : Icons.notifications_none_rounded, 
+                       color: isFollowed ? const Color(0xFF26BC94) : subTextColor, size: 22),
+                  onPressed: () {}, // Notification toggle placeholder
+                  constraints: const BoxConstraints(),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

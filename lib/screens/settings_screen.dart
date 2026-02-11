@@ -107,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
               const CircleAvatar(
                 radius: 25,
                 backgroundColor: Colors.white10,
-                child: Icon(Icons.workspace_premium, color: Color(0xFFD4FF00), size: 30),
+                child: Icon(Icons.workspace_premium, color: Color(0xFFFF8700), size: 30),
               ),
             ],
           ),

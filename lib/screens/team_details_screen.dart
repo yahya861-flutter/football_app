@@ -55,7 +55,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFFD4FF00);
+    const Color accentColor = Color(0xFFFF8700);
     
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
@@ -226,7 +226,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           const SizedBox(height: 24),
           
           if (provider.isLoading)
-            const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)))
+            const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)))
           else if (statsEntries.isEmpty)
             _buildEmptyStats()
           else

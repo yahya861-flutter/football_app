@@ -59,7 +59,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
     final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor;
     final Color headerColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
-    const Color accentColor = Color(0xFFD4FF00); // Premium Lime accent
+    const Color accentColor = Color(0xFFFF8700); // Premium Lime accent
 
     return DefaultTabController(
       length: 2, // Fixtures and Table

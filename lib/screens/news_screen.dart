@@ -5,7 +5,7 @@ class NewsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFFD4FF00);
+    const Color accentColor = Color(0xFFFF8700);
 
     return Center(
       child: Column(

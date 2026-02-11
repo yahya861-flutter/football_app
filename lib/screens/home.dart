@@ -309,7 +309,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     return Consumer<TeamListProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFD4FF00)));
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
 
         if (provider.teams.isEmpty && _searchController.text.isNotEmpty) {

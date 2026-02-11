@@ -7,7 +7,7 @@ class TeamsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color accentColor = Color(0xFFD4FF00); // Professional Lime accent
+    const Color accentColor = Color(0xFFFF8700); // Professional Lime accent
 
     return Center(
       child: Column(
