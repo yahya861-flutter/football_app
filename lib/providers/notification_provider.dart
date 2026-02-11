@@ -81,7 +81,7 @@ class NotificationProvider with ChangeNotifier {
 
   Future<void> updateSettings(int matchId, MatchNotificationSettings settings, DateTime startTime, String matchTitle) async {
     print("🔔 Updating settings for Match: $matchTitle (ID: $matchId) | StartTime: $startTime");
-    // 1. Cancel existing notifications for this match
+    // 1. Cancel existing notifications/alarms for this match
     await _cancelMatchNotifications(matchId);
 
     if (!settings.isActive) {
@@ -89,18 +89,28 @@ class NotificationProvider with ChangeNotifier {
     } else {
       _settingsMap[matchId] = settings;
       
-      // 2. Schedule new notifications
+      // 2. Schedule new notifications/alarms
       if (settings.notifyBeforeMatch && settings.beforeMatchMinutes > 0) {
         final scheduledDate = startTime.subtract(Duration(minutes: settings.beforeMatchMinutes));
-        await _notificationService.scheduleNotification(
+        // Use ALARM for pre-match reminders
+        await _notificationService.scheduleAlarm(
           id: matchId * 10 + 1,
           title: "Match Reminder",
           body: "$matchTitle starts in ${settings.beforeMatchMinutes} minutes!",
-          scheduledDate: scheduledDate,
+          scheduledTime: scheduledDate,
+        );
+      } else if (settings.notifyBeforeMatch && settings.beforeMatchMinutes == 0) {
+        // If 0 minutes selected but before match is on, schedule for start time as alarm
+         await _notificationService.scheduleAlarm(
+          id: matchId * 10 + 1,
+          title: "Match Reminder",
+          body: "$matchTitle is starting now!",
+          scheduledTime: startTime,
         );
       }
 
       if (settings.notifyAtStart) {
+        // Use regular LOCAL NOTIFICATION for start
         await _notificationService.scheduleNotification(
           id: matchId * 10 + 2,
           title: "Match Starting",
@@ -110,7 +120,7 @@ class NotificationProvider with ChangeNotifier {
       }
 
       if (settings.notifyAtFullTime) {
-        // Appoximation: 110 minutes after start
+        // Use regular LOCAL NOTIFICATION for full time
         final fullTimeEstimate = startTime.add(const Duration(minutes: 110));
         await _notificationService.scheduleNotification(
           id: matchId * 10 + 3,
@@ -128,18 +138,19 @@ class NotificationProvider with ChangeNotifier {
   Future<void> showTestNotification() async {
     await _notificationService.showNotification(
       id: 999,
-      title: "Test Alarm",
+      title: "Test Notification",
       body: "This is a test notification triggered immediately!",
     );
   }
 
   Future<void> scheduleTestAlarm() async {
     final scheduledDate = DateTime.now().add(const Duration(seconds: 10));
-    await _notificationService.scheduleNotification(
+    // Test using ALARM package
+    await _notificationService.scheduleAlarm(
       id: 888,
       title: "Scheduled Test Alarm",
       body: "This alarm was scheduled 10 seconds ago!",
-      scheduledDate: scheduledDate,
+      scheduledTime: scheduledDate,
     );
   }
 
@@ -151,7 +162,11 @@ class NotificationProvider with ChangeNotifier {
   }
 
   Future<void> _cancelMatchNotifications(int matchId) async {
-    await _notificationService.cancelNotification(matchId * 10 + 1);
+    // Cancel alarms
+    await _notificationService.stopAlarm(matchId * 10 + 1);
+    
+    // Cancel local notifications
+    await _notificationService.cancelNotification(matchId * 10 + 1); // Also cancel if it was a notification before
     await _notificationService.cancelNotification(matchId * 10 + 2);
     await _notificationService.cancelNotification(matchId * 10 + 3);
   }

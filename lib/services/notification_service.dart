@@ -3,7 +3,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:alarm/alarm.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -17,7 +18,7 @@ class NotificationService {
     tz.initializeTimeZones();
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
-    print("🔔 Notification Service Initialized. Local Timezone: $timeZoneName");
+    debugPrint("🔔 Notification Service Initialized. Local Timezone: $timeZoneName");
 
     // 2. Setup Android Settings
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -52,12 +53,53 @@ class NotificationService {
       await androidImplementation?.requestNotificationsPermission();
       
       // Request exact alarm permission (Android 12+)
-      // Although user is on Android 11, it's good practice
       await androidImplementation?.requestExactAlarmsPermission();
       
-      print("🔔 Permissions requested for Android.");
+      debugPrint("🔔 Permissions requested for Android.");
     }
   }
+
+  // --- ALARM SECTION (using alarm package) ---
+
+  Future<void> scheduleAlarm({
+    required int id,
+    required String title,
+    required String body,
+    required DateTime scheduledTime,
+    String assetAudioPath = 'assets/marimba.mp3', // Default or user-provided
+  }) async {
+    debugPrint("⏰ [ALARM] Scheduling Alarm $id for $scheduledTime");
+
+    final alarmSettings = AlarmSettings(
+      id: id,
+      dateTime: scheduledTime,
+      assetAudioPath: assetAudioPath,
+      loopAudio: true,
+      vibrate: true,
+      volumeSettings: VolumeSettings.fade(
+        volume: 0.8,
+        fadeDuration: const Duration(seconds: 3),
+      ),
+      notificationSettings: NotificationSettings(
+        title: title,
+        body: body,
+        stopButton: "Stop",
+      ),
+    );
+
+    try {
+      await Alarm.set(alarmSettings: alarmSettings);
+      debugPrint("✅ [ALARM] Success: Alarm $id set.");
+    } catch (e) {
+      debugPrint("❌ [ALARM] Error: $e");
+    }
+  }
+
+  Future<void> stopAlarm(int id) async {
+    await Alarm.stop(id);
+  }
+
+  // --- NOTIFICATION SECTION (using flutter_local_notifications) ---
 
   Future<void> scheduleNotification({
     required int id,
@@ -69,17 +111,17 @@ class NotificationService {
     var tzDateTime = tz.TZDateTime.from(scheduledDate, tz.local);
     final now = tz.TZDateTime.now(tz.local);
 
-    print("🔔 [DEBUG] System Time: ${DateTime.now()}");
-    print("🔔 [DEBUG] TZ Local Time: $now");
-    print("🔔 [DEBUG] Target Time: $tzDateTime");
+    debugPrint("🔔 [DEBUG] System Time: ${DateTime.now()}");
+    debugPrint("🔔 [DEBUG] TZ Local Time: $now");
+    debugPrint("🔔 [DEBUG] Target Time: $tzDateTime");
 
     // 2. Ensure it's in the future
     if (tzDateTime.isBefore(now)) {
-      print("⚠️ [WARNING] Scheduled time is in the past! Adding 5 seconds offset.");
+      debugPrint("⚠️ [WARNING] Scheduled time is in the past! Adding 5 seconds offset.");
       tzDateTime = now.add(const Duration(seconds: 5));
     }
 
-    print("🔔 [DEBUG] Final Schedule Time: $tzDateTime (ID: $id)");
+    debugPrint("🔔 [DEBUG] Final Schedule Time: $tzDateTime (ID: $id)");
 
     try {
       await _notificationsPlugin.zonedSchedule(
@@ -89,18 +131,14 @@ class NotificationService {
         tzDateTime,
         NotificationDetails(
           android: AndroidNotificationDetails(
-            'match_alarms_v5', // New channel to force settings wipe
-            'Match Alarms',
+            'match_reminders',
+            'Match Reminders',
             channelDescription: 'Notifications for football match reminders',
             importance: Importance.max,
             priority: Priority.high,
             ticker: 'ticker',
             playSound: true,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            audioAttributesUsage: AudioAttributesUsage.alarm,
             enableVibration: true,
-            vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
             visibility: NotificationVisibility.public,
           ),
           iOS: const DarwinNotificationDetails(
@@ -112,9 +150,9 @@ class NotificationService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
-      print("✅ [SUCCESS] Notification $id scheduled for $tzDateTime.");
+      debugPrint("✅ [SUCCESS] Notification $id scheduled for $tzDateTime.");
     } catch (e) {
-      print("❌ [ERROR] Failed to schedule: $e");
+      debugPrint("❌ [ERROR] Failed to schedule: $e");
     }
   }
 
@@ -123,7 +161,7 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    print("🔔 [DEBUG] Showing Immediate Notification (ID: $id)");
+    debugPrint("🔔 [DEBUG] Showing Immediate Notification (ID: $id)");
 
     try {
       await _notificationsPlugin.show(
@@ -132,18 +170,14 @@ class NotificationService {
         body,
         NotificationDetails(
           android: AndroidNotificationDetails(
-            'match_alarms_v5',
-            'Match Alarms',
+            'match_reminders',
+            'Match Reminders',
             channelDescription: 'Notifications for football match reminders',
             importance: Importance.max,
             priority: Priority.high,
             ticker: 'ticker',
             playSound: true,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            audioAttributesUsage: AudioAttributesUsage.alarm,
             enableVibration: true,
-            vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
             visibility: NotificationVisibility.public,
           ),
           iOS: const DarwinNotificationDetails(
@@ -153,9 +187,9 @@ class NotificationService {
           ),
         ),
       );
-      print("✅ [SUCCESS] Notification $id shown.");
+      debugPrint("✅ [SUCCESS] Notification $id shown.");
     } catch (e) {
-      print("❌ [ERROR] Failed to show: $e");
+      debugPrint("❌ [ERROR] Failed to show: $e");
     }
   }
 

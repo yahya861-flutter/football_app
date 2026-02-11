@@ -17,9 +17,13 @@ import 'package:football_app/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
+import 'package:alarm/alarm.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Alarm
+  await Alarm.init();
   
   // Initialize notification service
   await NotificationService().init();
