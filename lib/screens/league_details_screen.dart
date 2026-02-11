@@ -425,10 +425,10 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isActive ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      isActive ? Icons.access_time_filled_rounded : Icons.access_time_rounded,
                       color: !isUpcoming 
                         ? Colors.white10 
-                        : (isActive ? const Color(0xFF48C9B0) : Colors.white24),
+                        : (isActive ? const Color(0xFF48C9B0) : textColor.withOpacity(0.3)),
                       size: 16,
                     ),
                   ),

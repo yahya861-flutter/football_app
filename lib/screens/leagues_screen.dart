@@ -763,8 +763,8 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 ),
                 const SizedBox(width: 12),
                 IconButton(
-                  icon: Icon(isFollowed ? Icons.notifications_active_rounded : Icons.notifications_none_rounded, 
-                       color: isFollowed ? const Color(0xFF26BC94) : subTextColor, size: 22),
+                  icon: Icon(isFollowed ? Icons.access_time_filled_rounded : Icons.access_time_rounded, 
+                    color: isFollowed ? accentColor : textColor.withOpacity(0.5), size: 20),
                   onPressed: () {}, // Notification toggle placeholder
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,

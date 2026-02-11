@@ -229,6 +229,9 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
   }
 
   Widget _buildTriggerRow(String label, bool value, Function(bool?) onChanged, Color textColor, {bool enabled = true}) {
+    final Color activeText = enabled ? textColor : (textColor.withOpacity(0.4));
+    final Color activeSide = enabled ? textColor.withOpacity(0.3) : (textColor.withOpacity(0.15));
+
     return Row(
       children: [
         SizedBox(
@@ -239,14 +242,14 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
             onChanged: enabled ? onChanged : null,
             activeColor: _mintColor,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            side: BorderSide(color: enabled ? textColor.withOpacity(0.3) : textColor.withOpacity(0.1), width: 1.5),
+            side: BorderSide(color: activeSide, width: 1.5),
           ),
         ),
         const SizedBox(width: 12),
         Text(
           label,
           style: TextStyle(
-            color: enabled ? textColor : textColor.withOpacity(0.3),
+            color: activeText,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),

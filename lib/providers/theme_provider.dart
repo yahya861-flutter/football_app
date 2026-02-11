@@ -50,6 +50,7 @@ class ThemeProvider with ChangeNotifier {
     appBarTheme: const AppBarTheme(
       backgroundColor: darkPrimary,
       elevation: 0,
+      surfaceTintColor: Colors.transparent,
       iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
     ),

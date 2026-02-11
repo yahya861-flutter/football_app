@@ -285,9 +285,9 @@ class LiveMatchesScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isActive ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      isActive ? Icons.access_time_filled_rounded : Icons.access_time_rounded,
                       color: !isUpcoming 
-                        ? Colors.white10 
+                        ? subTextColor.withOpacity(0.1) 
                         : (isActive ? const Color(0xFF48C9B0) : const Color(0xFFFF8700)),
                       size: 18,
                     ),
