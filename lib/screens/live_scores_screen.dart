@@ -1,3 +1,5 @@
+import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/widgets/match_alarm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
@@ -93,21 +95,6 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
       ),
       child: Row(
         children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor.withOpacity(0.7), size: 20),
-            onPressed: () {
-              // This is a tab, so "back" usually means returning to the default view or index 0 handled by Home
-              // But we can also use it to reset the date to Today here
-              if (DateFormat('yyyy-MM-dd').format(_selectedDate) != DateFormat('yyyy-MM-dd').format(DateTime.now())) {
-                setState(() {
-                  _selectedDate = DateTime.now();
-                });
-                context.read<FixtureProvider>().fetchFixturesByDate(_selectedDate);
-              }
-            },
-            padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(),
-          ),
           const SizedBox(width: 8),
           IconButton(
             icon: Icon(Icons.chevron_left, color: textColor.withOpacity(0.7), size: 28),
@@ -367,7 +354,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                period == "Sch" || period == "NS" ? time : period,
+                (period == "Sch" || period == "NS") ? time : period,
                 style: TextStyle(
                   color: isLive ? const Color(0xFFFF8700) : subTextColor,
                   fontSize: 10, 
@@ -389,13 +376,62 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               ),
             ),
             const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF8700).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFFFF8700), size: 18),
+            Consumer<NotificationProvider>(
+              builder: (context, notificationProvider, _) {
+                final matchId = match['id'] ?? 0;
+                final bool isActive = notificationProvider.isAlarmSet(matchId);
+                final String homeName = homeTeam?['name'] ?? 'Home';
+                final String awayName = awayTeam?['name'] ?? 'Away';
+                final timestamp = match['starting_at_timestamp'];
+                final startTime = timestamp != null 
+                    ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
+                    : DateTime.now();
+
+                final isUpcoming = period == "Sch" || period == "NS";
+
+                return GestureDetector(
+                  onTap: !isUpcoming 
+                    ? null 
+                    : () {
+                        if (isActive) {
+                          notificationProvider.toggleAllOff(matchId);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Alarms removed for $homeName vs $awayName"),
+                              backgroundColor: Colors.grey[800],
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => MatchAlarmDialog(
+                              matchId: matchId,
+                              matchTitle: "$homeName vs $awayName",
+                              startTime: startTime,
+                            ),
+                          );
+                        }
+                      },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: !isUpcoming 
+                        ? Colors.white.withOpacity(0.02)
+                        : (isActive ? const Color(0xFF48C9B0).withOpacity(0.1) : const Color(0xFFFF8700).withOpacity(0.1)),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isActive ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      color: !isUpcoming 
+                        ? Colors.white10 
+                        : (isActive ? const Color(0xFF48C9B0) : const Color(0xFFFF8700)),
+                      size: 18,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

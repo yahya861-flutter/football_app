@@ -1,3 +1,5 @@
+import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/widgets/match_alarm_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -181,6 +183,14 @@ class LiveMatchesScreen extends StatelessWidget {
     final stateId = state?['id'];
     bool isLive = stateId != null && [2, 3, 6, 9, 10, 11, 12, 13, 14, 15, 22].contains(stateId);
     
+    // Extract and format start time
+    final timestamp = match['starting_at_timestamp'];
+    String matchTime = "";
+    if (timestamp != null) {
+      final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
+      matchTime = DateFormat('HH:mm').format(date);
+    }
+    
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -208,7 +218,7 @@ class LiveMatchesScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                period,
+                (period == "Sch" || period == "NS") ? matchTime : period,
                 style: TextStyle(
                   color: isLive ? const Color(0xFFFF8700) : subTextColor,
                   fontSize: 10, 
@@ -228,13 +238,62 @@ class LiveMatchesScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF8700).withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFFFF8700), size: 18),
+            Consumer<NotificationProvider>(
+              builder: (context, notificationProvider, _) {
+                final matchId = match['id'] ?? 0;
+                final bool isActive = notificationProvider.isAlarmSet(matchId);
+                final String homeName = homeTeam?['name'] ?? 'Home';
+                final String awayName = awayTeam?['name'] ?? 'Away';
+                final timestamp = match['starting_at_timestamp'];
+                final startTime = timestamp != null 
+                    ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
+                    : DateTime.now();
+
+                final isUpcoming = period == "Sch" || period == "NS";
+
+                return GestureDetector(
+                  onTap: !isUpcoming 
+                    ? null 
+                    : () {
+                        if (isActive) {
+                          notificationProvider.toggleAllOff(matchId);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Alarms removed for $homeName vs $awayName"),
+                              backgroundColor: Colors.grey[800],
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => MatchAlarmDialog(
+                              matchId: matchId,
+                              matchTitle: "$homeName vs $awayName",
+                              startTime: startTime,
+                            ),
+                          );
+                        }
+                      },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: !isUpcoming 
+                        ? Colors.white.withOpacity(0.02)
+                        : (isActive ? const Color(0xFF48C9B0).withOpacity(0.1) : const Color(0xFFFF8700).withOpacity(0.1)),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isActive ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      color: !isUpcoming 
+                        ? Colors.white10 
+                        : (isActive ? const Color(0xFF48C9B0) : const Color(0xFFFF8700)),
+                      size: 18,
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),

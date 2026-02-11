@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:football_app/screens/premium_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/screens/live_scores_screen.dart';
 import 'package:football_app/screens/leagues_screen.dart';
@@ -111,7 +112,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
-        leading: _selectedIndex != 0 
+        leading: _selectedIndex != 0
           ? IconButton(
               icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
               onPressed: () => setState(() => _selectedIndex = 0),
@@ -158,15 +159,20 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 22),
                       ),
                       const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFFF8700),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          "PRO",
-                          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                      GestureDetector(
+                        onDoubleTap: (){
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFFF8700),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            "PRO",
+                            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
                         ),
                       ),
                     ],
@@ -310,9 +316,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         // Other tabs refresh if needed
         break;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Refreshing data..."), duration: Duration(seconds: 1)),
-    );
   }
 
   Widget _buildSearchResultsTab(Color accentColor) {

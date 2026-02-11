@@ -12,11 +12,18 @@ import 'package:football_app/providers/h2h_provider.dart';
 import 'package:football_app/providers/stats_provider.dart';
 import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/theme_provider.dart';
+import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize notification service
+  await NotificationService().init();
+
   runApp(
     MultiProvider(
       providers: [
@@ -34,6 +41,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => StatsProvider()),
         ChangeNotifierProvider(create: (_) => LineupProvider()),
         ChangeNotifierProvider(create: (_) => CommentaryProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),
     ),

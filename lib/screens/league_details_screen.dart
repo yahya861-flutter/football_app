@@ -6,6 +6,8 @@ import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
+import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/widgets/match_alarm_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -347,7 +349,21 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(time, style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              child: (() {
+                final state = fixture['state'];
+                final String period = state?['short_name'] ?? state?['name'] ?? "Sch";
+                final bool isLive = state['id'] != null && [2, 3, 6, 9, 10, 11, 12, 13, 14, 15, 22].contains(state['id']);
+
+                return Text(
+                  (period == "Sch" || period == "NS") ? time : period,
+                  style: TextStyle(
+                    color: isLive ? const Color(0xFFFF8700) : textColor,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold
+                  ),
+                  textAlign: TextAlign.center
+                );
+              })(),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -359,13 +375,67 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: accentColor.withOpacity(0.1), shape: BoxShape.circle),
-              child: Icon(Icons.notifications_none_rounded, color: accentColor, size: 20),
+            const SizedBox(width: 8),
+            Consumer<NotificationProvider>(
+              builder: (context, notificationProvider, _) {
+                final matchId = fixture['id'] ?? 0;
+                final bool isActive = notificationProvider.isAlarmSet(matchId);
+                final String homeName = fixture['participants']?[0]?['name'] ?? 'Home';
+                final String awayName = fixture['participants']?[1]?['name'] ?? 'Away';
+                final timestamp = fixture['starting_at_timestamp'];
+                final startTime = timestamp != null 
+                    ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
+                    : DateTime.now();
+
+                final state = fixture['state'];
+                final String period = state?['short_name'] ?? state?['name'] ?? "Sch";
+                final isUpcoming = period == "Sch" || period == "NS";
+
+                return GestureDetector(
+                  onTap: !isUpcoming 
+                    ? null 
+                    : () {
+                        if (isActive) {
+                          notificationProvider.toggleAllOff(matchId);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Alarms removed for $homeName vs $awayName"),
+                              backgroundColor: Colors.grey[800],
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                        } else {
+                          showDialog(
+                            context: context,
+                            builder: (context) => MatchAlarmDialog(
+                              matchId: matchId,
+                              matchTitle: "$homeName vs $awayName",
+                              startTime: startTime,
+                            ),
+                          );
+                        }
+                      },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: !isUpcoming 
+                        ? Colors.white.withOpacity(0.02)
+                        : (isActive ? const Color(0xFF48C9B0).withOpacity(0.1) : Colors.white.withOpacity(0.05)),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isActive ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      color: !isUpcoming 
+                        ? Colors.white10 
+                        : (isActive ? const Color(0xFF48C9B0) : Colors.white24),
+                      size: 16,
+                    ),
+                  ),
+                );
+              },
             ),
-          ],
+      ],
         ),
       ),
     );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/notification_provider.dart';
 import '../providers/theme_provider.dart';
+import 'premium_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final bool isTab;
@@ -23,7 +25,13 @@ class SettingsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // PREMIUM BANNER
-          _buildPremiumBanner(),
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PremiumScreen()),
+            ),
+            child: _buildPremiumBanner(),
+          ),
           const SizedBox(height: 32),
           
           // GENERAL SECTION
@@ -45,6 +53,29 @@ class SettingsScreen extends StatelessWidget {
           _buildActionTile(icon: Icons.star_border, title: "Rate Us", textColor: textColor),
           _buildActionTile(icon: Icons.feedback_outlined, title: "Feedback", textColor: textColor),
           _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
+          const SizedBox(height: 16),
+          _buildActionTile(
+            icon: Icons.notifications_active,
+            title: "Test Notification",
+            textColor: textColor,
+            onTap: () {
+              context.read<NotificationProvider>().showTestNotification();
+            },
+          ),
+          _buildActionTile(
+            icon: Icons.timer,
+            title: "Test Scheduled Alarm (10s)",
+            textColor: textColor,
+            onTap: () {
+              context.read<NotificationProvider>().scheduleTestAlarm();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Alarm scheduled for 10 seconds from now..."),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -143,17 +174,21 @@ class SettingsScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required Color textColor,
+    VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF00BFA5)),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
-          ),
-        ],
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF00BFA5)),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
+            ),
+          ],
+        ),
       ),
     );
   }
