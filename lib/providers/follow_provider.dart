@@ -5,6 +5,7 @@ import 'dart:convert';
 class FollowProvider with ChangeNotifier {
   final List<int> _followedLeagueIds = [];
   final List<int> _followedTeamIds = [];
+  final Map<int, bool> _notificationsMap = {};
   final DatabaseService _dbService = DatabaseService();
 
   List<int> get followedLeagueIds => _followedLeagueIds;
@@ -18,27 +19,33 @@ class FollowProvider with ChangeNotifier {
     final favorites = await _dbService.getFavorites();
     _followedLeagueIds.clear();
     _followedTeamIds.clear();
+    _notificationsMap.clear();
     for (var fav in favorites) {
+      final int id = fav['id'];
       if (fav['type'] == 'league') {
-        _followedLeagueIds.add(fav['id']);
+        _followedLeagueIds.add(id);
       } else if (fav['type'] == 'team') {
-        _followedTeamIds.add(fav['id']);
+        _followedTeamIds.add(id);
       }
+      _notificationsMap[id] = (fav['notifications_enabled'] == 1);
     }
     notifyListeners();
   }
 
   bool isLeagueFollowed(int leagueId) => _followedLeagueIds.contains(leagueId);
   bool isTeamFollowed(int teamId) => _followedTeamIds.contains(teamId);
+  bool isNotificationEnabled(int id) => _notificationsMap[id] ?? false;
 
   Future<void> toggleFollowLeague(int leagueId, {dynamic leagueData}) async {
     if (_followedLeagueIds.contains(leagueId)) {
       _followedLeagueIds.remove(leagueId);
+      _notificationsMap.remove(leagueId);
       await _dbService.deleteFavorite(leagueId);
     } else {
       _followedLeagueIds.add(leagueId);
+      _notificationsMap[leagueId] = true; // Enabled by default when favorited
       final dataStr = leagueData != null ? jsonEncode(leagueData) : "{}";
-      await _dbService.insertFavorite(leagueId, 'league', dataStr);
+      await _dbService.insertFavorite(leagueId, 'league', dataStr, notificationsEnabled: true);
     }
     notifyListeners();
   }
@@ -46,11 +53,13 @@ class FollowProvider with ChangeNotifier {
   Future<void> toggleFollowTeam(int teamId, {dynamic teamData}) async {
     if (_followedTeamIds.contains(teamId)) {
       _followedTeamIds.remove(teamId);
+      _notificationsMap.remove(teamId);
       await _dbService.deleteFavorite(teamId);
     } else {
       _followedTeamIds.add(teamId);
+      _notificationsMap[teamId] = true; // Enabled by default when favorited
       final dataStr = teamData != null ? jsonEncode(teamData) : "{}";
-      await _dbService.insertFavorite(teamId, 'team', dataStr);
+      await _dbService.insertFavorite(teamId, 'team', dataStr, notificationsEnabled: true);
     }
     notifyListeners();
   }

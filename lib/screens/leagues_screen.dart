@@ -28,14 +28,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LeagueProvider>().fetchLeagues();
-      final teamProvider = context.read<TeamListProvider>();
-      if (teamProvider.currentSearchQuery != null) {
-        setState(() {
-          _teamSearchController.text = teamProvider.currentSearchQuery!;
-          _teamSearchQuery = teamProvider.currentSearchQuery!;
-        });
-      }
-      teamProvider.fetchTeams();
+      context.read<TeamListProvider>().fetchTeams();
     });
     
     _teamScrollController.addListener(() {
@@ -274,12 +267,26 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
             Consumer<FollowProvider>(
               builder: (context, follow, child) {
                 final isFollowed = follow.isLeagueFollowed(league['id']);
-                return IconButton(
-                  icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
-                       color: isFollowed ? accentColor : subTextColor, size: 24),
-                  onPressed: () => follow.toggleFollowLeague(league['id'], leagueData: league),
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
+                final isNotifEnabled = follow.isNotificationEnabled(league['id']);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isFollowed) ...[
+                      Icon(
+                        Icons.notifications_active_rounded, 
+                        color: accentColor, 
+                        size: 22
+                      ),
+                      const SizedBox(width: 12),
+                    ],
+                    IconButton(
+                      icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
+                           color: isFollowed ? accentColor : subTextColor, size: 24),
+                      onPressed: () => follow.toggleFollowLeague(league['id'], leagueData: league),
+                      constraints: const BoxConstraints(),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ],
                 );
               },
             ),
@@ -754,18 +761,18 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (isFollowed) ...[
+                  Icon(
+                    Icons.notifications_active_rounded, 
+                    color: accentColor, 
+                    size: 22
+                  ),
+                  const SizedBox(width: 12),
+                ],
                 IconButton(
                   icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
                        color: isFollowed ? accentColor : subTextColor, size: 24),
                   onPressed: () => followProvider.toggleFollowTeam(team['id'], teamData: team),
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
-                ),
-                const SizedBox(width: 12),
-                IconButton(
-                  icon: Icon(isFollowed ? Icons.access_time_filled_rounded : Icons.access_time_rounded, 
-                    color: isFollowed ? accentColor : textColor.withOpacity(0.5), size: 20),
-                  onPressed: () {}, // Notification toggle placeholder
                   constraints: const BoxConstraints(),
                   padding: EdgeInsets.zero,
                 ),

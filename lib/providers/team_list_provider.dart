@@ -21,17 +21,7 @@ class TeamListProvider with ChangeNotifier {
   final String _baseUrl = 'https://api.sportmonks.com/v3/football/teams';
 
   TeamListProvider() {
-    _loadLastSearch();
-  }
-
-  Future<void> _loadLastSearch() async {
-    final prefs = await SharedPreferences.getInstance();
-    final lastQuery = prefs.getString('lastTeamSearch');
-    if (lastQuery != null && lastQuery.isNotEmpty) {
-      searchTeams(lastQuery);
-    } else {
-      fetchTeams();
-    }
+    fetchTeams();
   }
 
   Future<void> fetchTeams({bool forceRefresh = false}) async {
@@ -156,15 +146,11 @@ class TeamListProvider with ChangeNotifier {
   Future<void> searchTeams(String query) async {
     if (query.isEmpty) {
       _currentSearchQuery = null;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('lastTeamSearch');
       fetchTeams(forceRefresh: true);
       return;
     }
     
     _currentSearchQuery = query;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('lastTeamSearch', query);
     _isLoading = true;
     _teams = []; 
     notifyListeners();
