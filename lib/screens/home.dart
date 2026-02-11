@@ -109,6 +109,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       },
       child: Scaffold(
       backgroundColor: primaryColor,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
@@ -160,7 +161,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                       ),
                       const SizedBox(width: 12),
                       GestureDetector(
-                        onDoubleTap: (){
+                        onTap: (){
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const PremiumScreen()));
                         },
                         child: Container(
@@ -215,50 +216,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       ),
       // Display the screen corresponding to the current selection
       body: _isSearching ? _buildSearchResultsTab(accentColor) : _screens[_selectedIndex],
-      floatingActionButton: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          final scale = 1.0 + (_pulseController.value * 0.08); // Pulse between 1.0 and 1.08
-          return Transform.scale(
-            scale: scale,
-            child: FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  _selectedIndex = 2;
-                });
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF8700), Color(0xFFFF4500)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF8700).withOpacity(0.4 + (_pulseController.value * 0.2)),
-                      blurRadius: 10 + (_pulseController.value * 5),
-                      spreadRadius: 2 + (_pulseController.value * 2),
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.live_tv, color: Colors.white, size: 28),
-              ),
-            ),
-          );
-        },
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         color: secondaryColor,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
+        elevation: 10,
         padding: EdgeInsets.zero,
         child: SizedBox(
           height: 60,
@@ -267,7 +228,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             children: [
               _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
               _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
-              const SizedBox(width: 48), // Space for FAB
+              _buildLiveNavItem(2, accentColor), // Integrated Live Button
               _buildBottomNavItem(3, Icons.newspaper, "News", accentColor),
               _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
             ],
@@ -277,6 +238,41 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     ),
   );
 }
+
+  Widget _buildLiveNavItem(int index, Color accentColor) {
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIndex = index),
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (context, child) {
+          return Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFF8700), Color(0xFFFF4500)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF8700).withOpacity(0.5 + (_pulseController.value * 0.2)),
+                  blurRadius: 15 + (_pulseController.value * 5),
+                  spreadRadius: 2 + (_pulseController.value * 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.live_tv, 
+              color: Colors.white, 
+              size: 24
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildBottomNavItem(int index, IconData icon, String label, Color accentColor) {
     final isSelected = _selectedIndex == index;

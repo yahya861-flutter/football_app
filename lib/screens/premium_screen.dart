@@ -111,7 +111,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                               Icon(Icons.sports_soccer, size: 16, color: Colors.black),
                               SizedBox(width: 4),
                               Text(
-                                "Exp",
+                                "Explore Benifits",
                                 style: TextStyle(
                                   color: Colors.black,
                                   fontWeight: FontWeight.bold,
@@ -127,7 +127,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     _buildFeatureRow("Covering 2100+ leagues", mintColor),
                     _buildFeatureRow("Ads Free Version", mintColor),
                     _buildFeatureRow("Custom Match Alarm", mintColor),
-                    _buildFeatureRow("Winning Probability", mintColor),
                   ],
                 ),
               ),
@@ -137,115 +136,27 @@ class _PremiumScreenState extends State<PremiumScreen> {
               // Subscription Options
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    // Weekly Option
-                    Expanded(
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          GestureDetector(
-                            onTap: () => setState(() => _selectedOption = 0),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 24),
-                              decoration: BoxDecoration(
-                                color: darkCardColor,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: _selectedOption == 0 ? mintColor : Colors.white10,
-                                  width: 2,
-                                ),
-                              ),
-                              child: const Column(
-                                children: [
-                                  Text(
-                                    "Weekly",
-                                    style: TextStyle(color: Colors.white, fontSize: 16),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    "Rs 1,400/week",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // 50% Off Badge
-                          Positioned(
-                            top: -10,
-                            right: -5,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(4),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.3),
-                                    blurRadius: 4,
-                                  ),
-                                ],
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.sports_soccer, size: 14, color: Colors.black),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    "50 % off",
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      _buildSubscriptionCard(
+                        index: 0,
+                        title: "Weekly",
+                        price: "Rs 1,400/week",
+                        mintColor: mintColor,
+                        darkCardColor: darkCardColor,
+                        badgeText: "50 % off",
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Monthly Option
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedOption = 1),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          decoration: BoxDecoration(
-                            color: darkCardColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: _selectedOption == 1 ? mintColor : Colors.white10,
-                              width: 2,
-                            ),
-                          ),
-                          child: const Column(
-                            children: [
-                              Text(
-                                "Monthly",
-                                style: TextStyle(color: Colors.white, fontSize: 16),
-                              ),
-                              SizedBox(height: 8),
-                              Text(
-                                "Rs 4,200/month",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      const SizedBox(width: 16),
+                      _buildSubscriptionCard(
+                        index: 1,
+                        title: "Monthly",
+                        price: "Rs 4,200/month",
+                        mintColor: mintColor,
+                        darkCardColor: darkCardColor,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
       
@@ -256,7 +167,6 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Implement purchase logic
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: mintColor,
@@ -302,6 +212,91 @@ class _PremiumScreenState extends State<PremiumScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSubscriptionCard({
+    required int index,
+    required String title,
+    required String price,
+    required Color mintColor,
+    required Color darkCardColor,
+    String? badgeText,
+  }) {
+    final isSelected = _selectedOption == index;
+    return Expanded(
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _selectedOption = index),
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+              decoration: BoxDecoration(
+                color: darkCardColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? mintColor : Colors.white10,
+                  width: 2,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    price,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (badgeText != null)
+            Positioned(
+              top: -10,
+              right: -5,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sports_soccer, size: 14, color: Colors.black),
+                    const SizedBox(width: 4),
+                    Text(
+                      badgeText,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
