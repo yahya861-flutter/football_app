@@ -222,10 +222,19 @@ class LiveMatchesScreen extends StatelessWidget {
               child: Column(
                 children: [
                    _buildModernTeamRow(context, homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   _buildModernTeamRow(context, awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
                 ],
               ),
+            ),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF8700).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFFFF8700), size: 18),
             ),
           ],
         ),

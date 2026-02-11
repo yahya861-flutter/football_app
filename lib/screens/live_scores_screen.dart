@@ -389,8 +389,14 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               ),
             ),
             const SizedBox(width: 16),
-            // Notification/Match Info simplified
-            Icon(Icons.chevron_right, color: subTextColor.withOpacity(0.3), size: 20),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF8700).withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.notifications_none_rounded, color: Color(0xFFFF8700), size: 18),
+            ),
           ],
         ),
       ),
