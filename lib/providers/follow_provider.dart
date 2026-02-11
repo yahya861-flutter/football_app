@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:football_app/services/database_service.dart';
+import 'package:football_app/services/auto_notification_service.dart';
 import 'dart:convert';
 
 class FollowProvider with ChangeNotifier {
@@ -46,6 +47,7 @@ class FollowProvider with ChangeNotifier {
       _notificationsMap[leagueId] = true; // Enabled by default when favorited
       final dataStr = leagueData != null ? jsonEncode(leagueData) : "{}";
       await _dbService.insertFavorite(leagueId, 'league', dataStr, notificationsEnabled: true);
+      AutoNotificationService().syncImmediately();
     }
     notifyListeners();
   }
@@ -60,6 +62,7 @@ class FollowProvider with ChangeNotifier {
       _notificationsMap[teamId] = true; // Enabled by default when favorited
       final dataStr = teamData != null ? jsonEncode(teamData) : "{}";
       await _dbService.insertFavorite(teamId, 'team', dataStr, notificationsEnabled: true);
+      AutoNotificationService().syncImmediately();
     }
     notifyListeners();
   }

@@ -14,6 +14,7 @@ import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/theme_provider.dart';
 import 'package:football_app/providers/notification_provider.dart';
 import 'package:football_app/services/notification_service.dart';
+import 'package:football_app/services/auto_notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/home.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,9 @@ void main() async {
   
   // Initialize notification service
   await NotificationService().init();
+
+  // Initialize auto notification service (background sync)
+  await AutoNotificationService().init();
 
   runApp(
     MultiProvider(

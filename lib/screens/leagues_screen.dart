@@ -6,6 +6,7 @@ import 'package:football_app/providers/team_list_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/league_details_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
+import 'package:football_app/widgets/notifications_activated_dialog.dart';
 
 class LeaguesScreen extends StatefulWidget {
   const LeaguesScreen({super.key});
@@ -272,10 +273,18 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (isFollowed) ...[
-                      Icon(
-                        Icons.notifications_active_rounded, 
-                        color: accentColor, 
-                        size: 22
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => const NotificationsActivatedDialog(),
+                          );
+                        },
+                        child: Icon(
+                          Icons.notifications_active_rounded, 
+                          color: accentColor, 
+                          size: 22
+                        ),
                       ),
                       const SizedBox(width: 12),
                     ],
@@ -762,10 +771,18 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isFollowed) ...[
-                  Icon(
-                    Icons.notifications_active_rounded, 
-                    color: accentColor, 
-                    size: 22
+                  GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => const NotificationsActivatedDialog(),
+                      );
+                    },
+                    child: Icon(
+                      Icons.notifications_active_rounded, 
+                      color: accentColor, 
+                      size: 22
+                    ),
                   ),
                   const SizedBox(width: 12),
                 ],
