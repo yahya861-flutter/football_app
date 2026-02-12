@@ -52,100 +52,141 @@ class _TeamsScreenState extends State<TeamsScreen> {
     final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
-    return Scaffold(
-      backgroundColor: primaryColor,
-      body: Consumer2<TeamListProvider, FollowProvider>(
-        builder: (context, teamProvider, followProvider, _) {
-          if (teamProvider.isLoading && teamProvider.teams.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: Colors.blueGrey));
-          }
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? primaryColor : Colors.white,
+              border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+            ),
+            child: TabBar(
+              indicatorColor: accentColor,
+              indicatorWeight: 3,
+              labelColor: isDark ? Colors.white : Colors.black,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
+              tabs: const [
+                Tab(text: "Teams"),
+                Tab(text: "Following"),
+              ],
+            ),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildTeamsTab(accentColor, cardColor),
+            _buildFollowingTeamsTab(accentColor, cardColor),
+          ],
+        ),
+      ),
+    );
+  }
 
-          // 1. Filtered data
-          final filteredTeams = teamProvider.teams.where((t) {
-            final name = t['name']?.toLowerCase() ?? "";
-            return name.contains(_teamSearchQuery.toLowerCase());
-          }).toList();
+  Widget _buildTeamsTab(Color accentColor, Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
-          final followedTeams = filteredTeams.where((t) => followProvider.isTeamFollowed(t['id'])).toList();
+    return Consumer2<TeamListProvider, FollowProvider>(
+      builder: (context, teamProvider, followProvider, _) {
+        if (teamProvider.isLoading && teamProvider.teams.isEmpty) {
+          return const Center(child: CircularProgressIndicator(color: Colors.blueGrey));
+        }
 
-          // 2. Build list of widgets
-          final List<Widget> items = [];
+        final filteredTeams = teamProvider.teams.where((t) {
+          final name = t['name']?.toLowerCase() ?? "";
+          return name.contains(_teamSearchQuery.toLowerCase());
+        }).toList();
 
-          // Search Bar
+        final List<Widget> items = [];
+
+        // Search Bar
+        items.add(Padding(
+          padding: const EdgeInsets.only(top: 16, bottom: 24),
+          child: _buildTeamSearchBar(cardColor),
+        ));
+
+        // All Teams Header
+        items.add(_buildSectionHeader(
+          icon: Icons.groups_rounded,
+          iconColor: isDark ? Colors.tealAccent : Colors.teal,
+          title: "All Teams",
+          count: teamProvider.teams.length,
+          isExpanded: _isAllTeamsExpanded,
+          onToggle: () => setState(() => _isAllTeamsExpanded = !_isAllTeamsExpanded),
+        ));
+
+        // All Teams Content
+        if (_isAllTeamsExpanded) {
+          items.addAll(filteredTeams.map((t) => _buildTeamItem(t, accentColor, followProvider, isDark)));
+        }
+
+        // Loading Indicator
+        if (teamProvider.hasMore) {
           items.add(Padding(
-            padding: const EdgeInsets.only(top: 16, bottom: 24),
-            child: _buildTeamSearchBar(cardColor),
-          ));
-
-          // Following Header
-          items.add(_buildSectionHeader(
-            icon: Icons.star,
-            iconColor: isDark ? Colors.tealAccent : Colors.teal,
-            title: "Following",
-            count: followedTeams.length,
-            isExpanded: _isFollowingExpanded,
-            onToggle: () => setState(() => _isFollowingExpanded = !_isFollowingExpanded),
-          ));
-
-          // Following Content
-          if (_isFollowingExpanded) {
-            if (followedTeams.isEmpty) {
-              items.add(Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text("You are not following any teams", style: TextStyle(color: subTextColor)),
-              ));
-            } else {
-              items.addAll(followedTeams.map((t) => _buildTeamItem(t, accentColor, followProvider, isDark)));
-            }
-          }
-
-          // All Teams Header
-          items.add(Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: _buildSectionHeader(
-              icon: Icons.groups_rounded,
-              iconColor: isDark ? Colors.tealAccent : Colors.teal,
-              title: "All Teams",
-              count: teamProvider.teams.length,
-              isExpanded: _isAllTeamsExpanded,
-              onToggle: () => setState(() => _isAllTeamsExpanded = !_isAllTeamsExpanded),
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Column(
+                children: [
+                  CircularProgressIndicator(color: accentColor, strokeWidth: 2),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Loading more teams (${teamProvider.teams.length} loaded)...",
+                    style: TextStyle(color: subTextColor, fontSize: 12),
+                  ),
+                ],
+              ),
             ),
           ));
+        }
 
-          // All Teams Content
-          if (_isAllTeamsExpanded) {
-            items.addAll(filteredTeams.map((t) => _buildTeamItem(t, accentColor, followProvider, isDark)));
-          }
+        items.add(const SizedBox(height: 40));
 
-          // Loading Indicator
-          if (teamProvider.hasMore) {
-            items.add(Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Column(
-                  children: [
-                    CircularProgressIndicator(color: accentColor, strokeWidth: 2),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Loading more teams (${teamProvider.teams.length} loaded)...",
-                      style: TextStyle(color: subTextColor, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ));
-          }
+        return ListView.builder(
+          controller: _teamScrollController,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: items.length,
+          itemBuilder: (context, index) => items[index],
+        );
+      },
+    );
+  }
 
-          items.add(const SizedBox(height: 40));
+  Widget _buildFollowingTeamsTab(Color accentColor, Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
-          return ListView.builder(
-            controller: _teamScrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length,
-            itemBuilder: (context, index) => items[index],
+    return Consumer<FollowProvider>(
+      builder: (context, followProvider, child) {
+        final followedTeams = context.watch<TeamListProvider>().teams.where((t) => followProvider.isTeamFollowed(t['id'])).toList();
+
+        if (followedTeams.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.star_outline_rounded, size: 64, color: subTextColor),
+                const SizedBox(height: 16),
+                Text("No favorited teams yet", style: TextStyle(color: textColor, fontSize: 16)),
+                const SizedBox(height: 8),
+                Text("Star a team to see it here", style: TextStyle(color: subTextColor, fontSize: 14)),
+              ],
+            ),
           );
-        },
-      ),
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: followedTeams.length,
+          itemBuilder: (context, index) {
+            return _buildTeamItem(followedTeams[index], accentColor, followProvider, isDark);
+          },
+        );
+      },
     );
   }
 

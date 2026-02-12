@@ -52,9 +52,37 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
 
-    return Scaffold(
-      backgroundColor: primaryColor,
-      body: _buildLeaguesTab(accentColor, cardColor),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: primaryColor,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            decoration: BoxDecoration(
+              color: isDark ? primaryColor : Colors.white,
+              border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+            ),
+            child: TabBar(
+              indicatorColor: accentColor,
+              indicatorWeight: 3,
+              labelColor: isDark ? Colors.white : Colors.black,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
+              tabs: const [
+                Tab(text: "Leagues"),
+                Tab(text: "Following"),
+              ],
+            ),
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            _buildLeaguesTab(accentColor, cardColor),
+            _buildFollowingLeaguesTab(accentColor, cardColor),
+          ],
+        ),
+      ),
     );
   }
 
@@ -490,6 +518,41 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFollowingLeaguesTab(Color accentColor, Color cardColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
+    return Consumer<FollowProvider>(
+      builder: (context, followProvider, child) {
+        final followedLeagues = context.watch<LeagueProvider>().leagues.where((l) => followProvider.isLeagueFollowed(l['id'])).toList();
+
+        if (followedLeagues.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.star_outline_rounded, size: 64, color: subTextColor),
+                const SizedBox(height: 16),
+                Text("No favorited leagues yet", style: TextStyle(color: textColor, fontSize: 16)),
+                const SizedBox(height: 8),
+                Text("Star a league to see it here", style: TextStyle(color: subTextColor, fontSize: 14)),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: followedLeagues.length,
+          itemBuilder: (context, index) {
+            return _buildLeagueItem(followedLeagues[index], accentColor);
+          },
+        );
+      },
     );
   }
 }
