@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:football_app/screens/premium_screen.dart';
+import 'package:football_app/screens/settings_screen.dart';
+import 'package:football_app/screens/team_details_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/screens/live_scores_screen.dart';
 import 'package:football_app/screens/leagues_screen.dart';
@@ -13,8 +15,7 @@ import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
 import '../providers/team_list_provider.dart';
 import 'live_matches_screen.dart';
-import 'team_details_screen.dart';
-import 'settings_screen.dart';
+import 'search_screen.dart';
 
 /// The Home screen acts as the main shell for the application.
 /// It manages the bottom navigation bar and switches between specialized screens.
@@ -31,9 +32,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   
   // Current index of the selected tab
   int _selectedIndex = 0;
-  bool _isSearching = false;
-  final TextEditingController _searchController = TextEditingController();
-  Timer? _debounce;
 
   @override
   void initState() {
@@ -60,8 +58,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   void dispose() {
     _rotationController.dispose();
     _pulseController.dispose();
-    _searchController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
@@ -89,20 +85,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).appBarTheme.backgroundColor;
     const Color accentColor = Color(0xFFFF8700); // Lime/Neon Yellow
-    final secondaryColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
     final textPrimary = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.white;
 
     return PopScope(
-      canPop: !_isSearching && _selectedIndex == 0,
+      canPop: _selectedIndex == 0,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        if (_isSearching) {
-          setState(() {
-            _isSearching = false;
-            _searchController.clear();
-          });
-          return;
-        }
         if (_selectedIndex != 0) {
           setState(() => _selectedIndex = 0);
         }
@@ -115,41 +103,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         elevation: 0,
         leading: _selectedIndex != 0
           ? IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
+               icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
               onPressed: () => setState(() => _selectedIndex = 0),
             )
           : null,
-        title: _isSearching
-            ? Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: secondaryColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  autofocus: true,
-                  textAlignVertical: TextAlignVertical.center,
-                  style: TextStyle(color: textPrimary, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: "Search teams...",
-                    hintStyle: TextStyle(color: textPrimary.withOpacity(0.4), fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: textPrimary.withOpacity(0.4), size: 20),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.only(top: 10, bottom: 12),
-                  ),
-                  onChanged: (value) {
-                    // Local state updates if needed, but here we just wait for submission
-                  },
-                  onSubmitted: (value) {
-                    if (value.isNotEmpty) {
-                      context.read<TeamListProvider>().searchTeams(value);
-                    }
-                  },
-                ),
-              )
-            : _selectedIndex == 0 // Show PRO header ONLY on Matches tab
+        title: _selectedIndex == 0 // Show PRO header ONLY on Matches tab
                 ? Row(
                     children: [
                       Text(
@@ -164,7 +122,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Color(0xFFFF8700),
+                            color: const Color(0xFFFF8700),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Text(
@@ -179,19 +137,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     _titles[_selectedIndex],
                     style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
                   ),
-        actions: _isSearching
-            ? [
-                IconButton(
-                  icon: Icon(Icons.close, color: textPrimary),
-                  onPressed: () {
-                    setState(() {
-                      _isSearching = false;
-                      _searchController.clear();
-                    });
-                  },
-                ),
-              ]
-            : _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
+        actions: _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
                 ? [
                     RotationTransition(
                       turns: Tween(begin: 0.0, end: 1.0).animate(_rotationController),
@@ -203,19 +149,20 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     IconButton(
                       icon: Icon(Icons.search, color: textPrimary),
                       onPressed: () {
-                        setState(() {
-                          _isSearching = true;
-                        });
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const SearchScreen()),
+                        );
                       },
                     ),
                   ]
                 : [], // No tools for other screens
       ),
       // Display the screen corresponding to the current selection
-      body: _isSearching ? _buildSearchResultsTab(accentColor) : _screens[_selectedIndex],
+      body: _screens[_selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        color: secondaryColor,
+        color: isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!,
         elevation: 10,
         padding: EdgeInsets.zero,
         child: SizedBox(
@@ -318,6 +265,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
     return Consumer<TeamListProvider>(
       builder: (context, provider, _) {
+        final TextEditingController _searchController = TextEditingController();
+
         if (provider.isLoading) {
           return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
