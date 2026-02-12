@@ -1,3 +1,6 @@
+import 'package:alarm/alarm.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/providers/prediction_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
@@ -14,24 +17,25 @@ import 'package:football_app/providers/stats_provider.dart';
 import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/theme_provider.dart';
 import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/screens/home.dart';
 import 'package:football_app/services/notification_service.dart';
 import 'package:football_app/services/auto_notification_service.dart';
-import 'package:flutter/material.dart';
-import 'package:football_app/screens/home.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-import 'package:alarm/alarm.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Alarm
-  await Alarm.init();
-  
-  // Initialize notification service
-  await NotificationService().init();
+  if (!kIsWeb) {
+    // Initialize Alarm
+    await Alarm.init();
+    
+    // Initialize notification service
+    await NotificationService().init();
 
-  // Initialize auto notification service (background sync)
-  await AutoNotificationService().init();
+    // Initialize auto notification service (background sync)
+    await AutoNotificationService().init();
+  }
 
   runApp(
     MultiProvider(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +32,7 @@ class AutoNotificationService {
   final String _taskName = 'com.football.app.notif_sync';
 
   Future<void> init() async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) return;
     await Workmanager().initialize(
       callbackDispatcher,
       isInDebugMode: kDebugMode,
@@ -48,6 +50,7 @@ class AutoNotificationService {
   }
 
   Future<void> syncImmediately() async {
+    if (kIsWeb) return;
     await Workmanager().registerOneOffTask(
       "one_off_${DateTime.now().millisecondsSinceEpoch}",
       _taskName,
@@ -55,6 +58,7 @@ class AutoNotificationService {
   }
 
   Future<void> sync() async {
+    if (kIsWeb) return;
     debugPrint("🔄 [AUTO_NOTIF] Starting Sync...");
     
     // 1. Load favorites from Database

@@ -1,5 +1,6 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -12,6 +13,9 @@ class DatabaseService {
   DatabaseService._internal();
 
   Future<Database> get database async {
+    if (kIsWeb) {
+      throw UnsupportedError("Database is not supported on Web");
+    }
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
@@ -78,6 +82,7 @@ class DatabaseService {
   }
 
   Future<List<Map<String, dynamic>>> getFavorites() async {
+    if (kIsWeb) return [];
     final db = await database;
     return await db.query('favorites');
   }

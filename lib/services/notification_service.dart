@@ -14,6 +14,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    if (kIsWeb) return;
     // 1. Initialize Timezones
     tz.initializeTimeZones();
     
@@ -41,6 +42,7 @@ class NotificationService {
     const InitializationSettings settings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      macOS: iosSettings,
     );
 
     // 5. Initialize Plugin
