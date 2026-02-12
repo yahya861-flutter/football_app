@@ -165,7 +165,10 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
           _buildTriggerRow(
             "Before match",
             _notifyBeforeMatch,
-            (val) => setState(() => _notifyBeforeMatch = val!),
+            (val) => setState(() {
+              _notifyBeforeMatch = val!;
+              if (_notifyBeforeMatch) _notifyAtStart = false;
+            }),
             textColor,
           ),
           const SizedBox(height: 16),
@@ -185,9 +188,11 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
           _buildTriggerRow(
             "At the start of match",
             _notifyAtStart,
-            (val) => setState(() => _notifyAtStart = val!),
+            (val) => setState(() {
+              _notifyAtStart = val!;
+              if (_notifyAtStart) _notifyBeforeMatch = false;
+            }),
             textColor,
-            enabled: false, // UI matching screenshot (greyed out)
           ),
         ],
       ),

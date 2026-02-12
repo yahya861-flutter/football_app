@@ -110,12 +110,12 @@ class NotificationProvider with ChangeNotifier {
       }
 
       if (settings.notifyAtStart) {
-        // Use regular LOCAL NOTIFICATION for start
-        await _notificationService.scheduleNotification(
+        // Use ALARM for start to ensure it's loud as expected
+        await _notificationService.scheduleAlarm(
           id: matchId * 10 + 2,
           title: "Match Starting",
           body: "$matchTitle has started!",
-          scheduledDate: startTime,
+          scheduledTime: startTime,
         );
       }
 
@@ -175,9 +175,10 @@ class NotificationProvider with ChangeNotifier {
   Future<void> _cancelMatchNotifications(int matchId) async {
     // Cancel alarms
     await _notificationService.stopAlarm(matchId * 10 + 1);
+    await _notificationService.stopAlarm(matchId * 10 + 2);
     
     // Cancel local notifications
-    await _notificationService.cancelNotification(matchId * 10 + 1); // Also cancel if it was a notification before
+    await _notificationService.cancelNotification(matchId * 10 + 1);
     await _notificationService.cancelNotification(matchId * 10 + 2);
     await _notificationService.cancelNotification(matchId * 10 + 3);
   }
