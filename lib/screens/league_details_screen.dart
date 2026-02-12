@@ -510,6 +510,9 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
           const SizedBox(width: 14),
           const Expanded(child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5))),
           _buildHeaderColumn("PL"),
+          _buildHeaderColumn("W"),
+          _buildHeaderColumn("D"),
+          _buildHeaderColumn("L"),
           _buildHeaderColumn("GD"),
           _buildHeaderColumn("PTS"),
         ],
@@ -520,13 +523,13 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
   /// Helper for header columns
   Widget _buildHeaderColumn(String label, {bool isLast = false}) {
     return SizedBox(
-      width: 35,
+      width: 32,
       child: Text(
         label,
         style: const TextStyle(
           color: Colors.white60,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
         ),
         textAlign: TextAlign.center,
       ),
@@ -542,18 +545,33 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final teamImg = team['image_path'] ?? '';
 
     final details = standing['details'] as List? ?? [];
-    String mp = "0", gd = "0";
+    String mp = "0", w = "0", d = "0", l = "0", gd = "0", pts = standing['points']?.toString() ?? "0";
 
     for (var detail in details) {
-      final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
+      final typeId = detail['type_id']?.toString();
       final value = detail['value']?.toString() ?? '0';
-      if (type.contains('played')) mp = value;
-      else if (type.contains('goals-difference')) gd = value;
+      
+      if (typeId == '129') {
+        mp = value;
+      } else if (typeId == '130') {
+        w = value;
+      } else if (typeId == '131') {
+        d = value;
+      } else if (typeId == '132') {
+        l = value;
+      } else if (typeId == '186') {
+        gd = value;
+      } else if (typeId == '187') {
+        pts = value;
+      }
     }
 
     if (mp == "0" && standing['overall'] != null) {
       final overall = standing['overall'];
       mp = overall['played']?.toString() ?? "0";
+      w = overall['won']?.toString() ?? "0";
+      d = overall['draw']?.toString() ?? "0";
+      l = overall['lost']?.toString() ?? "0";
       gd = overall['goals_diff']?.toString() ?? "0";
     }
 
@@ -600,12 +618,15 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               ),
             ),
             _buildStatColumn(mp),
+            _buildStatColumn(w),
+            _buildStatColumn(d),
+            _buildStatColumn(l),
             _buildStatColumn(gd),
             Container(
               width: 38,
               padding: const EdgeInsets.symmetric(vertical: 4),
               decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-              child: Text(points.toString(), style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
+              child: Text(pts, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
             ),
           ],
         ),
@@ -617,8 +638,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color subTextColor = isDark ? Colors.white70 : Colors.black54;
     return SizedBox(
-      width: 38,
-      child: Text(value, style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
+      width: 32,
+      child: Text(value, style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
     );
   }
 

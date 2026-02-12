@@ -271,7 +271,7 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('https://api.sportmonks.com/v3/football/standings/seasons/$seasonId?include=participant'),
+        Uri.parse('https://api.sportmonks.com/v3/football/standings/seasons/$seasonId?include=participant;details'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -332,7 +332,7 @@ class LeagueProvider with ChangeNotifier {
 
     try {
       final response = await http.get(
-        Uri.parse('https://api.sportmonks.com/v3/football/standings/live/leagues/$leagueId?api_token=$_apiKey&include=participant'),
+        Uri.parse('https://api.sportmonks.com/v3/football/standings/live/leagues/$leagueId?api_token=$_apiKey&include=participant;details'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

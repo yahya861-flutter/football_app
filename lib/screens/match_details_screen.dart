@@ -818,6 +818,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           const SizedBox(width: 40),
           const Expanded(child: SizedBox()),
           _buildHeaderColumn("PL"),
+          _buildHeaderColumn("W"),
+          _buildHeaderColumn("D"),
+          _buildHeaderColumn("L"),
           _buildHeaderColumn("GD"),
           _buildHeaderColumn("PTS"),
         ],
@@ -828,10 +831,10 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   Widget _buildHeaderColumn(String label) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      width: 35,
+      width: 32,
       child: Text(
         label,
-        style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 12, fontWeight: FontWeight.w500),
+        style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 11, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
       ),
     );
@@ -845,18 +848,33 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final teamImg = team['image_path'] ?? '';
 
     final details = standing['details'] as List? ?? [];
-    String mp = "0", gd = "0";
+    String mp = "0", w = "0", d = "0", l = "0", gd = "0", pts = standing['points']?.toString() ?? "0";
 
     for (var detail in details) {
-      final type = detail['type']?['name']?.toString().toLowerCase() ?? '';
+      final typeId = detail['type_id']?.toString();
       final value = detail['value']?.toString() ?? '0';
-      if (type.contains('played')) mp = value;
-      else if (type.contains('goals-difference')) gd = value;
+      
+      if (typeId == '129') {
+        mp = value;
+      } else if (typeId == '130') {
+        w = value;
+      } else if (typeId == '131') {
+        d = value;
+      } else if (typeId == '132') {
+        l = value;
+      } else if (typeId == '186') {
+        gd = value;
+      } else if (typeId == '187') {
+        pts = value;
+      }
     }
 
     if (mp == "0" && standing['overall'] != null) {
       final overall = standing['overall'];
       mp = overall['played']?.toString() ?? "0";
+      w = overall['won']?.toString() ?? "0";
+      d = overall['draw']?.toString() ?? "0";
+      l = overall['lost']?.toString() ?? "0";
       gd = overall['goals_diff']?.toString() ?? "0";
     }
 
@@ -919,6 +937,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ),
             ),
             _buildStatColumn(mp),
+            _buildStatColumn(w),
+            _buildStatColumn(d),
+            _buildStatColumn(l),
             _buildStatColumn(gd),
             Container(
               width: 38,
@@ -928,7 +949,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                points.toString(),
+                pts,
                 style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 13),
                 textAlign: TextAlign.center,
               ),
@@ -942,8 +963,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   Widget _buildStatColumn(String value) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      width: 35,
-      child: Text(value, style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12), textAlign: TextAlign.center),
+      width: 32,
+      child: Text(value, style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11), textAlign: TextAlign.center),
     );
   }
 
