@@ -1,4 +1,5 @@
 import 'package:football_app/providers/commentary_provider.dart';
+import 'package:football_app/providers/prediction_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/match_provider.dart';
 import 'package:football_app/providers/fixture_provider.dart';
@@ -49,6 +50,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => StatsProvider()),
         ChangeNotifierProvider(create: (_) => LineupProvider()),
         ChangeNotifierProvider(create: (_) => CommentaryProvider()),
+        ChangeNotifierProvider(create: (_) => PredictionProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),

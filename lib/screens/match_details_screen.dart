@@ -4,6 +4,7 @@ import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/h2h_provider.dart';
 import 'package:football_app/providers/stats_provider.dart';
 import 'package:football_app/providers/lineup_provider.dart';
+import 'package:football_app/providers/prediction_provider.dart';
 import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
@@ -58,7 +59,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         context.read<StatsProvider>().fetchStats(fixtureId);
         context.read<StatsProvider>().fetchEvents(fixtureId);
         context.read<LineupProvider>().fetchLineupsAndBench(fixtureId);
-        context.read<CommentaryProvider>().fetchComments(fixtureId);
+        context.read<PredictionProvider>().fetchPredictionDetails(fixtureId);
         // Fetch Live Standings for the league
         context.read<LeagueProvider>().fetchLiveStandings(widget.leagueId);
       }
@@ -387,23 +388,40 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
-                  Text("Who will win?", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildPollButton("Home", "45%"),
-                      _buildPollButton("Draw", "15%"),
-                      _buildPollButton("Away", "40%"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          // Prediction Section
+          Consumer<PredictionProvider>(
+            builder: (context, predProvider, child) {
+              final WinProbabilities = predProvider.getWinProbabilities();
+              
+              return _buildExpansionCard(
+                icon: Icons.analytics_outlined,
+                title: "Predictions",
+                initiallyExpanded: true,
+                content: predProvider.isLoading 
+                  ?  Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: Colors.redAccent)))
+                  : Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        children: [
+                          Text("Win Probability", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 20),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildPollButton("Home", WinProbabilities['home']!),
+                              _buildPollButton("Draw", WinProbabilities['draw']!),
+                              _buildPollButton("Away", WinProbabilities['away']!),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+              );
+            },
           ),
         ],
       ),
-    );
+    ))]));
   }
 
   Widget _buildPollButton(String label, String percent) {
@@ -1510,26 +1528,35 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildCommentsTab() {
-    return Consumer<CommentaryProvider>(
+    return Consumer<PredictionProvider>(
       builder: (context, provider, child) {
-        if (provider.isLoading && provider.comments.isEmpty) {
+        final comments = provider.predictionData?['comments'] as List? ?? [];
+        
+        if (provider.isLoading && comments.isEmpty) {
           return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
         }
 
-        if (provider.errorMessage != null && provider.comments.isEmpty) {
+        if (provider.errorMessage != null && comments.isEmpty) {
           return Center(child: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)));
         }
 
-        if (provider.comments.isEmpty) {
+        if (comments.isEmpty) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Center(child: Text("No commentary available", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
         }
 
+        // Sort by minute (descending, latest first)
+        final sortedComments = List.from(comments)..sort((a, b) {
+          final minA = a['minute'] ?? 0;
+          final minB = b['minute'] ?? 0;
+          return minB.compareTo(minA);
+        });
+
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: provider.comments.length,
+          itemCount: sortedComments.length,
           itemBuilder: (context, index) {
-            final comment = provider.comments[index];
+            final comment = sortedComments[index];
             final minute = comment['minute']?.toString() ?? '';
             final text = comment['comment'] ?? '';
             final isImportant = comment['important'] == true;
