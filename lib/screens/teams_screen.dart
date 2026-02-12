@@ -298,7 +298,8 @@ class _TeamsScreenState extends State<TeamsScreen> {
           hintStyle: TextStyle(color: subTextColor, fontSize: 14),
           prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          isDense: true,
+          contentPadding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 14),
         ),
       ),
     );

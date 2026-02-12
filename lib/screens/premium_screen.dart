@@ -15,23 +15,27 @@ class _PremiumScreenState extends State<PremiumScreen> {
     const Color mintColor = Color(0xFF00FF9D); // Mint/Neon green from screenshot
     const Color darkCardColor = Color(0xFF121212);
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bool isSmallScreen = screenHeight < 700;
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Top Image with Back Button
-              Stack(
+        body: Column(
+          children: [
+            // Top Image with Back Button
+            Expanded(
+              flex: isSmallScreen ? 2 : 3,
+              child: Stack(
                 children: [
                   Image.asset(
                     'lib/assets/images/footbal.jpg',
                     width: double.infinity,
-                    height: 350,
+                    height: double.infinity,
                     fit: BoxFit.cover,
                   ),
                   Positioned(
-                    top: 50,
+                    top: 20,
                     left: 20,
                     child: Container(
                       decoration: BoxDecoration(
@@ -44,13 +48,13 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       ),
                     ),
                   ),
-                  // Bottom Gradient Overlay for fading into black
+                  // Bottom Gradient Overlay
                   Positioned(
                     bottom: 0,
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 100,
+                      height: 80,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
@@ -66,151 +70,160 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   ),
                 ],
               ),
+            ),
       
-              const SizedBox(height: 10),
-              const Text(
-                "Go Premium",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-      
-              // Features Card
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: darkCardColor,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Text(
+                    "Go Premium",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isSmallScreen ? 24 : 32,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: isSmallScreen ? 12 : 24),
+          
+                  // Features Card
+                  Container(
+                    padding: EdgeInsets.all(isSmallScreen ? 16 : 24),
+                    decoration: BoxDecoration(
+                      color: darkCardColor,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Column(
                       children: [
-                        const Text(
-                          "Get Access to",
-                          style: TextStyle(
-                            color: mintColor,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: mintColor,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.sports_soccer, size: 16, color: Colors.black),
-                              SizedBox(width: 4),
-                              Text(
-                                "Explore Benifits",
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Get Access to",
+                              style: TextStyle(
+                                color: mintColor,
+                                fontSize: isSmallScreen ? 18 : 22,
+                                fontWeight: FontWeight.bold,
                               ),
-                            ],
-                          ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: mintColor,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.sports_soccer, size: 16, color: Colors.black),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "Explore Benefits",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: isSmallScreen ? 10 : 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isSmallScreen ? 12 : 24),
+                        _buildFeatureRow("Covering 2100+ leagues", mintColor, isSmallScreen),
+                        _buildFeatureRow("Ads Free Version", mintColor, isSmallScreen),
+                        _buildFeatureRow("Custom Match Alarm", mintColor, isSmallScreen),
+                      ],
+                    ),
+                  ),
+          
+                  SizedBox(height: isSmallScreen ? 16 : 32),
+          
+                  // Subscription Options
+                  IntrinsicHeight(
+                    child: Row(
+                      children: [
+                        _buildSubscriptionCard(
+                          index: 0,
+                          title: "Weekly",
+                          price: "Rs 1,400/week",
+                          mintColor: mintColor,
+                          darkCardColor: darkCardColor,
+                          badgeText: "50 % off",
+                          isSmallScreen: isSmallScreen,
+                        ),
+                        const SizedBox(width: 16),
+                        _buildSubscriptionCard(
+                          index: 1,
+                          title: "Monthly",
+                          price: "Rs 4,200/month",
+                          mintColor: mintColor,
+                          darkCardColor: darkCardColor,
+                          isSmallScreen: isSmallScreen,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
-                    _buildFeatureRow("Covering 2100+ leagues", mintColor),
-                    _buildFeatureRow("Ads Free Version", mintColor),
-                    _buildFeatureRow("Custom Match Alarm", mintColor),
-                  ],
-                ),
-              ),
-      
-              const SizedBox(height: 32),
-      
-              // Subscription Options
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      _buildSubscriptionCard(
-                        index: 0,
-                        title: "Weekly",
-                        price: "Rs 1,400/week",
-                        mintColor: mintColor,
-                        darkCardColor: darkCardColor,
-                        badgeText: "50 % off",
-                      ),
-                      const SizedBox(width: 16),
-                      _buildSubscriptionCard(
-                        index: 1,
-                        title: "Monthly",
-                        price: "Rs 4,200/month",
-                        mintColor: mintColor,
-                        darkCardColor: darkCardColor,
-                      ),
-                    ],
                   ),
-                ),
-              ),
-      
-              const SizedBox(height: 32),
-      
-              // Purchase Button
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ElevatedButton(
-                  onPressed: () {
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: mintColor,
-                    minimumSize: const Size(double.infinity, 60),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+          
+                  SizedBox(height: isSmallScreen ? 16 : 32),
+          
+                  // Purchase Button
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: mintColor,
+                      minimumSize: Size(double.infinity, isSmallScreen ? 50 : 60),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Purchase Premium",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: isSmallScreen ? 16 : 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Icon(Icons.arrow_forward, color: Colors.black),
+                      ],
                     ),
                   ),
-                  child: const Row(
+          
+                  SizedBox(height: isSmallScreen ? 12 : 24),
+          
+                  // Terms & Info
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Purchase Premium",
+                        "Privacy Policy",
                         style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          color: Colors.white60,
+                          fontSize: isSmallScreen ? 12 : 13,
+                          decoration: TextDecoration.underline,
                         ),
                       ),
-                      SizedBox(width: 12),
-                      Icon(Icons.arrow_forward, color: Colors.black),
+                      const SizedBox(width: 24),
+                      Text(
+                        "Cancel any time",
+                        style: TextStyle(
+                          color: Colors.white60,
+                          fontSize: isSmallScreen ? 12 : 13,
+                        ),
+                      ),
                     ],
                   ),
-                ),
+                  SizedBox(height: isSmallScreen ? 16 : 32),
+                ],
               ),
-      
-              const SizedBox(height: 24),
-      
-              // Terms Text
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  "Payment will be charged from your Google Play account. Subscription automatically renews unless it is cancelled at least 24 hours before the end of current period. Your account will be charged for renewal within 24 hours prior to the end of current period. You can manage and cancel your subscription at any time from the Google Play store.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white60,
-                    fontSize: 12,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -222,6 +235,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
     required String price,
     required Color mintColor,
     required Color darkCardColor,
+    required bool isSmallScreen,
     String? badgeText,
   }) {
     final isSelected = _selectedOption == index;
@@ -234,7 +248,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
             child: Container(
               width: double.infinity,
               height: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+              padding: EdgeInsets.symmetric(vertical: isSmallScreen ? 16 : 24, horizontal: 8),
               decoration: BoxDecoration(
                 color: darkCardColor,
                 borderRadius: BorderRadius.circular(16),
@@ -248,15 +262,15 @@ class _PremiumScreenState extends State<PremiumScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    style: TextStyle(color: Colors.white, fontSize: isSmallScreen ? 14 : 16),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: isSmallScreen ? 4 : 8),
                   Text(
                     price,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: isSmallScreen ? 14 : 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -301,19 +315,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
     );
   }
 
-  Widget _buildFeatureRow(String text, Color mintColor) {
+  Widget _buildFeatureRow(String text, Color mintColor, bool isSmallScreen) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: isSmallScreen ? 8 : 16),
       child: Row(
         children: [
-          Icon(Icons.check, color: mintColor, size: 24),
-          const SizedBox(width: 16),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          Icon(Icons.check, color: mintColor, size: isSmallScreen ? 18 : 24),
+          SizedBox(width: isSmallScreen ? 12 : 16),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 14 : 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
