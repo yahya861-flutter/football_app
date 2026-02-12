@@ -126,23 +126,6 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
           child: _buildSearchBar(cardColor),
         ));
 
-        // Following
-        items.add(_buildSectionHeader(
-          icon: Icons.star, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Following", count: followedLeagues.length,
-          isExpanded: _isLeaguesFollowingExpanded,
-          onToggle: () => setState(() => _isLeaguesFollowingExpanded = !_isLeaguesFollowingExpanded),
-        ));
-        if (_isLeaguesFollowingExpanded) {
-          if (followedLeagues.isEmpty) {
-            items.add(Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text("You are not following any leagues", style: TextStyle(color: subTextColor)),
-            ));
-          } else {
-            items.addAll(followedLeagues.map((l) => _buildLeagueItem(l, accentColor)));
-          }
-        }
-
         // Top Leagues
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
