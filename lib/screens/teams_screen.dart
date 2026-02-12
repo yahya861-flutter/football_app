@@ -277,14 +277,6 @@ class _TeamsScreenState extends State<TeamsScreen> {
         style: TextStyle(color: textColor, fontSize: 14),
         onChanged: (val) {
           setState(() => _teamSearchQuery = val);
-          if (_teamDebounce?.isActive ?? false) _teamDebounce!.cancel();
-          _teamDebounce = Timer(const Duration(milliseconds: 500), () {
-            if (val.isNotEmpty) {
-              context.read<TeamListProvider>().searchTeams(val);
-            } else {
-              context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
-            }
-          });
         },
         onSubmitted: (val) {
           if (val.isNotEmpty) {

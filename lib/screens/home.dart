@@ -140,12 +140,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     contentPadding: const EdgeInsets.only(top: 10, bottom: 12),
                   ),
                   onChanged: (value) {
-                    if (_debounce?.isActive ?? false) _debounce!.cancel();
-                    _debounce = Timer(const Duration(milliseconds: 500), () {
-                      if (value.isNotEmpty) {
-                        context.read<TeamListProvider>().searchTeams(value);
-                      }
-                    });
+                    // Local state updates if needed, but here we just wait for submission
                   },
                   onSubmitted: (value) {
                     if (value.isNotEmpty) {
