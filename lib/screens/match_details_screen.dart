@@ -341,8 +341,19 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildInfoTab(dynamic fixture, String htScore) {
-    final venueName = fixture['venue']?['name'] ?? 'Unknown Venue';
-    final city = fixture['venue']?['city'] ?? 'Unknown City';
+    final venueNameRaw = fixture['venue']?['name']?.toString() ?? '';
+    final cityNameRaw = fixture['venue']?['city']?.toString() ?? '';
+    
+    String venueDisplay = "N/A";
+    if (venueNameRaw.isNotEmpty && !venueNameRaw.toLowerCase().contains('unknown')) {
+      venueDisplay = venueNameRaw;
+      if (cityNameRaw.isNotEmpty && !cityNameRaw.toLowerCase().contains('unknown') && cityNameRaw != venueNameRaw) {
+        venueDisplay += ", $cityNameRaw";
+      }
+    } else if (cityNameRaw.isNotEmpty && !cityNameRaw.toLowerCase().contains('unknown')) {
+      venueDisplay = cityNameRaw;
+    }
+
     final timestamp = fixture['starting_at_timestamp'];
     String formattedKickOff = "N/A";
     if (timestamp != null) {
@@ -355,6 +366,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+    final Color accentColor = const Color(0xFFFF8700);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -367,61 +379,56 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             title: "Match Information",
             initiallyExpanded: true,
             content: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
                   _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
                   _buildInfoRow(Icons.access_time, "Kick off", formattedKickOff),
                   if (htScore.isNotEmpty)
                     _buildInfoRow(Icons.timer_outlined, "Half Time Result", htScore),
-                  _buildInfoRow(Icons.location_on_outlined, "Venue", "$venueName, $city", showMap: true),
+                  _buildInfoRow(Icons.location_on_outlined, "Venue", venueDisplay, showMap: true),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          // Poll Section
-          _buildExpansionCard(
-            icon: Icons.poll_outlined,
-            title: "Match Poll",
-            content: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
           // Prediction Section
           Consumer<PredictionProvider>(
             builder: (context, predProvider, child) {
               final WinProbabilities = predProvider.getWinProbabilities();
+              final bool hasPredictions = WinProbabilities.values.any((v) => v != "0%");
               
               return _buildExpansionCard(
                 icon: Icons.analytics_outlined,
                 title: "Predictions",
                 initiallyExpanded: true,
                 content: predProvider.isLoading 
-                  ?  Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: Colors.redAccent)))
+                  ? const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: Colors.redAccent)))
                   : Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          Text("Win Probability", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      child: !hasPredictions 
+                        ? Center(child: Text("No prediction available for this match", style: TextStyle(color: subTextColor, fontSize: 13)))
+                        : Column(
                             children: [
-                              _buildPollButton("Home", WinProbabilities['home']!),
-                              _buildPollButton("Draw", WinProbabilities['draw']!),
-                              _buildPollButton("Away", WinProbabilities['away']!),
+                              Text("Win Probability", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _buildPollButton("Home", WinProbabilities['home']!),
+                                  _buildPollButton("Draw", WinProbabilities['draw']!),
+                                  _buildPollButton("Away", WinProbabilities['away']!),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
-                      ),
                     ),
               );
             },
           ),
         ],
       ),
-    ))]));
+    );
   }
 
   Widget _buildPollButton(String label, String percent) {
@@ -516,38 +523,26 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: const Color(0xFF26BC94)),
-              const SizedBox(width: 14),
+              Icon(icon, size: 16, color: const Color(0xFFFF8700).withOpacity(0.7)),
+              const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(color: subTextColor, fontSize: 13, fontWeight: FontWeight.w500),
+                style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.w600, letterSpacing: 0.5),
               ),
             ],
           ),
-          const SizedBox(width: 24),
-          Flexible(
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    value,
-                    style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.right,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (showMap) ...[
-                  const SizedBox(width: 8),
-                  const Icon(Icons.location_on_rounded, color: Color(0xFFFF8700), size: 16),
-                ],
-              ],
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 24),
+            child: Text(
+              value,
+              style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
         ],
