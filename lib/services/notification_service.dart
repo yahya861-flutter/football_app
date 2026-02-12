@@ -103,7 +103,9 @@ class NotificationService {
         title: title,
         body: body,
         stopButton: "Stop",
+        icon: 'ic_launcher', // Use app icon for notification
       ),
+      warningNotificationOnKill: true, // Survive app kill/swipe on Android
     );
 
     try {

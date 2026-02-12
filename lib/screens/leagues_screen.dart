@@ -107,13 +107,19 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         final followedLeagues = filteredLeagues.where((l) => followProvider.isLeagueFollowed(l['id'])).toList();
 
         // 2. Grouping
-        Map<String, List<dynamic>> leaguesByCountryMap = {};
+        Map<String, Map<String, dynamic>> leaguesByCountryMap = {};
         for (var league in filteredLeagues) {
-          final countryName = league['country']?['name'] ?? 'International';
+          final country = league['country'];
+          final countryName = country?['name'] ?? 'International';
+          final flagUrl = country?['image_path'];
+          
           if (!leaguesByCountryMap.containsKey(countryName)) {
-            leaguesByCountryMap[countryName] = [];
+            leaguesByCountryMap[countryName] = {
+              'flag': flagUrl,
+              'leagues': <dynamic>[],
+            };
           }
-          leaguesByCountryMap[countryName]!.add(league);
+          leaguesByCountryMap[countryName]!['leagues'].add(league);
         }
         final countryEntries = leaguesByCountryMap.entries.toList();
 
@@ -158,7 +164,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         ));
 
         // Country Groups
-        items.addAll(countryEntries.map((entry) => _buildCountryExpandable(entry.key, entry.value, accentColor, textColor, subTextColor, isDark)));
+        items.addAll(countryEntries.map((entry) => _buildCountryExpandable(entry.key, entry.value['leagues'], entry.value['flag'], accentColor, textColor, subTextColor, isDark)));
 
         // Loading Indicator
         if (leagueProvider.hasMore) {
@@ -365,7 +371,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, Color accentColor, Color textColor, Color subTextColor, bool isDark) {
+  Widget _buildCountryExpandable(String countryName, List<dynamic> leagues, String? flagUrl, Color accentColor, Color textColor, Color subTextColor, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -389,16 +395,34 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         child: ExpansionTile(
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           leading: Container(
-            padding: const EdgeInsets.all(8),
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: Colors.blue.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.public_rounded, color: Colors.blue, size: 20),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: flagUrl != null
+                  ? Image.network(
+                      flagUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.public_rounded, color: Colors.blue, size: 20),
+                    )
+                  : const Icon(Icons.public_rounded, color: Colors.blue, size: 20),
+            ),
           ),
           title: Text(
             countryName, 
-            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14)
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          subtitle: Text(
+            "${leagues.length} Leagues",
+            style: TextStyle(color: subTextColor, fontSize: 13),
           ),
           trailing: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
