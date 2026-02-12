@@ -426,8 +426,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                       isActive ? Icons.alarm_on : Icons.alarm,
                       color: !isUpcoming 
                         ? subTextColor.withOpacity(0.1) 
-                        : (isActive ? const Color(0xFF48C9B0) : const Color(0xFFFF8700)),
-                      size: 18,
+                        : (isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54)),
+                      size: 28,
                     ),
                   ),
                 );

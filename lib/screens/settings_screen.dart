@@ -58,6 +58,8 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.notifications,
             title: "Test Notification",
             textColor: textColor,
+            iconColor: const Color(0xFF48C9B0),
+            iconSize: 28,
             onTap: () {
               context.read<NotificationProvider>().showTestNotification();
             },
@@ -66,6 +68,8 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.alarm,
             title: "Test Scheduled Alarm (10s)",
             textColor: textColor,
+            iconColor: const Color(0xFF48C9B0),
+            iconSize: 28,
             onTap: () {
               context.read<NotificationProvider>().scheduleTestAlarm();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -80,6 +84,8 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.notifications_active,
             title: "Test Scheduled Notification (10s)",
             textColor: textColor,
+            iconColor: const Color(0xFF48C9B0),
+            iconSize: 28,
             onTap: () {
               context.read<NotificationProvider>().scheduleTestNotification();
               ScaffoldMessenger.of(context).showSnackBar(
@@ -188,6 +194,8 @@ class SettingsScreen extends StatelessWidget {
     required IconData icon,
     required String title,
     required Color textColor,
+    Color? iconColor,
+    double? iconSize,
     VoidCallback? onTap,
   }) {
     return InkWell(
@@ -196,7 +204,7 @@ class SettingsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           children: [
-            Icon(icon, color: const Color(0xFF00BFA5)),
+            Icon(icon, color: iconColor ?? const Color(0xFF00BFA5), size: iconSize),
             const SizedBox(width: 16),
             Expanded(
               child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),

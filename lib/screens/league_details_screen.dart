@@ -430,8 +430,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       isActive ? Icons.alarm_on : Icons.alarm,
                       color: !isUpcoming 
                         ? Colors.white10 
-                        : (isActive ? const Color(0xFF48C9B0) : textColor.withOpacity(0.3)),
-                      size: 16,
+                        : (isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54)),
+                      size: 28,
                     ),
                   ),
                 );

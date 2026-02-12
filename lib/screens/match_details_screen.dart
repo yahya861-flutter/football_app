@@ -382,9 +382,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               child: Column(
                 children: [
                   _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
-                  _buildInfoRow(Icons.access_time, "Kick off", formattedKickOff),
+                  _buildInfoRow(Icons.alarm, "Kick off", formattedKickOff),
                   if (htScore.isNotEmpty)
-                    _buildInfoRow(Icons.timer_outlined, "Half Time Result", htScore),
+                    _buildInfoRow(Icons.alarm_on, "Half Time Result", htScore),
                   _buildInfoRow(Icons.location_on_outlined, "Venue", venueDisplay, showMap: true),
                 ],
               ),
@@ -528,7 +528,11 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: const Color(0xFFFF8700).withOpacity(0.7)),
+              Icon(
+                icon, 
+                size: (icon == Icons.alarm || icon == Icons.alarm_on) ? 28 : 20, 
+                color: (icon == Icons.alarm || icon == Icons.alarm_on) ? const Color(0xFF48C9B0) : const Color(0xFFFF8700).withOpacity(0.7)
+              ),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -1105,7 +1109,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.alarm, color: Colors.grey, size: 20),
+            Icon(Icons.alarm, color: isDark ? Colors.white60 : Colors.black54, size: 28),
           ],
         ),
       ),
