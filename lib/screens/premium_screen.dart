@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PremiumScreen extends StatefulWidget {
   const PremiumScreen({super.key});
@@ -201,12 +202,20 @@ class _PremiumScreenState extends State<PremiumScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        "Privacy Policy",
-                        style: TextStyle(
-                          color: Colors.white60,
-                          fontSize: isSmallScreen ? 12 : 13,
-                          decoration: TextDecoration.underline,
+                      GestureDetector(
+                        onTap: () async {
+                          final Uri uri = Uri.parse("https://www.youtube.com/");
+                          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+                            debugPrint('Could not launch YouTube URL');
+                          }
+                        },
+                        child: Text(
+                          "Privacy Policy",
+                          style: TextStyle(
+                            color: Colors.white60,
+                            fontSize: isSmallScreen ? 12 : 13,
+                            decoration: TextDecoration.underline,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 24),

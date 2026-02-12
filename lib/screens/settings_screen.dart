@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
+import 'feedback_screen.dart';
 import '../providers/notification_provider.dart';
 import '../providers/theme_provider.dart';
 import 'premium_screen.dart';
@@ -8,6 +11,85 @@ class SettingsScreen extends StatelessWidget {
   final bool isTab;
   const SettingsScreen({super.key, this.isTab = false});
 
+  final String _youtubeUrl = 'https://www.youtube.com/';
+
+  Future<void> _launchUrl(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      debugPrint('Could not launch $url');
+    }
+  }
+
+  void _showReviewDialog(BuildContext context) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Colors.white;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Enjoying the App?",
+                style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Tap a star to rate us on the Store!",
+                textAlign: TextAlign.center,
+                style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) => const Icon(
+                  Icons.star_rounded,
+                  color: Colors.amber,
+                  size: 32,
+                )),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text("Later", style: TextStyle(color: textColor.withOpacity(0.5))),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _launchUrl(_youtubeUrl);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BFA5),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Text("Rate"),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -15,9 +97,7 @@ class SettingsScreen extends StatelessWidget {
     
     // Theme aware colors
     final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white70 : Colors.black87;
     final Color sectionColor = isDark ? Colors.white38 : Colors.black38;
-    final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
 
     final content = SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -49,10 +129,33 @@ class SettingsScreen extends StatelessWidget {
           // OTHERS SECTION
           Text("Others", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          _buildActionTile(icon: Icons.share, title: "Share", textColor: textColor),
-          _buildActionTile(icon: Icons.star_border, title: "Rate Us", textColor: textColor),
-          _buildActionTile(icon: Icons.feedback_outlined, title: "Feedback", textColor: textColor),
-          _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
+          _buildActionTile(
+            icon: Icons.share, 
+            title: "Share", 
+            textColor: textColor,
+            onTap: () => Share.share("Check out this amazing Football App! $_youtubeUrl"),
+          ),
+          _buildActionTile(
+            icon: Icons.star_border, 
+            title: "Rate Us", 
+            textColor: textColor,
+            onTap: () => _showReviewDialog(context),
+          ),
+          _buildActionTile(
+            icon: Icons.feedback_outlined, 
+            title: "Feedback", 
+            textColor: textColor,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FeedbackScreen()),
+            ),
+          ),
+          _buildActionTile(
+            icon: Icons.verified_user_outlined, 
+            title: "Privacy Policy", 
+            textColor: textColor,
+            onTap: () => _launchUrl(_youtubeUrl),
+          ),
           const SizedBox(height: 16),
           _buildActionTile(
             icon: Icons.notifications,
