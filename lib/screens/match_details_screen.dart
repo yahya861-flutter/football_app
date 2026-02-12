@@ -1105,7 +1105,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.access_time_rounded, color: Colors.grey, size: 20),
+            const Icon(Icons.alarm, color: Colors.grey, size: 20),
           ],
         ),
       ),

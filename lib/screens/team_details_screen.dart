@@ -8,6 +8,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/follow_provider.dart';
+import '../providers/notification_provider.dart';
+import '../widgets/match_alarm_dialog.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
   final int teamId;
@@ -631,12 +633,45 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             ),
             // Alarm Icon (Only for NS)
             if (isNotStarted)
-              Column(
-                children: [
-                  Icon(Icons.alarm, color: isDark ? Colors.white60 : Colors.black54, size: 28),
-                  const SizedBox(height: 4),
-                  Text("Alarm", style: TextStyle(color: subTextColor, fontSize: 10)),
-                ],
+              Consumer<NotificationProvider>(
+                builder: (context, notificationProvider, _) {
+                  final int matchId = fixture['id'] ?? 0;
+                  final bool isActive = notificationProvider.isAlarmSet(matchId);
+                  final DateTime startTime = timestamp != null 
+                      ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
+                      : DateTime.now();
+                  
+                  return GestureDetector(
+                    onTap: () {
+                      if (isActive) {
+                        notificationProvider.toggleAllOff(matchId);
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) => MatchAlarmDialog(
+                            matchId: matchId,
+                            matchTitle: "${homeTeam?['name'] ?? 'Home'} vs ${awayTeam?['name'] ?? 'Away'}",
+                            startTime: startTime,
+                          ),
+                        );
+                      }
+                    },
+                    child: Column(
+                      children: [
+                        Icon(
+                          isActive ? Icons.alarm_on : Icons.alarm, 
+                          color: isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54), 
+                          size: 28
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          isActive ? "On" : "Alarm", 
+                          style: TextStyle(color: isActive ? const Color(0xFF48C9B0) : subTextColor, fontSize: 10)
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
           ],
         ),

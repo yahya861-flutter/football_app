@@ -55,7 +55,7 @@ class SettingsScreen extends StatelessWidget {
           _buildActionTile(icon: Icons.verified_user_outlined, title: "Privacy Policy", textColor: textColor),
           const SizedBox(height: 16),
           _buildActionTile(
-            icon: Icons.access_time_filled_rounded,
+            icon: Icons.notifications,
             title: "Test Notification",
             textColor: textColor,
             onTap: () {
@@ -63,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           _buildActionTile(
-            icon: Icons.access_time_rounded,
+            icon: Icons.alarm,
             title: "Test Scheduled Alarm (10s)",
             textColor: textColor,
             onTap: () {
@@ -77,7 +77,7 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           _buildActionTile(
-            icon: Icons.more_time_rounded,
+            icon: Icons.notifications_active,
             title: "Test Scheduled Notification (10s)",
             textColor: textColor,
             onTap: () {
