@@ -773,34 +773,40 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           final isDark = Theme.of(context).brightness == Brightness.dark;
           return Center(child: Text("No table data", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
         }
-        return Column(
-          children: [
-            if (leagueProvider.liveStandings.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 8, height: 8,
-                      decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SizedBox(
+            width: 590,
+            child: Column(
+              children: [
+                if (leagueProvider.liveStandings.isNotEmpty)
+              /*    Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 8, height: 8,
+                          decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text("LIVE STANDINGS", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 10)),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    const Text("LIVE STANDINGS", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 10)),
-                  ],
+                  ),*/
+                _buildTableHeader(),
+                Expanded(
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: standings.length,
+                    itemBuilder: (context, index) {
+                      return _buildTableStandingRow(context, standings[index]);
+                    },
+                  ),
                 ),
-              ),
-            _buildTableHeader(),
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: standings.length,
-                itemBuilder: (context, index) {
-                  return _buildTableStandingRow(context, standings[index]);
-                },
-              ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );
@@ -809,32 +815,42 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   Widget _buildTableHeader() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: isDark ? Colors.white10 : Colors.black12, width: 0.5)),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 40),
-          const Expanded(child: SizedBox()),
-          _buildHeaderColumn("PL"),
-          _buildHeaderColumn("W"),
-          _buildHeaderColumn("D"),
-          _buildHeaderColumn("L"),
-          _buildHeaderColumn("GD"),
-          _buildHeaderColumn("PTS"),
+          SizedBox(
+            width: 40,
+            child: Text("#", style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+          ),
+          const SizedBox(width: 14),
+          const SizedBox(
+            width: 180,
+            child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          ),
+          _buildHeaderColumn("Played", width: 60, isDark: isDark),
+          _buildHeaderColumn("Won", width: 50, isDark: isDark),
+          _buildHeaderColumn("Drawn", width: 50, isDark: isDark),
+          _buildHeaderColumn("Lost", width: 50, isDark: isDark),
+          _buildHeaderColumn("GD", width: 50, isDark: isDark),
+          _buildHeaderColumn("Points", width: 60, isDark: isDark),
         ],
       ),
     );
   }
 
-  Widget _buildHeaderColumn(String label) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildHeaderColumn(String label, {double width = 32, required bool isDark}) {
     return SizedBox(
-      width: 32,
+      width: width,
       child: Text(
         label,
-        style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 11, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: isDark ? Colors.white60 : Colors.black54,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -896,14 +912,14 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 14),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
         ),
         child: Row(
           children: [
             SizedBox(
-              width: 24,
+              width: 40,
               child: Text(
                 position.toString(),
                 style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 13),
@@ -911,7 +927,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ),
             ),
             const SizedBox(width: 14),
-            Expanded(
+            SizedBox(
+              width: 180,
               child: Row(
                 children: [
                   Container(
@@ -936,22 +953,27 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 ],
               ),
             ),
-            _buildStatColumn(mp),
-            _buildStatColumn(w),
-            _buildStatColumn(d),
-            _buildStatColumn(l),
-            _buildStatColumn(gd),
-            Container(
-              width: 38,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF8700).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                pts,
-                style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 13),
-                textAlign: TextAlign.center,
+            _buildStatColumn(mp, width: 60),
+            _buildStatColumn(w, width: 50),
+            _buildStatColumn(d, width: 50),
+            _buildStatColumn(l, width: 50),
+            _buildStatColumn(gd, width: 50),
+            SizedBox(
+              width: 60,
+              child: Center(
+                child: Container(
+                  width: 38,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF8700).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    pts,
+                    style: const TextStyle(color: Color(0xFFFF8700), fontWeight: FontWeight.bold, fontSize: 13),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             ),
           ],
@@ -960,10 +982,10 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     );
   }
 
-  Widget _buildStatColumn(String value) {
+  Widget _buildStatColumn(String value, {double width = 32}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
-      width: 32,
+      width: width,
       child: Text(value, style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11), textAlign: TextAlign.center),
     );
   }

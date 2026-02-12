@@ -474,19 +474,25 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       return _buildPlaceholderTab("League Table", Icons.table_chart_rounded, accentColor);
     }
 
-    return Column(
-      children: [
-        _buildTableHeader(),
-        Expanded(
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            itemCount: leagueProvider.standings.length,
-            itemBuilder: (context, index) {
-              return _buildTableStandingRow(leagueProvider.standings[index], accentColor);
-            },
-          ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        width: 590,
+        child: Column(
+          children: [
+            _buildTableHeader(),
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: leagueProvider.standings.length,
+                itemBuilder: (context, index) {
+                  return _buildTableStandingRow(leagueProvider.standings[index], accentColor);
+                },
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -496,7 +502,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 18),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withOpacity(0.01) : Colors.grey[50],
         border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
@@ -504,31 +510,34 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
       child: Row(
         children: [
           SizedBox(
-            width: 30,
+            width: 40,
             child: Text("#", style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
           ),
           const SizedBox(width: 14),
-          const Expanded(child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5))),
-          _buildHeaderColumn("PL"),
-          _buildHeaderColumn("W"),
-          _buildHeaderColumn("D"),
-          _buildHeaderColumn("L"),
-          _buildHeaderColumn("GD"),
-          _buildHeaderColumn("PTS"),
+          const SizedBox(
+            width: 180,
+            child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+          ),
+          _buildHeaderColumn("Played", width: 60, isDark: isDark),
+          _buildHeaderColumn("Won", width: 50, isDark: isDark),
+          _buildHeaderColumn("Drawn", width: 50, isDark: isDark),
+          _buildHeaderColumn("Lost", width: 50, isDark: isDark),
+          _buildHeaderColumn("GD", width: 50, isDark: isDark),
+          _buildHeaderColumn("Points", width: 60, isDark: isDark),
         ],
       ),
     );
   }
 
   /// Helper for header columns
-  Widget _buildHeaderColumn(String label, {bool isLast = false}) {
+  Widget _buildHeaderColumn(String label, {double width = 32, required bool isDark}) {
     return SizedBox(
-      width: 32,
+      width: width,
       child: Text(
         label,
-        style: const TextStyle(
-          color: Colors.white60,
-          fontSize: 11,
+        style: TextStyle(
+          color: isDark ? Colors.white60 : Colors.black54,
+          fontSize: 10,
           fontWeight: FontWeight.bold,
         ),
         textAlign: TextAlign.center,
@@ -584,18 +593,19 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
         Navigator.push(context, MaterialPageRoute(builder: (context) => TeamDetailsScreen(teamId: team['id'], teamName: teamName, teamLogo: teamImg)));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 14),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
         ),
         child: Row(
           children: [
             SizedBox(
-              width: 30,
+              width: 40,
               child: Text(position.toString(), style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
             ),
             const SizedBox(width: 14),
-            Expanded(
+            SizedBox(
+              width: 180,
               child: Row(
                 children: [
                   Container(
@@ -617,16 +627,21 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 ],
               ),
             ),
-            _buildStatColumn(mp),
-            _buildStatColumn(w),
-            _buildStatColumn(d),
-            _buildStatColumn(l),
-            _buildStatColumn(gd),
-            Container(
-              width: 38,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-              child: Text(pts, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
+            _buildStatColumn(mp, width: 60),
+            _buildStatColumn(w, width: 50),
+            _buildStatColumn(d, width: 50),
+            _buildStatColumn(l, width: 50),
+            _buildStatColumn(gd, width: 50),
+            SizedBox(
+              width: 60,
+              child: Center(
+                child: Container(
+                  width: 38,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                  child: Text(pts, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
+                ),
+              ),
             ),
           ],
         ),
@@ -634,11 +649,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     );
   }
 
-  Widget _buildStatColumn(String value) {
+  Widget _buildStatColumn(String value, {double width = 32}) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color subTextColor = isDark ? Colors.white70 : Colors.black54;
     return SizedBox(
-      width: 32,
+      width: width,
       child: Text(value, style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.w500), textAlign: TextAlign.center),
     );
   }
