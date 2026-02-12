@@ -136,7 +136,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     hintStyle: TextStyle(color: textPrimary.withOpacity(0.4), fontSize: 14),
                     prefixIcon: Icon(Icons.search, color: textPrimary.withOpacity(0.4), size: 20),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.only(top: 10, bottom: 12),
                   ),
                   onChanged: (value) {
                     if (_debounce?.isActive ?? false) _debounce!.cancel();

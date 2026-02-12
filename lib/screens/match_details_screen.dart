@@ -3,7 +3,6 @@ import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
 import 'package:football_app/providers/h2h_provider.dart';
 import 'package:football_app/providers/stats_provider.dart';
-import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/prediction_provider.dart';
 import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
@@ -58,7 +57,6 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       if (fixtureId != null) {
         context.read<StatsProvider>().fetchStats(fixtureId);
         context.read<StatsProvider>().fetchEvents(fixtureId);
-        context.read<LineupProvider>().fetchLineupsAndBench(fixtureId);
         context.read<PredictionProvider>().fetchPredictionDetails(fixtureId);
         // Fetch Live Standings for the league
         context.read<LeagueProvider>().fetchLiveStandings(widget.leagueId);
@@ -141,132 +139,133 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     
     return DefaultTabController(
       length: 6,
-      child: Scaffold(
-        backgroundColor: isDark ? const Color(0xFF131321) : Colors.white,
-        appBar: AppBar(
-          backgroundColor: headerColor,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
-            onPressed: () => Navigator.pop(context),
-          ),
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(240),
-            child: Container(
-              padding: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: headerColor,
-                border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
-              ),
-              child: Column(
-                children: [
-                  // Team Logos and Score/Time
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Home Team
-                        Expanded(child: _buildHeaderTeam(homeName, homeImg, homeTeam?['id'] ?? 0, true, isDark, textColor)),
-                        
-                        // Match Info Center
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: Column(
-                            children: [
-                              if (isUpcoming) ...[
-                                Text(
-                                  matchTime,
-                                  style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: accentColor.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
+      child: SafeArea(
+        child: Scaffold(
+          backgroundColor: isDark ? const Color(0xFF131321) : Colors.white,
+          appBar: AppBar(
+            backgroundColor: headerColor,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
+              onPressed: () => Navigator.pop(context),
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(240),
+              child: Container(
+                padding: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: headerColor,
+                  border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
+                ),
+                child: Column(
+                  children: [
+                    // Team Logos and Score/Time
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Home Team
+                          Expanded(child: _buildHeaderTeam(homeName, homeImg, homeTeam?['id'] ?? 0, true, isDark, textColor)),
+                          
+                          // Match Info Center
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Column(
+                              children: [
+                                if (isUpcoming) ...[
+                                  Text(
+                                    matchTime,
+                                    style: TextStyle(color: textColor, fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: -1),
                                   ),
-                                  child: Text(
-                                    matchDate,
-                                    style: const TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: accentColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      matchDate,
+                                      style: const TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ),
-                              ] else ...[
-                                Text(
-                                  "$homeScoreStr - $awayScoreStr",
-                                  style: TextStyle(color: textColor, fontSize: 38, fontWeight: FontWeight.bold, letterSpacing: -1),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isLive)
-                                      _buildLiveIndicator(),
-                                    Text(
-                                      isLive ? "LIVE - $stateName" : stateName,
-                                      style: TextStyle(
-                                        color: isLive ? Colors.redAccent : subTextColor,
-                                        fontSize: 12,
-                                        fontWeight: isLive ? FontWeight.bold : FontWeight.w500,
+                                ] else ...[
+                                  Text(
+                                    "$homeScoreStr - $awayScoreStr",
+                                    style: TextStyle(color: textColor, fontSize: 38, fontWeight: FontWeight.bold, letterSpacing: -1),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (isLive)
+                                        _buildLiveIndicator(),
+                                      Text(
+                                        isLive ? "LIVE - $stateName" : stateName,
+                                        style: TextStyle(
+                                          color: isLive ? Colors.redAccent : subTextColor,
+                                          fontSize: 12,
+                                          fontWeight: isLive ? FontWeight.bold : FontWeight.w500,
+                                        ),
                                       ),
+                                    ],
+                                  ),
+                                  if (htScoreStr.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "HT: $htScoreStr",
+                                      style: TextStyle(color: subTextColor, fontSize: 11),
                                     ),
                                   ],
-                                ),
-                                if (htScoreStr.isNotEmpty) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "HT: $htScoreStr",
-                                    style: TextStyle(color: subTextColor, fontSize: 11),
-                                  ),
                                 ],
                               ],
-                            ],
+                            ),
                           ),
-                        ),
-                        
-                        // Away Team
-                        Expanded(child: _buildHeaderTeam(awayName, awayImg, awayTeam?['id'] ?? 0, false, isDark, textColor)),
+                          
+                          // Away Team
+                          Expanded(child: _buildHeaderTeam(awayName, awayImg, awayTeam?['id'] ?? 0, false, isDark, textColor)),
+                          SizedBox(height: 5,)
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // TabBar
+                    TabBar(
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicatorColor: accentColor,
+                      labelColor: accentColor,
+                      unselectedLabelColor: subTextColor,
+                      indicatorWeight: 3,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                      labelPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      tabs: const [
+                        Tab(text: "INFO"),
+                        Tab(text: "H2H"),
+                        Tab(text: "STATS"),
+                        Tab(text: "TABLE"),
+                        Tab(text: "COMMENTS"),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  // TabBar
-                  TabBar(
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    indicatorColor: accentColor,
-                    labelColor: accentColor,
-                    unselectedLabelColor: subTextColor,
-                    indicatorWeight: 3,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                    unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    tabs: const [
-                      Tab(text: "INFO"),
-                      Tab(text: "H2H"),
-                      Tab(text: "STATS"),
-                      Tab(text: "LINEUP"),
-                      Tab(text: "TABLE"),
-                      Tab(text: "COMMENTS"),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
-          children: [
-            _buildInfoTab(widget.fixture, htScoreStr),
-            _buildH2HTab(accentColor),
-            _buildStatsTab(accentColor),
-            _buildLineupTab(accentColor),
-            _buildTableTab(context),
-            _buildCommentsTab(),
-          ],
+          body: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _buildInfoTab(widget.fixture, htScoreStr),
+              _buildH2HTab(accentColor),
+              _buildStatsTab(accentColor),
+              _buildTableTab(context),
+              _buildCommentsTab(),
+            ],
+          ),
         ),
       ),
     );
@@ -391,7 +390,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 5),
           // Prediction Section
           Consumer<PredictionProvider>(
             builder: (context, predProvider, child) {
@@ -1005,57 +1004,6 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     );
   }
 
-  Widget _buildFixturesTabContent(Color accentColor) {
-    return Consumer<FixtureProvider>(
-      builder: (context, fixtureProvider, child) {
-        if (fixtureProvider.isLoading && fixtureProvider.fixtures.isEmpty) {
-          return Center(child: CircularProgressIndicator(color: accentColor));
-        }
-
-        if (fixtureProvider.fixtures.isEmpty) {
-          return _buildPlaceholderTab("No Fixtures Found");
-        }
-
-        // Group fixtures by local date using timestamps
-        Map<String, List<dynamic>> groupedFixtures = {};
-        for (var fixture in fixtureProvider.fixtures) {
-          final timestamp = fixture['starting_at_timestamp'];
-          if (timestamp != null) {
-            try {
-              final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
-              final dateKey = DateFormat('yyyy-MM-dd').format(localDate);
-
-              if (!groupedFixtures.containsKey(dateKey)) {
-                groupedFixtures[dateKey] = [];
-              }
-              groupedFixtures[dateKey]!.add(fixture);
-            } catch (e) {
-              debugPrint("Error parsing timestamp: $e");
-            }
-          }
-        }
-
-        final sortedDates = groupedFixtures.keys.toList()..sort();
-
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          itemCount: sortedDates.length,
-          itemBuilder: (context, index) {
-            final dateKey = sortedDates[index];
-            final fixtures = groupedFixtures[dateKey]!;
-
-            String displayDate = dateKey;
-            try {
-              final parsedLocal = DateTime.parse(dateKey);
-              displayDate = DateFormat('EEEE, MMM d').format(parsedLocal);
-            } catch (_) {}
-
-            return _buildDateGroup(displayDate, fixtures, accentColor);
-          },
-        );
-      },
-    );
-  }
 
   Widget _buildDateGroup(String date, List<dynamic> fixtures, Color accentColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1379,102 +1327,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     );
   }
 
-  Widget _buildLineupTab(Color accentColor) {
-    return Consumer<LineupProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading && provider.lineups.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
-        }
 
-        if (provider.errorMessage != null && provider.lineups.isEmpty) {
-          return Center(child: Text(provider.errorMessage!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)));
-        }
-
-        if (provider.lineups.isEmpty) {
-          final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Center(child: Text("Lineup not available yet", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
-        }
-
-        final participants = widget.fixture['participants'] as List? ?? [];
-        int? homeId;
-        int? awayId;
-        String homeName = "Home";
-        String awayName = "Away";
-        if (participants.isNotEmpty) {
-          final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
-          homeId = home['id'];
-          homeName = home['name'] ?? 'Home';
-          if (participants.length > 1) {
-            final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
-            awayId = away['id'];
-            awayName = away['name'] ?? 'Away';
-          }
-        }
-
-        final homeXI = provider.lineups.where((l) => l['participant_id'] == homeId).toList();
-        final awayXI = provider.lineups.where((l) => l['participant_id'] == awayId).toList();
-        final homeBench = provider.bench.where((b) => b['participant_id'] == homeId).toList();
-        final awayBench = provider.bench.where((b) => b['participant_id'] == awayId).toList();
-
-        return ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _buildLineupSection("Starting XI", homeName, awayName, homeXI, awayXI, accentColor),
-            const SizedBox(height: 32),
-            _buildLineupSection("Substitutes", homeName, awayName, homeBench, awayBench, accentColor),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildLineupSection(String title, String homeName, String awayName, List<dynamic> homePlayers, List<dynamic> awayPlayers, Color accentColor) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black87;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[50],
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4, height: 16,
-                decoration: BoxDecoration(color: const Color(0xFFFF8700), borderRadius: BorderRadius.circular(2)),
-              ),
-              const SizedBox(width: 10),
-              Text(title, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 0.5)),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: homePlayers.map((p) => _buildPlayerRow(p, true)).toList(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: awayPlayers.map((p) => _buildPlayerRow(p, false)).toList(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildPlayerRow(dynamic player, bool isHome) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
