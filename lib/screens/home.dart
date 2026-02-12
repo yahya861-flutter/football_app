@@ -7,7 +7,7 @@ import 'package:football_app/screens/live_scores_screen.dart';
 import 'package:football_app/screens/leagues_screen.dart';
 import 'package:football_app/screens/shorts_screen.dart';
 import 'package:football_app/screens/highlights_screen.dart';
-import 'package:football_app/screens/news_screen.dart';
+import 'package:football_app/screens/teams_screen.dart';
 import '../providers/fixture_provider.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
@@ -70,7 +70,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     "Matches",
     "Leagues",
     "Live",
-    "News",
+    "Teams",
     "Settings"
   ];
 
@@ -79,7 +79,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     LiveScoresScreen(),
     LeaguesScreen(),
     LiveMatchesScreen(isTab: true),
-    NewsScreen(),
+    TeamsScreen(),
     SettingsScreen(isTab: true),
   ];
 
@@ -229,7 +229,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
               _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
               _buildLiveNavItem(2, accentColor), // Integrated Live Button
-              _buildBottomNavItem(3, Icons.newspaper, "News", accentColor),
+              _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
               _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
             ],
           ),

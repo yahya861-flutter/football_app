@@ -17,27 +17,16 @@ class LeaguesScreen extends StatefulWidget {
 
 class _LeaguesScreenState extends State<LeaguesScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _teamSearchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final ScrollController _teamScrollController = ScrollController();
   String _searchQuery = "";
-  String _teamSearchQuery = "";
-  Timer? _teamDebounce;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<LeagueProvider>().fetchLeagues();
-      context.read<TeamListProvider>().fetchTeams();
     });
     
-    _teamScrollController.addListener(() {
-      if (_teamScrollController.position.pixels >= _teamScrollController.position.maxScrollExtent - 200) {
-        context.read<TeamListProvider>().loadMoreTeams();
-      }
-    });
-
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
         context.read<LeagueProvider>().loadMoreLeagues();
@@ -48,10 +37,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _teamScrollController.dispose();
     _searchController.dispose();
-    _teamSearchController.dispose();
-    _teamDebounce?.cancel();
     super.dispose();
   }
 
@@ -65,43 +51,10 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     final Color primaryColor = isDark ? const Color(0xFF131321) : Colors.white;
     const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
-    final Color subTextColor = isDark ? Colors.white54 : Colors.black45;
 
     return Scaffold(
       backgroundColor: primaryColor,
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            // Sub Tabs: Leagues | Teams
-            Container(
-              decoration: BoxDecoration(
-                color: isDark ? primaryColor : Colors.white,
-                border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
-              ),
-              child: TabBar(
-                indicatorColor: accentColor,
-                indicatorWeight: 3,
-                labelColor: isDark ? Colors.white : Colors.black,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-                unselectedLabelColor: subTextColor,
-                tabs: const [
-                  Tab(text: "Leagues"),
-                  Tab(text: "Teams"),
-                ],
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildLeaguesTab(accentColor, cardColor),
-                  _buildTeamsTab(accentColor, cardColor),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: _buildLeaguesTab(accentColor, cardColor),
     );
   }
 
@@ -466,8 +419,8 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               child: Column(
                 children: leagues.map((l) => _buildLeagueItem(l, accentColor)).toList(),
               ),
-            ),
-          ],
+
+            )],
         ),
       ),
     );
@@ -476,134 +429,6 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
   bool _isFollowingExpanded = true;
   bool _isAllTeamsExpanded = true;
-
-  Widget _buildTeamsTab(Color accentColor, Color cardColor) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
-
-    return Consumer2<TeamListProvider, FollowProvider>(
-      builder: (context, teamProvider, followProvider, _) {
-        if (teamProvider.isLoading && teamProvider.teams.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Colors.blueGrey));
-        }
-
-        // 1. Filtered data
-        final filteredTeams = teamProvider.teams.where((t) {
-          final name = t['name']?.toLowerCase() ?? "";
-          return name.contains(_teamSearchQuery.toLowerCase());
-        }).toList();
-
-        final followedTeams = filteredTeams.where((t) => followProvider.isTeamFollowed(t['id'])).toList();
-
-        // 2. Index Calculation Helpers
-        const int searchBarIndex = 0;
-        const int followingHeaderIndex = 1;
-        
-        final int followingItemsCount = _isFollowingExpanded 
-            ? (followedTeams.isEmpty ? 1 : followedTeams.length) 
-            : 0;
-        
-        final int allHeaderIndex = followingHeaderIndex + 1 + followingItemsCount;
-        
-        final int allTeamsItemsCount = _isAllTeamsExpanded ? filteredTeams.length : 0;
-        
-        final int loadingIndicatorIndex = allHeaderIndex + 1 + allTeamsItemsCount;
-        
-        final int totalItems = loadingIndicatorIndex + (teamProvider.hasMore ? 1 : 0) + 1; // +1 for bottom scroll padding
-
-        return ListView.builder(
-          controller: _teamScrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: totalItems,
-          itemBuilder: (context, index) {
-            // 0: Search Bar
-            if (index == searchBarIndex) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 24),
-                child: _buildTeamSearchBar(cardColor),
-              );
-            }
-
-            // 1: Following Header
-            if (index == followingHeaderIndex) {
-              return _buildSectionHeader(
-                icon: Icons.star,
-                iconColor: isDark ? Colors.tealAccent : Colors.teal,
-                title: "Following",
-                count: followedTeams.length,
-                isExpanded: _isFollowingExpanded,
-                onToggle: () => setState(() => _isFollowingExpanded = !_isFollowingExpanded),
-              );
-            }
-
-            // Following Content
-            if (_isFollowingExpanded && index > followingHeaderIndex && index < allHeaderIndex) {
-              if (followedTeams.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text("You are not following any teams", style: TextStyle(color: subTextColor)),
-                );
-              }
-              final teamIdx = index - (followingHeaderIndex + 1);
-              if (teamIdx >= 0 && teamIdx < followedTeams.length) {
-                return _buildTeamItem(followedTeams[teamIdx], accentColor, followProvider);
-              }
-            }
-
-            // All Leagues Header
-            if (index == allHeaderIndex) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: _buildSectionHeader(
-                  icon: Icons.thumb_up,
-                  iconColor: isDark ? Colors.tealAccent : Colors.teal,
-                  title: "All Teams",
-                  count: teamProvider.teams.length,
-                  isExpanded: _isAllTeamsExpanded,
-                  onToggle: () => setState(() => _isAllTeamsExpanded = !_isAllTeamsExpanded),
-                ),
-              );
-            }
-
-            // All Leagues Content
-            if (_isAllTeamsExpanded && index > allHeaderIndex && index < loadingIndicatorIndex) {
-              final teamIdx = index - (allHeaderIndex + 1);
-              if (teamIdx >= 0 && teamIdx < filteredTeams.length) {
-                return _buildTeamItem(filteredTeams[teamIdx], accentColor, followProvider);
-              }
-            }
-
-            // Loading Indicator
-            if (teamProvider.hasMore && index == loadingIndicatorIndex) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: Column(
-                    children: [
-                      CircularProgressIndicator(color: accentColor, strokeWidth: 2),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Loading more teams (${teamProvider.teams.length} loaded)...",
-                        style: TextStyle(color: subTextColor, fontSize: 12),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            // Bottom Spacing
-            if (index == totalItems - 1) {
-              return const SizedBox(height: 40);
-            }
-
-            return const SizedBox.shrink();
-          },
-        );
-      },
-    );
-  }
 
   Widget _buildSectionHeader({
     required IconData icon,
@@ -661,139 +486,6 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
               color: subTextColor,
               size: 24,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamSearchBar(Color cardColor) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
-    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
-      ),
-      child: TextField(
-        controller: _teamSearchController,
-        style: TextStyle(color: textColor, fontSize: 14),
-        onChanged: (val) {
-          setState(() => _teamSearchQuery = val);
-          if (_teamDebounce?.isActive ?? false) _teamDebounce!.cancel();
-          _teamDebounce = Timer(const Duration(milliseconds: 500), () {
-            if (val.isNotEmpty) {
-              context.read<TeamListProvider>().searchTeams(val);
-            } else {
-              context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
-            }
-          });
-        },
-        onSubmitted: (val) {
-          if (val.isNotEmpty) {
-            context.read<TeamListProvider>().searchTeams(val);
-          } else {
-            context.read<TeamListProvider>().fetchTeams(forceRefresh: true);
-          }
-        },
-        decoration: InputDecoration(
-          hintText: "Search teams...",
-          hintStyle: TextStyle(color: subTextColor, fontSize: 14),
-          prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamItem(dynamic team, Color accentColor, FollowProvider followProvider) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
-    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
-
-    final isFollowed = followProvider.isTeamFollowed(team['id']);
-    
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TeamDetailsScreen(
-              teamId: team['id'],
-              teamName: team['name'] ?? 'Unknown',
-              teamLogo: team['image_path'] ?? '',
-            ),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), width: 0.5)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: team['image_path'] != null 
-                  ? Image.network(team['image_path'], width: 32, height: 32, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Icon(Icons.shield_rounded, color: accentColor, size: 28))
-                  : Icon(Icons.shield_rounded, color: accentColor, size: 28),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                team['name'] ?? 'Unknown', 
-                style: TextStyle(color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isFollowed) ...[
-                  GestureDetector(
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => const NotificationsActivatedDialog(),
-                      );
-                    },
-                    child: Icon(
-                      Icons.notifications_active_rounded, 
-                      color: accentColor, 
-                      size: 22
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                IconButton(
-                  icon: Icon(isFollowed ? Icons.star_rounded : Icons.star_outline_rounded, 
-                       color: isFollowed ? accentColor : subTextColor, size: 24),
-                  onPressed: () => followProvider.toggleFollowTeam(team['id'], teamData: team),
-                  constraints: const BoxConstraints(),
-                  padding: EdgeInsets.zero,
-                ),
-              ],
             ),
           ],
         ),
