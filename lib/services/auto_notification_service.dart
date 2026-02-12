@@ -180,6 +180,30 @@ class AutoNotificationService {
             final String lastEventKey = "last_event_count_$fixtureId";
             final int? lastEventCount = prefs.getInt(lastEventKey);
             
+            // Handle Match Status Changes (Half-Time, Full-Time)
+            final String status = fixture['state']?['short_name']?.toString().toUpperCase() ?? '';
+            final String lastStatusKey = "last_status_$fixtureId";
+            final String? lastStatus = prefs.getString(lastStatusKey);
+
+            if (lastStatus != null && lastStatus != status) {
+              if (status == 'HT') {
+                await notifService.showNotification(
+                  id: fixtureId + 3000,
+                  title: "Half-Time",
+                  body: "It's Half-Time in $homeName vs $awayName ($currentScore)",
+                );
+                debugPrint("⏰ [Live] Half-Time detected: $homeName vs $awayName");
+              } else if (status == 'FT') {
+                await notifService.showNotification(
+                  id: fixtureId + 4000,
+                  title: "Full-Time",
+                  body: "Full-Time! Final Score: $homeName $homeScore - $awayScore $awayName",
+                );
+                debugPrint("🏁 [Live] Full-Time detected: $homeName vs $awayName");
+              }
+            }
+            await prefs.setString(lastStatusKey, status);
+
             if (lastEventCount != null && events.length > lastEventCount) {
               // New event(s) detected. Notify for important ones (Cards, etc.)
               for (int i = lastEventCount; i < events.length; i++) {
@@ -187,10 +211,14 @@ class AutoNotificationService {
                 final String type = event['type']?['name']?.toString().toUpperCase() ?? '';
                 final int minute = event['minute'] ?? 0;
                 
-                if (type.contains('CARD') || type.contains('PENALTY')) {
+                if (type.contains('CARD') || type.contains('PENALTY') || type.contains('SUBSTITUTION') || type.contains('VAR') || type.contains('GOAL')) {
+                  String title = "$type!";
+                  if (type.contains('SUBSTITUTION')) title = "Substitution";
+                  if (type.contains('VAR')) title = "VAR Decision";
+                  
                   await notifService.showNotification(
                     id: fixtureId + 2000 + i,
-                    title: "$type!",
+                    title: title,
                     body: "$type at $minute' in $homeName vs $awayName",
                   );
                   debugPrint("🚩 [Live] Event detected: $type at $minute'");
