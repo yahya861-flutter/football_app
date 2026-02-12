@@ -164,6 +164,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                     ),
                     child: TabBar(
                       isScrollable: true,
+                      tabAlignment: TabAlignment.start,
                       indicatorColor: accentColor,
                       labelColor: accentColor,
                       unselectedLabelColor: subTextColor,
@@ -183,6 +184,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             ];
           },
           body: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
             children: [
               // FIXTURES TAB
               _buildFixturesTabContent(accentColor),

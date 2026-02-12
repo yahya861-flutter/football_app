@@ -233,6 +233,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                   // TabBar
                   TabBar(
                     isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     indicatorColor: accentColor,
                     labelColor: accentColor,
                     unselectedLabelColor: subTextColor,
@@ -256,6 +257,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           ),
         ),
         body: TabBarView(
+          physics: const NeverScrollableScrollPhysics(),
           children: [
             _buildInfoTab(widget.fixture, htScoreStr),
             _buildH2HTab(accentColor),

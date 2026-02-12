@@ -153,6 +153,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     alignment: Alignment.centerLeft,
                     child: TabBar(
                       isScrollable: true,
+                      tabAlignment: TabAlignment.start,
                       indicatorColor: accentColor,
                       labelColor: isDark ? accentColor : textColor,
                       unselectedLabelColor: subTextColor,
@@ -171,6 +172,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             ];
           },
           body: TabBarView(
+            physics: const NeverScrollableScrollPhysics(),
             children: [
               Consumer<TeamProvider>(
                 builder: (context, provider, _) {
