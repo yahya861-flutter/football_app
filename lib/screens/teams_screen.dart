@@ -273,6 +273,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
       ),
       child: TextField(
         controller: _teamSearchController,
+        textAlignVertical: TextAlignVertical.center,
         style: TextStyle(color: textColor, fontSize: 14),
         onChanged: (val) {
           setState(() => _teamSearchQuery = val);
@@ -297,7 +298,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
           hintStyle: TextStyle(color: subTextColor, fontSize: 14),
           prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
         ),
       ),
     );

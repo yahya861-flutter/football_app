@@ -129,13 +129,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 child: TextField(
                   controller: _searchController,
                   autofocus: true,
+                  textAlignVertical: TextAlignVertical.center,
                   style: TextStyle(color: textPrimary, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: "Search teams...",
                     hintStyle: TextStyle(color: textPrimary.withOpacity(0.4), fontSize: 14),
                     prefixIcon: Icon(Icons.search, color: textPrimary.withOpacity(0.4), size: 20),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 13),
+                    contentPadding: EdgeInsets.zero,
                   ),
                   onChanged: (value) {
                     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -315,6 +316,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   }
 
   Widget _buildSearchResultsTab(Color accentColor) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
     return Consumer<TeamListProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
@@ -322,14 +327,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         }
 
         if (provider.teams.isEmpty && _searchController.text.isNotEmpty) {
-          return const Center(
-            child: Text("No teams found", style: TextStyle(color: Colors.white38)),
+          return Center(
+            child: Text("No teams found", style: TextStyle(color: subTextColor)),
           );
         }
 
         if (_searchController.text.isEmpty) {
-          return const Center(
-            child: Text("Start typing to search teams", style: TextStyle(color: Colors.white38)),
+          return Center(
+            child: Text("Start typing to search teams", style: TextStyle(color: subTextColor)),
           );
         }
 
@@ -341,7 +346,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               leading: team['image_path'] != null
                   ? Image.network(team['image_path'], width: 30, height: 30)
                   : Icon(Icons.shield, color: accentColor, size: 30),
-              title: Text(team['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white)),
+              title: Text(team['name'] ?? 'Unknown', style: TextStyle(color: textColor)),
               onTap: () {
                 Navigator.push(
                   context,
