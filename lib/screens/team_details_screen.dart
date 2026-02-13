@@ -66,14 +66,14 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: isDark ? Colors.black : Theme.of(context).scaffoldBackgroundColor,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               SliverAppBar(
                 expandedHeight: 200,
                 pinned: true,
-                backgroundColor: isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor,
+                backgroundColor: isDark ? const Color(0xFF121212) : Theme.of(context).primaryColor,
                 elevation: 0,
                 leading: IconButton(
                   icon: Icon(Icons.arrow_back, color: textColor),
@@ -105,7 +105,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                           height: 70,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF2D2D44).withOpacity(0.5) : Colors.black12,
+                            color: isDark ? const Color(0xFF121212).withOpacity(0.5) : Colors.black12,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
                           ),
@@ -293,7 +293,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
+        color: isDark ? const Color(0xFF121212) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
@@ -364,7 +364,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (context) {
         // Reverse to show newest first
@@ -472,7 +472,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
+        color: isDark ? const Color(0xFF121212) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
       ),
@@ -579,7 +579,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               width: 70,
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               decoration: BoxDecoration(
-                color: isLive ? Colors.redAccent.withOpacity(0.1) : (isDark ? const Color(0xFF262626) : Colors.grey[300]),
+                color: isLive ? Colors.redAccent.withOpacity(0.1) : (isDark ? const Color(0xFF121212) : Colors.grey[300]),
                 borderRadius: BorderRadius.circular(6),
                 border: isLive ? Border.all(color: Colors.redAccent.withOpacity(0.3)) : null,
               ),
@@ -742,7 +742,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
+              color: isDark ? const Color(0xFF121212) : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
             ),

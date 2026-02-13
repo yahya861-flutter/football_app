@@ -15,7 +15,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
-    final Color primaryColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
+    final Color primaryColor = isDark ? Colors.black : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFFF8700);
 
     final content = Consumer<InPlayProvider>(
@@ -114,7 +114,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
-    final Color cardColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -214,7 +214,7 @@ class LiveMatchesScreen extends StatelessWidget {
               width: 50,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[300],
+                color: isDark ? const Color(0xFF121212) : Colors.grey[300],
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(

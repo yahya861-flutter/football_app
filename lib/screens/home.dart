@@ -162,7 +162,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       body: _screens[_selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-        color: isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!,
+        color: isDark ? const Color(0xFF121212) : Colors.grey[200]!,
         elevation: 10,
         padding: EdgeInsets.zero,
         child: SizedBox(

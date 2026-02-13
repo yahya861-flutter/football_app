@@ -32,11 +32,11 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               ? const ColorScheme.dark(
                   primary: Color(0xFFFF8700),
                   onPrimary: Colors.black,
-                  surface: Color(0xFF1E1E2C),
+                  surface: Color(0xFF121212),
                   onSurface: Colors.white,
                 )
               : const ColorScheme.light(
-                  primary: Color(0xFF1E1E2C),
+                  primary: Color(0xFF121212),
                   onPrimary: Colors.white,
                   surface: Colors.white,
                   onSurface: Colors.black,
@@ -64,7 +64,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color cardColor = isDark ? const Color(0xFF1E1E2C) : Colors.grey[200]!;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
     const Color accentColor = Color(0xFFFF8700);
@@ -90,7 +90,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C).withOpacity(0.5) : Colors.grey[50],
+        color: isDark ? const Color(0xFF121212) : Colors.grey[50],
         border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
       ),
       child: Row(
@@ -204,7 +204,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
 
   Widget _buildModernLeagueGroup(String name, String? logo, List<dynamic> matches) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
     const Color accentColor = Color(0xFFFF8700);
@@ -350,7 +350,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
               width: 50,
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                color: isDark ? const Color(0xFF121212) : Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(

@@ -59,8 +59,8 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
-    final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).scaffoldBackgroundColor;
-    final Color headerColor = isDark ? const Color(0xFF1E1E2C) : Theme.of(context).primaryColor;
+    final Color backgroundColor = isDark ? Colors.black : Theme.of(context).scaffoldBackgroundColor;
+    final Color headerColor = isDark ? const Color(0xFF121212) : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFFF8700); // Premium Lime accent
 
     return DefaultTabController(
@@ -270,7 +270,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2D2D44).withOpacity(0.3) : Colors.white,
+        color: isDark ? const Color(0xFF121212) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 10, offset: const Offset(0, 4))
@@ -348,7 +348,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               width: 54,
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                color: isDark ? const Color(0xFF121212) : Colors.grey[100],
                 borderRadius: BorderRadius.circular(8),
               ),
               child: (() {

@@ -29,9 +29,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color mintColor = Color(0xFF48C9B0);
-    const Color darkBg = Color(0xFF131321);
-    const Color cardBg = Color(0xFF1E1E2C);
+    const Color mintColor = Color(0xFFFF8700);
+    const Color darkBg = Colors.black;
+    const Color cardBg = Color(0xFF121212);
 
     return Scaffold(
       backgroundColor: darkBg,

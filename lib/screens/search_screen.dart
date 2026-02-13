@@ -36,7 +36,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).appBarTheme.backgroundColor;
     final textPrimary = Theme.of(context).appBarTheme.titleTextStyle?.color ?? Colors.white;
-    final secondaryColor = isDark ? const Color(0xFF2D2D44) : Colors.grey[200]!;
+    final secondaryColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
 
     return Scaffold(
       backgroundColor: primaryColor,

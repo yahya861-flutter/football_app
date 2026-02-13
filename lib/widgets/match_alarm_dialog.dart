@@ -52,7 +52,7 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Colors.white;
+    final Color backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
 

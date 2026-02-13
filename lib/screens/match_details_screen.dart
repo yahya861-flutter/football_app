@@ -135,16 +135,16 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white54 : Colors.black54;
-    final Color headerColor = isDark ? const Color(0xFF131321) : Colors.white;
-    final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.grey[50]!;
+    final Color backgroundColor = isDark ? Colors.black : Colors.white;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
     
     return DefaultTabController(
       length: 5,
       child: SafeArea(
         child: Scaffold(
-          backgroundColor: isDark ? const Color(0xFF131321) : Colors.white,
+          backgroundColor: backgroundColor,
           appBar: AppBar(
-            backgroundColor: headerColor,
+            backgroundColor: backgroundColor,
             elevation: 0,
             leading: IconButton(
               icon: Icon(Icons.arrow_back_ios_new_rounded, color: textColor),
@@ -155,7 +155,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               child: Container(
                 padding: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
-                  color: headerColor,
+                  color: backgroundColor,
                   border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
                 ),
                 child: Column(
@@ -795,7 +795,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
   Widget _buildExpansionCard({required IconData icon, required String title, required Widget content, bool initiallyExpanded = false}) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    final Color primaryColor = isDark ? Colors.black : Colors.white;
+    const Color accentColor = Color(0xFFFF8700);
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
 
@@ -989,7 +991,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+        color: isDark ? const Color(0xFF121212) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 15, offset: const Offset(0, 8)),
@@ -1108,7 +1110,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[100],
+        color: isDark ? const Color(0xFF121212) : Colors.grey[100],
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05)),
       ),
@@ -1378,7 +1380,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[200],
+        color: isDark ? const Color(0xFF121212) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
       ),
       child: Theme(
@@ -1454,7 +1456,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               width: 65,
               padding: const EdgeInsets.symmetric(vertical: 4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2D2D44) : Colors.grey[300],
+                color: isDark ? const Color(0xFF121212) : Colors.grey[300],
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -1796,7 +1798,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+                color: isDark ? const Color(0xFF121212) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: isImportant ? Border.all(color: const Color(0xFFFF8700).withOpacity(0.5)) : Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black12),
                 boxShadow: isImportant ? [BoxShadow(color: const Color(0xFFFF8700).withOpacity(0.1), blurRadius: 10)] : null,

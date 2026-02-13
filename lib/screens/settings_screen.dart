@@ -22,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
 
   void _showReviewDialog(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color backgroundColor = isDark ? const Color(0xFF1E1E2C) : Colors.white;
+    final Color backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
 
     showDialog(
@@ -74,7 +74,7 @@ class SettingsScreen extends StatelessWidget {
                         _launchUrl(_youtubeUrl);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BFA5),
+                        backgroundColor: const Color(0xFFFF8700),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
@@ -279,7 +279,7 @@ class SettingsScreen extends StatelessWidget {
   }) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF00BFA5)),
+        Icon(icon, color: const Color(0xFFFF8700)),
         const SizedBox(width: 16),
         Expanded(
           child: Text(title, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.w500)),
@@ -287,7 +287,7 @@ class SettingsScreen extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: const Color(0xFF00BFA5),
+          activeColor: const Color(0xFFFF8700),
         ),
       ],
     );

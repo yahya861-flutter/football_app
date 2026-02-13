@@ -28,10 +28,10 @@ class ThemeProvider with ChangeNotifier {
   // Branding Colors
   static const Color accentColor = Color(0xFFFF8700); // Lime/Neon Yellow
   
-  // Dark Theme Colors
-  static const Color darkPrimary = Color(0xFF1E1E2C);
-  static const Color darkSecondary = Color(0xFF2D2D44);
-  static const Color darkBackground = Color(0xFF121212);
+  // Dark Theme Colors (Premium Look)
+  static const Color darkBackground = Colors.black;
+  static const Color darkSurface = Color(0xFF121212);
+  static const Color darkBorder = Colors.white10;
   
   // Light Theme Colors
   static const Color lightPrimary = Color(0xFFFFFFFF);
@@ -42,20 +42,23 @@ class ThemeProvider with ChangeNotifier {
     useMaterial3: true,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: darkBackground,
-    primaryColor: darkPrimary,
+    primaryColor: darkSurface,
+    cardColor: darkSurface,
+    dividerColor: darkBorder,
     colorScheme: const ColorScheme.dark(
       primary: accentColor,
-      surface: darkSecondary,
+      surface: darkSurface,
+      outline: darkBorder,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: darkPrimary,
+      backgroundColor: darkSurface,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: darkSecondary,
+      backgroundColor: darkSurface,
       selectedItemColor: accentColor,
       unselectedItemColor: Colors.white38,
     ),

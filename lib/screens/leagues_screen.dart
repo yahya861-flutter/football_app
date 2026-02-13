@@ -48,9 +48,9 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor = isDark ? const Color(0xFF131321) : Colors.white;
+    final Color primaryColor = isDark ? Colors.black : Colors.white;
     const Color accentColor = Color(0xFFFF8700);
-    final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
 
     return DefaultTabController(
       length: 2,
@@ -375,7 +375,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E2C) : Colors.white,
+        color: isDark ? const Color(0xFF121212) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -482,7 +482,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E1E2C) : Colors.grey[50],
+          color: isDark ? const Color(0xFF121212) : Colors.grey[50],
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
