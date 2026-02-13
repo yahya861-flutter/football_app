@@ -161,21 +161,31 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       // Display the screen corresponding to the current selection
       body: _screens[_selectedIndex],
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        color: isDark ? const Color(0xFF121212) : Colors.grey[200]!,
-        elevation: 10,
-        padding: EdgeInsets.zero,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
-              _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
-              _buildLiveNavItem(2, accentColor), // Integrated Live Button
-              _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
-              _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
-            ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.transparent,
+              width: 0.8,
+            ),
+          ),
+        ),
+        child: BottomAppBar(
+          color: isDark ? const Color(0xFF121212) : Colors.grey[200]!,
+          elevation: isDark ? 0 : 10,
+          padding: EdgeInsets.zero,
+          child: SizedBox(
+            height: 60,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
+                _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
+                _buildLiveNavItem(2, accentColor), // Integrated Live Button
+                _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
+                _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
+              ],
+            ),
           ),
         ),
       ),
