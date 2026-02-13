@@ -8,6 +8,7 @@ import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class MatchDetailsScreen extends StatefulWidget {
   final dynamic fixture;
@@ -588,6 +589,167 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  Widget _buildPressureIndexSection(StatsProvider provider) {
+    if (provider.isLoading && provider.pressureData.isEmpty) return const SizedBox();
+    if (provider.pressureData.isEmpty) return const SizedBox();
+
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
+    final participants = widget.fixture['participants'] as List? ?? [];
+    if (participants.length < 2) return const SizedBox();
+
+    final home = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants[0]);
+    final away = participants.firstWhere((p) => p['meta']?['location'] == 'away', orElse: () => participants[1]);
+
+    final homeId = home['id'];
+    final awayId = away['id'];
+
+    List<FlSpot> homeSpots = [];
+    List<FlSpot> awaySpots = [];
+
+    for (var point in provider.pressureData) {
+      if (point is! Map) continue;
+      final minute = (point['minute'] as num?)?.toDouble() ?? 0.0;
+      
+      // Only show from minute 60 onwards
+      if (minute < 60) continue;
+
+      final participantId = point['participant_id'];
+      final dynamic rawPressure = point['pressure'];
+      
+      double pVal = 0.0;
+      if (rawPressure is num) {
+        pVal = rawPressure.toDouble();
+      } else if (rawPressure is Map) {
+        // Handle alternative Map format if it exists
+        pVal = (rawPressure[participantId.toString()] as num?)?.toDouble() ?? 
+               (rawPressure[homeId.toString()] as num?)?.toDouble() ?? 
+               (rawPressure[awayId.toString()] as num?)?.toDouble() ?? 0.0;
+      }
+
+      if (participantId == homeId) {
+        homeSpots.add(FlSpot(minute, pVal));
+      } else if (participantId == awayId) {
+        awaySpots.add(FlSpot(minute, pVal));
+      }
+    }
+
+    // Sort spots by minute for fl_chart
+    homeSpots.sort((a, b) => a.x.compareTo(b.x));
+    awaySpots.sort((a, b) => a.x.compareTo(b.x));
+
+    return _buildExpansionCard(
+      icon: Icons.show_chart_rounded,
+      title: "Pressure Index",
+      initiallyExpanded: true,
+      content: Container(
+        padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
+        child: Column(
+          children: [
+            // Legend
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLegendItem(away['name'] ?? 'Away', Colors.red),
+                const SizedBox(width: 24),
+                _buildLegendItem(home['name'] ?? 'Home', const Color(0xFFFF8700)),
+              ],
+            ),
+            const SizedBox(height: 32),
+            // Chart
+            SizedBox(
+              height: 220,
+              child: LineChart(
+                LineChartData(
+                  gridData: const FlGridData(show: false),
+                  titlesData: FlTitlesData(
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 35,
+                        getTitlesWidget: (value, meta) {
+                          if (value % 10 != 0) return const SizedBox();
+                          return Text(
+                            value.toInt().toString(),
+                            style: TextStyle(color: subTextColor, fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          if (value % 15 != 0 || value == 0) return const SizedBox();
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              value.toInt().toString(),
+                              style: TextStyle(color: subTextColor, fontSize: 10),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border(
+                      left: BorderSide(color: subTextColor.withOpacity(0.2)),
+                      bottom: BorderSide(color: subTextColor.withOpacity(0.2)),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: awaySpots,
+                      isCurved: true,
+                      color: Colors.red,
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                    LineChartBarData(
+                      spots: homeSpots,
+                      isCurved: true,
+                      color: const Color(0xFFFF8700),
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                  lineTouchData: const LineTouchData(enabled: false),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text("Time", style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(String label, Color color) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return Row(
+      children: [
+        Container(width: 12, height: 2, color: color),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+      ],
     );
   }
 
@@ -1317,6 +1479,10 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     return ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            // Pressure Index Chart
+            _buildPressureIndexSection(provider),
+            const SizedBox(height: 24),
+
             if (provider.stats.isNotEmpty) ...[
               Text("Match Statistics", style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),

@@ -5,11 +5,13 @@ import 'package:http/http.dart' as http;
 class StatsProvider with ChangeNotifier {
   List<dynamic> _stats = [];
   List<dynamic> _events = [];
+  List<dynamic> _pressureData = [];
   bool _isLoading = false;
   String? _errorMessage;
 
   List<dynamic> get stats => _stats;
   List<dynamic> get events => _events;
+  List<dynamic> get pressureData => _pressureData;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -21,7 +23,7 @@ class StatsProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final url = 'https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=statistics.type;statistics.participant';
+      final url = 'https://api.sportmonks.com/v3/football/fixtures/$fixtureId?api_token=$_apiKey&include=statistics.type;statistics.participant;pressure';
       debugPrint('Fetching Stats via: $url');
       final response = await http.get(
         Uri.parse(url),
@@ -35,7 +37,8 @@ class StatsProvider with ChangeNotifier {
         final data = json.decode(response.body);
         final fixture = data['data'];
         _stats = fixture?['statistics'] ?? [];
-        debugPrint('Stats loaded: ${_stats.length}');
+        _pressureData = fixture?['pressure'] ?? [];
+        debugPrint('Stats loaded: ${_stats.length}, Pressure points: ${_pressureData.length}');
       } else {
         _errorMessage = 'Failed to load statistics: ${response.statusCode}';
         debugPrint('Stats error: $_errorMessage');
