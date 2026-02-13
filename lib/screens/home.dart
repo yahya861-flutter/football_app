@@ -143,7 +143,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     titles[_selectedIndex],
                     style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
                   ),
-         actions: _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
+         actions: (_selectedIndex == 0 || _selectedIndex == 2) 
                  ? [
                      RotationTransition(
                        turns: Tween(begin: 0.0, end: 1.0).animate(_rotationController),
@@ -152,15 +152,16 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                          onPressed: _handleRefresh,
                        ),
                      ),
-                     IconButton(
-                       icon: Icon(Icons.search, color: textPrimary),
-                       onPressed: () {
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(builder: (context) => const SearchScreen()),
-                         );
-                       },
-                     ),
+                     if (_selectedIndex == 0)
+                       IconButton(
+                         icon: Icon(Icons.search, color: textPrimary),
+                         onPressed: () {
+                           Navigator.push(
+                             context,
+                             MaterialPageRoute(builder: (context) => const SearchScreen()),
+                           );
+                         },
+                       ),
                    ]
                  : [], // No tools for other screens
        ),

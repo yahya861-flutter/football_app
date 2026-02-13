@@ -47,10 +47,12 @@ class LiveMatchesScreen extends StatelessWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                l10n.liveMatches,
-                style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.all(0.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+
+                ],
               ),
             ),
           ),
@@ -167,7 +169,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
-    const Color accentColor = Color(0xFFFF8700);
+    const Color accentColor = Color(0xFFFF8700);/**/
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

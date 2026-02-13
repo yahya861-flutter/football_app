@@ -86,6 +86,8 @@ class MyApp extends StatelessWidget {
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
+            FallbackMaterialLocalizationsDelegate(),
+            FallbackCupertinoLocalizationsDelegate(),
           ],
           supportedLocales: const [
             Locale('en'),
@@ -110,4 +112,36 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
+
+/// Fallback delegate for languages not natively supported by MaterialLocalizations (like yo, qu)
+class FallbackMaterialLocalizationsDelegate extends LocalizationsDelegate<MaterialLocalizations> {
+  const FallbackMaterialLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => ['yo', 'qu'].contains(locale.languageCode);
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async {
+    return await GlobalMaterialLocalizations.delegate.load(const Locale('en'));
+  }
+
+  @override
+  bool shouldReload(FallbackMaterialLocalizationsDelegate old) => false;
+}
+
+/// Fallback delegate for languages not natively supported by CupertinoLocalizations (like yo, qu)
+class FallbackCupertinoLocalizationsDelegate extends LocalizationsDelegate<CupertinoLocalizations> {
+  const FallbackCupertinoLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => ['yo', 'qu'].contains(locale.languageCode);
+
+  @override
+  Future<CupertinoLocalizations> load(Locale locale) async {
+    return await GlobalCupertinoLocalizations.delegate.load(const Locale('en'));
+  }
+
+  @override
+  bool shouldReload(FallbackCupertinoLocalizationsDelegate old) => false;
 }

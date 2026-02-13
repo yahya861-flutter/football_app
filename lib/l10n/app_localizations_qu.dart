@@ -239,7 +239,7 @@ class AppLocalizationsQu extends AppLocalizations {
   String get winProbability => 'Llalliy atiy';
 
   @override
-  String get drawShort => 'Empatados';
+  String get drawShort => 'Iskayninpuni';
 
   @override
   String get draw => 'Iskayninpuni';
@@ -396,16 +396,16 @@ class AppLocalizationsQu extends AppLocalizations {
   String get notStartedShort => 'Manaraq';
 
   @override
-  String get played => 'Jugados';
+  String get played => 'Pukllasqa';
 
   @override
-  String get win => 'Ganados';
+  String get win => 'Llallisqa';
 
   @override
-  String get loss => 'Perdidos';
+  String get loss => 'Atipachikusqa';
 
   @override
-  String get gd => 'Gol Diferencia';
+  String get gd => 'Goles Diferencia';
 
   @override
   String get points => 'Puntokuna';
