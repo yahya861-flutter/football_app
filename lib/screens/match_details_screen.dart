@@ -138,7 +138,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     final Color cardColor = isDark ? const Color(0xFF1A1A2E) : Colors.grey[50]!;
     
     return DefaultTabController(
-      length: 6,
+      length: 5,
       child: SafeArea(
         child: Scaffold(
           backgroundColor: isDark ? const Color(0xFF131321) : Colors.white,
@@ -425,6 +425,167 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               );
             },
           ),
+          const SizedBox(height: 5),
+          // Timeline Section
+          Consumer<StatsProvider>(
+            builder: (context, statsProvider, child) {
+              final participants = fixture['participants'] as List? ?? [];
+              final homeTeam = participants.firstWhere((p) => p['meta']?['location'] == 'home', orElse: () => participants.isNotEmpty ? participants[0] : null);
+              final homeId = homeTeam?['id'] ?? 0;
+              
+              return _buildTimelineSection(statsProvider, homeId);
+            },
+          ),
+          const SizedBox(height: 5),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimelineSection(StatsProvider statsProvider, int homeId) {
+    if (statsProvider.isLoading && statsProvider.events.isEmpty) {
+      return const SizedBox();
+    }
+
+    if (statsProvider.events.isEmpty) {
+      return const SizedBox();
+    }
+
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
+    // Split events into 1st Half, HT, and 2nd Half (and ET)
+    List<dynamic> firstHalf = [];
+    List<dynamic> secondHalf = [];
+    
+    for (var event in statsProvider.events) {
+      final minute = event['minute'] ?? 0;
+      if (minute <= 45) {
+        firstHalf.add(event);
+      } else {
+        secondHalf.add(event);
+      }
+    }
+
+    return _buildExpansionCard(
+      icon: Icons.timeline_rounded,
+      title: "Match Timeline",
+      initiallyExpanded: true,
+      content: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          children: [
+            ...firstHalf.map((e) => _buildTimelineEventItem(e, homeId)),
+            
+            // HT Separator
+            if (firstHalf.isNotEmpty || secondHalf.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  children: [
+                    const Expanded(child: Divider(indent: 20, endIndent: 10)),
+                    Text("HT", style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                    const Expanded(child: Divider(indent: 10, endIndent: 20)),
+                  ],
+                ),
+              ),
+              
+            ...secondHalf.map((e) => _buildTimelineEventItem(e, homeId)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineEventItem(dynamic event, int homeId) {
+    final participantId = event['participant_id'];
+    final bool isHome = participantId == homeId;
+    final minute = event['minute'];
+    final extraMinute = event['extra_minute'];
+    final player = event['player']?['display_name'] ?? event['player']?['name'] ?? 'Player';
+    final type = event['type']?['name']?.toString().toLowerCase() ?? '';
+    final typeId = event['type_id'];
+    
+    // Map event type to icon and color
+    IconData iconData = Icons.info_outline;
+    Color iconColor = Colors.grey;
+    String eventLabel = type;
+
+    if (type.contains('goal')) {
+      iconData = Icons.sports_soccer;
+      iconColor = Colors.green;
+      eventLabel = "Goal";
+      if (type.contains('own')) eventLabel = "Own Goal";
+      if (type.contains('penalty')) eventLabel = "Penalty Goal";
+    } else if (type.contains('yellow') || typeId == 18) {
+      iconData = Icons.rectangle;
+      iconColor = Colors.yellow[700]!;
+      eventLabel = "Yellowcard";
+    } else if (type.contains('red') || typeId == 19) {
+      iconData = Icons.rectangle;
+      iconColor = Colors.red;
+      eventLabel = "Redcard";
+    } else if (type.contains('substitution') || typeId == 20) {
+      iconData = Icons.swap_vert_rounded;
+      iconColor = Colors.orange;
+      eventLabel = "Substitution";
+    }
+
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Row(
+        mainAxisAlignment: isHome ? MainAxisAlignment.start : MainAxisAlignment.end,
+        children: [
+          if (isHome) ...[
+            // Minute
+            SizedBox(
+              width: 40,
+              child: Text(
+                "$minute'${extraMinute != null ? '+$extraMinute' : ''}",
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16),
+                textAlign: TextAlign.right,
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Icon
+            Icon(iconData, color: iconColor, size: 20),
+            const SizedBox(width: 16),
+            // Player and Label
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14)),
+                Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
+              ],
+            ),
+          ] else ...[
+            // Player and Label (Away)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14)),
+                Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
+              ],
+            ),
+            const SizedBox(width: 16),
+            // Icon
+            Icon(iconData, color: iconColor, size: 20),
+            const SizedBox(width: 12),
+            // Minute
+            SizedBox(
+              width: 40,
+              child: Text(
+                "$minute'${extraMinute != null ? '+$extraMinute' : ''}",
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16),
+                textAlign: TextAlign.left,
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1162,12 +1323,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ..._generateStatsRows(provider.stats),
               const SizedBox(height: 32),
             ],
-            if (provider.events.isNotEmpty) ...[
-              Text("Match Timeline", style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 16),
-              ...provider.events.map((e) => _buildEventRow(e, accentColor)).toList(),
             ],
-          ],
+
         );
       },
     );
