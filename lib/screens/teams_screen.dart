@@ -41,7 +41,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
     super.dispose();
   }
 
-  bool _isFollowingExpanded = true;
+  bool _isFavoriteExpanded = true;
   bool _isAllTeamsExpanded = true;
 
   @override
@@ -71,7 +71,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
               unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
               tabs: const [
                 Tab(text: "Teams"),
-                Tab(text: "Following"),
+                Tab(text: "Favorite"),
               ],
             ),
           ),
@@ -79,7 +79,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
         body: TabBarView(
           children: [
             _buildTeamsTab(accentColor, cardColor),
-            _buildFollowingTeamsTab(accentColor, cardColor),
+            _buildFavoriteTeamsTab(accentColor, cardColor),
           ],
         ),
       ),
@@ -155,7 +155,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
     );
   }
 
-  Widget _buildFollowingTeamsTab(Color accentColor, Color cardColor) {
+  Widget _buildFavoriteTeamsTab(Color accentColor, Color cardColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;

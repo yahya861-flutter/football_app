@@ -41,7 +41,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     super.dispose();
   }
 
-  bool _isLeaguesFollowingExpanded = true;
+  bool _isLeaguesFavoriteExpanded = true;
   bool _isLeaguesTopExpanded = true;
   bool _isLeaguesSuggestionsExpanded = true;
 
@@ -71,7 +71,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
               tabs: const [
                 Tab(text: "Leagues"),
-                Tab(text: "Following"),
+                Tab(text: "Favorite"),
               ],
             ),
           ),
@@ -79,7 +79,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         body: TabBarView(
           children: [
             _buildLeaguesTab(accentColor, cardColor),
-            _buildFollowingLeaguesTab(accentColor, cardColor),
+            _buildFavoriteLeaguesTab(accentColor, cardColor),
           ],
         ),
       ),
@@ -462,7 +462,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
   }
 
 
-  bool _isFollowingExpanded = true;
+  bool _isFavoriteExpanded = true;
   bool _isAllTeamsExpanded = true;
 
   Widget _buildSectionHeader({
@@ -528,7 +528,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildFollowingLeaguesTab(Color accentColor, Color cardColor) {
+  Widget _buildFavoriteLeaguesTab(Color accentColor, Color cardColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
