@@ -115,13 +115,15 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
       }
     }
 
-    // Colors
-    const Color accentColor = Color(0xFFFF8700);
+    // Eye-friendly, high-contrast accent colors
+    final Color accentColor = isDark 
+        ? const Color(0xFFFF8700) // Soft, radiant amber for dark mode
+        : const Color(0xFFE67E22); // Rich, deep orange for light mode
     final Color iconColor = isLive 
         ? Colors.white 
         : (isSelected 
             ? accentColor 
-            : (isDark ? Colors.white : Colors.black));
+            : (isDark ? Colors.white : Colors.black.withOpacity(0.75)));
 
     return GestureDetector(
       onTap: () => widget.onItemSelected(index),
@@ -137,12 +139,29 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
               curve: Curves.easeOutCubic,
               transform: Matrix4.identity()
                 ..scale(scale)
-                ..translate(0.0, - (scale - 1.0) * 30 - (isLive ? 5 : 0)), // Higher lift for engagement
+                ..translate(0.0, - (scale - 1.0) * 30 - (isLive ? 5 : 0)),
               width: _baseSize,
               height: _baseSize,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                   // Subtle glow for selected regular icons
+                  if (isSelected && !isLive)
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withOpacity(0.3),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Special background for Live item with pulse
                   if (isLive)
                     TweenAnimationBuilder<double>(
