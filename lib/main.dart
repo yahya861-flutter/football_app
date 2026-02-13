@@ -20,8 +20,7 @@ import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/theme_provider.dart';
 import 'package:football_app/providers/notification_provider.dart';
 import 'package:football_app/providers/language_provider.dart';
-import 'package:football_app/screens/home.dart';
-import 'package:football_app/screens/language_screen.dart';
+import 'package:football_app/screens/splash_screen.dart';
 import 'package:football_app/services/auto_notification_service.dart';
 import 'package:football_app/services/notification_service.dart';
 import 'package:provider/provider.dart';
@@ -105,9 +104,7 @@ class MyApp extends StatelessWidget {
             Locale('yo'),
             Locale('qu'),
           ],
-          home: languageProvider.isFirstTime 
-              ? const LanguageScreen(isFirstTime: true) 
-              : const Home(),
+          home: const SplashScreen(),
         );
       },
     );
