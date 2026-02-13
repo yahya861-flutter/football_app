@@ -999,16 +999,47 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: SizedBox(
-              height: 10,
-              child: LinearProgressIndicator(
-                value: matches.isEmpty ? 0 : homeWins / (homeWins + awayWins + draws),
-                backgroundColor: Colors.redAccent.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF8700)),
+          Row(
+            children: [
+              // Home Wins
+              Expanded(
+                flex: homeWins == 0 && draws == 0 && awayWins == 0 ? 1 : homeWins,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFFFF8700), Color(0xFFFFAB40)]),
+                    borderRadius: BorderRadius.horizontal(
+                      left: const Radius.circular(5),
+                      right: Radius.circular(draws == 0 && awayWins == 0 ? 5 : 0),
+                    ),
+                    boxShadow: [BoxShadow(color: const Color(0xFFFF8700).withOpacity(0.3), blurRadius: 4)],
+                  ),
+                ),
               ),
-            ),
+              // Draws
+              Expanded(
+                flex: homeWins == 0 && draws == 0 && awayWins == 0 ? 1 : draws,
+                child: Container(
+                  height: 10,
+                  color: isDark ? Colors.white24 : Colors.grey[300],
+                ),
+              ),
+              // Away Wins
+              Expanded(
+                flex: homeWins == 0 && draws == 0 && awayWins == 0 ? 1 : awayWins,
+                child: Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(colors: [Color(0xFF26A69A), Color(0xFF4DB6AC)]),
+                    borderRadius: BorderRadius.horizontal(
+                      right: const Radius.circular(5),
+                      left: Radius.circular(homeWins == 0 && draws == 0 ? 5 : 0),
+                    ),
+                    boxShadow: [BoxShadow(color: const Color(0xFF26A69A).withOpacity(0.3), blurRadius: 4)],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1544,21 +1575,35 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            Stack(
+            Row(
               children: [
-                Container(height: 6, decoration: BoxDecoration(color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[200], borderRadius: BorderRadius.circular(3))),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return Container(
-                      height: 6,
-                      width: constraints.maxWidth * hPercent,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFFF8700), Color(0xFFFFAB40)]), 
-                        borderRadius: BorderRadius.circular(3),
-                        boxShadow: [BoxShadow(color: const Color(0xFFFF8700).withOpacity(0.3), blurRadius: 4)],
+                Expanded(
+                  flex: (hVal * 100).toInt() == 0 && (aVal * 100).toInt() == 0 ? 1 : (hVal * 100).toInt(),
+                  child: Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFFFF8700), Color(0xFFFFAB40)]), 
+                      borderRadius: BorderRadius.horizontal(
+                        left: const Radius.circular(3),
+                        right: Radius.circular(total == 0 || aVal == 0 ? 3 : 0),
                       ),
-                    );
-                  }
+                      boxShadow: [BoxShadow(color: const Color(0xFFFF8700).withOpacity(0.3), blurRadius: 4)],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: (hVal * 100).toInt() == 0 && (aVal * 100).toInt() == 0 ? 1 : (aVal * 100).toInt(),
+                  child: Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(colors: [Color(0xFF26A69A), Color(0xFF4DB6AC)]), 
+                      borderRadius: BorderRadius.horizontal(
+                        right: const Radius.circular(3),
+                        left: Radius.circular(total == 0 || hVal == 0 ? 3 : 0),
+                      ),
+                      boxShadow: [BoxShadow(color: const Color(0xFF26A69A).withOpacity(0.3), blurRadius: 4)],
+                    ),
+                  ),
                 ),
               ],
             ),
