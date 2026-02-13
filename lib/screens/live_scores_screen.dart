@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:football_app/providers/inplay_provider.dart';
 import 'package:football_app/screens/live_matches_screen.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 class LiveScoresScreen extends StatefulWidget {
   const LiveScoresScreen({super.key});
@@ -84,8 +85,9 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
+    final l10n = AppLocalizations.of(context)!;
     final isToday = DateFormat('yyyy-MM-dd').format(_selectedDate) == DateFormat('yyyy-MM-dd').format(DateTime.now());
-    final dateStr = isToday ? "Today" : DateFormat('EEE d MMM').format(_selectedDate);
+    final dateStr = isToday ? l10n.today : DateFormat('EEE d MMM').format(_selectedDate);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -148,7 +150,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
         }
 
         if (provider.todayFixtures.isEmpty) {
-          return _buildEmptyState("No matches found for this date", () => provider.fetchFixturesByDate(_selectedDate));
+          return _buildEmptyState(AppLocalizations.of(context)!.noMatchesFound, () => provider.fetchFixturesByDate(_selectedDate));
         }
 
         return _buildGroupedMatchList(provider.todayFixtures);
@@ -172,7 +174,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
           ElevatedButton(
             onPressed: onRefresh,
             style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.white10 : Colors.black12),
-            child: Text("Refresh", style: TextStyle(color: textColor)),
+            child: Text(AppLocalizations.of(context)!.refresh, style: TextStyle(color: textColor)),
           ),
         ],
       ),
@@ -182,8 +184,9 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   Widget _buildGroupedMatchList(List<dynamic> matchesList) {
     // Group by league
     Map<String, List<dynamic>> groupedMatches = {};
+    final l10n = AppLocalizations.of(context)!;
     for (var match in matchesList) {
-      final leagueName = match['league']?['name'] ?? 'Other';
+      final leagueName = match['league']?['name'] ?? l10n.other;
       groupedMatches.putIfAbsent(leagueName, () => []).add(match);
     }
 
@@ -295,6 +298,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     final participants = match['participants'] as List? ?? [];
     final scores = match['scores'] as List? ?? [];
     
+    final l10n = AppLocalizations.of(context)!;
     dynamic homeTeam;
     dynamic awayTeam;
     if (participants.isNotEmpty) {
@@ -369,9 +373,9 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
             Expanded(
               child: Column(
                 children: [
-                  _buildModernTeamRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
+                  _buildModernTeamRow(homeTeam?['name'] ?? l10n.home, homeTeam?['image_path'] ?? '', homeScore),
                   const SizedBox(height: 14),
-                  _buildModernTeamRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
+                  _buildModernTeamRow(awayTeam?['name'] ?? l10n.away, awayTeam?['image_path'] ?? '', awayScore),
                 ],
               ),
             ),
@@ -397,7 +401,7 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
                           notificationProvider.toggleAllOff(matchId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Notifications removed for $homeName vs $awayName"),
+                              content: Text(l10n.notificationsRemoved),
                               backgroundColor: Colors.grey[800],
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 1),
