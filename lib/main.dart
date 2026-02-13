@@ -1,6 +1,8 @@
 import 'package:alarm/alarm.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:football_app/providers/commentary_provider.dart';
 import 'package:football_app/providers/prediction_provider.dart';
 import 'package:football_app/providers/league_provider.dart';
@@ -17,11 +19,14 @@ import 'package:football_app/providers/stats_provider.dart';
 import 'package:football_app/providers/lineup_provider.dart';
 import 'package:football_app/providers/theme_provider.dart';
 import 'package:football_app/providers/notification_provider.dart';
+import 'package:football_app/providers/language_provider.dart';
 import 'package:football_app/screens/home.dart';
-import 'package:football_app/services/notification_service.dart';
+import 'package:football_app/screens/language_screen.dart';
 import 'package:football_app/services/auto_notification_service.dart';
-import 'package:flutter/foundation.dart';
+import 'package:football_app/services/notification_service.dart';
 import 'package:provider/provider.dart';
+
+import 'package:football_app/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +46,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => LeagueProvider()),
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => FixtureProvider()),
@@ -67,14 +73,39 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
+    return Consumer2<ThemeProvider, LanguageProvider>(
+      builder: (context, themeProvider, languageProvider, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: themeProvider.lightTheme,
           darkTheme: themeProvider.darkTheme,
           themeMode: themeProvider.themeMode,
-          home: const Home(),
+          locale: languageProvider.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en'),
+            Locale('es'),
+            Locale('fr'),
+            Locale('de'),
+            Locale('it'),
+            Locale('pt'),
+            Locale('ar'),
+            Locale('zh'),
+            Locale('hi'),
+            Locale('ja'),
+            Locale('sw'),
+            Locale('am'),
+            Locale('yo'),
+            Locale('qu'),
+          ],
+          home: languageProvider.isFirstTime 
+              ? const LanguageScreen(isFirstTime: true) 
+              : const Home(),
         );
       },
     );

@@ -1,18 +1,19 @@
- import 'dart:async';
+import 'dart:async';
  import 'dart:io';
  import 'package:flutter/foundation.dart';
  import 'package:flutter/cupertino.dart';
  import 'package:flutter/material.dart';
+import 'package:football_app/screens/teams_screen.dart';
  import 'package:football_app/widgets/mac_dock_nav_bar.dart';
 import 'package:football_app/screens/premium_screen.dart';
 import 'package:football_app/screens/settings_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:football_app/screens/live_scores_screen.dart';
+import 'package:football_app/screens/matches_screen.dart';
 import 'package:football_app/screens/leagues_screen.dart';
 import 'package:football_app/screens/shorts_screen.dart';
 import 'package:football_app/screens/highlights_screen.dart';
-import 'package:football_app/screens/teams_screen.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/fixture_provider.dart';
 import '../providers/inplay_provider.dart';
 import '../providers/league_provider.dart';
@@ -64,18 +65,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // List of titles for each tab, used in the AppBar
-  final List<String> _titles = [
-    "Matches",
-    "Leagues",
-    "Live",
-    "Teams",
-    "Settings"
-  ];
-
   // List of actual screen widgets ordered by the bottom navigation items
   final List<Widget> _screens = const [
-    LiveScoresScreen(),
+    MatchesScreen(isTab: true),
     LeaguesScreen(),
     LiveMatchesScreen(isTab: true),
     TeamsScreen(),
@@ -84,6 +76,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // List of titles for each tab, used in the AppBar
+    final List<String> titles = [
+      l10n.matches,
+      l10n.leagues,
+      l10n.live,
+      l10n.teams,
+      l10n.settings
+    ];
+
     // Theme aware colors
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = Theme.of(context).appBarTheme.backgroundColor;
@@ -137,7 +140,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     ],
                   )
                 : Text(
-                    _titles[_selectedIndex],
+                    titles[_selectedIndex],
                     style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
                   ),
          actions: _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
@@ -163,11 +166,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
        ),
        // Display the screen corresponding to the current selection
        body: Stack(
+         clipBehavior: Clip.none, // Allow icons to scale and lift into the body area
          children: [
            _screens[_selectedIndex],
            if (!kIsWeb && Platform.isMacOS)
              Positioned(
-               bottom: 20,
+               bottom: 10, // Floating above the bottom of the body
                left: 0,
                right: 0,
                child: Center(
@@ -175,11 +179,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                    selectedIndex: _selectedIndex,
                    onItemSelected: (index) => setState(() => _selectedIndex = index),
                    items: [
-                     MacDockItem(icon: Icons.sports_soccer, label: "Matches"),
-                     MacDockItem(icon: Icons.emoji_events, label: "Leagues"),
-                     MacDockItem(icon: Icons.live_tv, label: "Live"),
-                     MacDockItem(icon: Icons.groups_rounded, label: "Teams"),
-                     MacDockItem(icon: Icons.settings, label: "Settings"),
+                     MacDockItem(icon: Icons.sports_soccer, label: l10n.matches),
+                     MacDockItem(icon: Icons.emoji_events, label: l10n.leagues),
+                     MacDockItem(icon: Icons.live_tv, label: l10n.live),
+                     MacDockItem(icon: Icons.groups_rounded, label: l10n.teams),
+                     MacDockItem(icon: Icons.settings, label: l10n.settings),
                    ],
                  ),
                ),
@@ -207,11 +211,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                  child: Row(
                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                    children: [
-                     _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
-                     _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
+                     _buildBottomNavItem(0, Icons.sports_soccer, l10n.matches, accentColor),
+                     _buildBottomNavItem(1, Icons.emoji_events, l10n.leagues, accentColor),
                      _buildLiveNavItem(2, accentColor), // Integrated Live Button
-                     _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
-                     _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
+                     _buildBottomNavItem(3, Icons.groups_rounded, l10n.teams, accentColor),
+                     _buildBottomNavItem(4, Icons.settings, l10n.settings, accentColor),
                    ],
                  ),
                ),

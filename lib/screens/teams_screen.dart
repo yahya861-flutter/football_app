@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:football_app/providers/team_list_provider.dart';
 import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/team_details_screen.dart';
+import 'package:football_app/screens/search_screen.dart';
 import 'package:football_app/widgets/notifications_activated_dialog.dart';
+
+import '../l10n/app_localizations.dart';
 
 class TeamsScreen extends StatefulWidget {
   const TeamsScreen({super.key});
@@ -46,8 +49,11 @@ class _TeamsScreenState extends State<TeamsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color primaryColor = isDark ? Colors.black : Colors.white;
+    final Color primaryColor = Theme.of(context).appBarTheme.backgroundColor ?? (isDark ? Colors.black : Colors.white);
+    final Color textPrimary = Theme.of(context).appBarTheme.titleTextStyle?.color ?? (isDark ? Colors.white : Colors.black);
+    final Color secondaryColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
     const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
@@ -56,24 +62,20 @@ class _TeamsScreenState extends State<TeamsScreen> {
       length: 2,
       child: Scaffold(
         backgroundColor: primaryColor,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark ? primaryColor : Colors.white,
-              border: Border(bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05))),
-            ),
-            child: TabBar(
-              indicatorColor: accentColor,
-              indicatorWeight: 3,
-              labelColor: isDark ? Colors.white : Colors.black,
-              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-              unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
-              tabs: const [
-                Tab(text: "Teams"),
-                Tab(text: "Favorite"),
-              ],
-            ),
+        appBar: AppBar(
+          backgroundColor: primaryColor,
+          elevation: 0,
+          title: Text(l10n.allTeams, style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold, fontSize: 24)),
+          bottom: TabBar(
+            indicatorColor: accentColor,
+            indicatorWeight: 3,
+            labelColor: accentColor,
+            unselectedLabelColor: textPrimary.withOpacity(0.5),
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            tabs: [
+              Tab(text: l10n.allTeams),
+              Tab(text: l10n.favorite),
+            ],
           ),
         ),
         body: TabBarView(
@@ -89,6 +91,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
   Widget _buildTeamsTab(Color accentColor, Color cardColor) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final l10n = AppLocalizations.of(context)!;
 
     return Consumer2<TeamListProvider, FollowProvider>(
       builder: (context, teamProvider, followProvider, _) {
@@ -113,7 +116,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
         items.add(_buildSectionHeader(
           icon: Icons.groups_rounded,
           iconColor: isDark ? Colors.tealAccent : Colors.teal,
-          title: "All Teams",
+          title: l10n.allTeams,
           count: teamProvider.teams.length,
           isExpanded: _isAllTeamsExpanded,
           onToggle: () => setState(() => _isAllTeamsExpanded = !_isAllTeamsExpanded),
@@ -134,8 +137,8 @@ class _TeamsScreenState extends State<TeamsScreen> {
                   CircularProgressIndicator(color: accentColor, strokeWidth: 2),
                   const SizedBox(height: 8),
                   Text(
-                    "Loading more teams (${teamProvider.teams.length} loaded)...",
-                    style: TextStyle(color: subTextColor, fontSize: 12),
+                    AppLocalizations.of(context)!.loadingMoreTeams,
+                    style: TextStyle(color: subTextColor, fontSize: 13),
                   ),
                 ],
               ),
@@ -159,23 +162,17 @@ class _TeamsScreenState extends State<TeamsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final l10n = AppLocalizations.of(context)!;
 
     return Consumer<FollowProvider>(
       builder: (context, followProvider, child) {
         final followedTeams = context.watch<TeamListProvider>().teams.where((t) => followProvider.isTeamFollowed(t['id'])).toList();
 
         if (followedTeams.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.star_outline_rounded, size: 64, color: subTextColor),
-                const SizedBox(height: 16),
-                Text("No favorited teams yet", style: TextStyle(color: textColor, fontSize: 16)),
-                const SizedBox(height: 8),
-                Text("Star a team to see it here", style: TextStyle(color: subTextColor, fontSize: 14)),
-              ],
-            ),
+          return _buildEmptyState(
+            context,
+            l10n.noFavoriteTeams,
+            l10n.starTeamPrompt,
           );
         }
 
@@ -187,6 +184,25 @@ class _TeamsScreenState extends State<TeamsScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context, String title, String subtitle) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.star_outline_rounded, size: 64, color: subTextColor),
+          const SizedBox(height: 16),
+          Text(title, style: TextStyle(color: textColor, fontSize: 16)),
+          const SizedBox(height: 8),
+          Text(subtitle, style: TextStyle(color: subTextColor, fontSize: 14)),
+        ],
+      ),
     );
   }
 
@@ -257,6 +273,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black87;
     final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       decoration: BoxDecoration(
@@ -286,7 +303,7 @@ class _TeamsScreenState extends State<TeamsScreen> {
           }
         },
         decoration: InputDecoration(
-          hintText: "Search teams...",
+          hintText: l10n.searchTeams,
           hintStyle: TextStyle(color: subTextColor, fontSize: 14),
           prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
           border: InputBorder.none,

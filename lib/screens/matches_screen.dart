@@ -5,18 +5,17 @@ import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:football_app/providers/inplay_provider.dart';
-import 'package:football_app/screens/live_matches_screen.dart';
 import 'package:football_app/l10n/app_localizations.dart';
 
-class LiveScoresScreen extends StatefulWidget {
-  const LiveScoresScreen({super.key});
+class MatchesScreen extends StatefulWidget {
+  final bool isTab;
+  const MatchesScreen({super.key, this.isTab = false});
 
   @override
-  State<LiveScoresScreen> createState() => _LiveScoresScreenState();
+  State<MatchesScreen> createState() => _MatchesScreenState();
 }
 
-class _LiveScoresScreenState extends State<LiveScoresScreen> {
+class _MatchesScreenState extends State<MatchesScreen> {
   DateTime _selectedDate = DateTime.now();
 
   Future<void> _selectDate(BuildContext context) async {
@@ -65,18 +64,51 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color primaryColor = isDark ? Colors.black : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFFF8700);
+    final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      children: [
-        _buildFilterHeader(),
-        Expanded(
-          child: _buildMatchesForDateList(),
+    final content = Consumer<FixtureProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoading && provider.todayFixtures.isEmpty) {
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator(color: accentColor)),
+          );
+        }
+
+        if (provider.todayFixtures.isEmpty) {
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: _buildEmptySliver(l10n.noMatchesFound, () => provider.fetchFixturesByDate(_selectedDate)),
+          );
+        }
+
+        return _buildGroupedMatchList(provider.todayFixtures);
+      },
+    );
+
+    return Scaffold(
+      backgroundColor: primaryColor,
+      appBar: widget.isTab ? null : AppBar(
+        backgroundColor: primaryColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: textColor, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
-      ],
+        title: Text(l10n.matches, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 18)),
+      ),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: _buildFilterHeader(),
+          ),
+          content,
+          if (widget.isTab) const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        ],
+      ),
     );
   }
 
@@ -141,26 +173,8 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
     );
   }
 
-  Widget _buildMatchesForDateList() {
-    return Consumer<FixtureProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoading && provider.todayFixtures.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(
-              0xFFFF8700)));
-        }
-
-        if (provider.todayFixtures.isEmpty) {
-          return _buildEmptyState(AppLocalizations.of(context)!.noMatchesFound, () => provider.fetchFixturesByDate(_selectedDate));
-        }
-
-        return _buildGroupedMatchList(provider.todayFixtures);
-      },
-    );
-  }
-
-  Widget _buildEmptyState(String message, VoidCallback onRefresh) {
+  Widget _buildEmptySliver(String message, VoidCallback onRefresh) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
     return Center(
@@ -171,10 +185,9 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
           const SizedBox(height: 16),
           Text(message, style: TextStyle(color: subTextColor)),
           const SizedBox(height: 24),
-          ElevatedButton(
+          TextButton(
             onPressed: onRefresh,
-            style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.white10 : Colors.black12),
-            child: Text(AppLocalizations.of(context)!.refresh, style: TextStyle(color: textColor)),
+            child: Text(AppLocalizations.of(context)!.refresh),
           ),
         ],
       ),
@@ -182,7 +195,6 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
   }
 
   Widget _buildGroupedMatchList(List<dynamic> matchesList) {
-    // Group by league
     Map<String, List<dynamic>> groupedMatches = {};
     final l10n = AppLocalizations.of(context)!;
     for (var match in matchesList) {
@@ -192,16 +204,20 @@ class _LiveScoresScreenState extends State<LiveScoresScreen> {
 
     final leagues = groupedMatches.keys.toList();
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: leagues.length,
-      itemBuilder: (context, index) {
-        final leagueName = leagues[index];
-        final matches = groupedMatches[leagueName]!;
-        final leagueLogo = matches.first['league']?['image_path'];
-        
-        return _buildModernLeagueGroup(leagueName, leagueLogo, matches);
-      },
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final leagueName = leagues[index];
+          final matches = groupedMatches[leagueName]!;
+          final leagueLogo = matches.first['league']?['image_path'];
+          
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildModernLeagueGroup(leagueName, leagueLogo, matches),
+          );
+        },
+        childCount: leagues.length,
+      ),
     );
   }
 

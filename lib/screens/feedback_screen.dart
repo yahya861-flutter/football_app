@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 class FeedbackScreen extends StatefulWidget {
   const FeedbackScreen({super.key});
@@ -8,172 +9,146 @@ class FeedbackScreen extends StatefulWidget {
 }
 
 class _FeedbackScreenState extends State<FeedbackScreen> {
-  final TextEditingController _detailsController = TextEditingController();
-  String? _selectedProblem;
-
-  final List<String> _problems = [
-    "Alerts not working",
-    "Live score not refreshing",
-    "Function disabled",
-    "App not responding",
-    "Crash",
-    "Ads",
-    "Other",
-  ];
+  final TextEditingController _feedbackController = TextEditingController();
+  String? _selectedProblemType;
 
   @override
   void dispose() {
-    _detailsController.dispose();
+    _feedbackController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    const Color mintColor = Color(0xFFFF8700);
-    const Color darkBg = Colors.black;
-    const Color cardBg = Color(0xFF121212);
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color mintColor = const Color(0xFF00FF9D);
+    final Color cardBg = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
 
     return Scaffold(
-      backgroundColor: darkBg,
-      resizeToAvoidBottomInset: false,
+      backgroundColor: isDark ? Colors.black : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Feedback",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.feedback,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "What type of problem are you facing?",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 12,
-                children: _problems.map((problem) {
-                  final bool isSelected = _selectedProblem == problem;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedProblem = problem;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected ? mintColor : cardBg,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        problem,
-                        style: TextStyle(
-                          color: isSelected ? Colors.black : Colors.white70,
-                          fontSize: 13,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
-              const Text(
-                "Details",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: TextField(
-                  controller: _detailsController,
-                  maxLines: 6,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: const InputDecoration(
-                    hintText: "Share your thoughts",
-                    hintStyle: TextStyle(color: Colors.white24),
-                    contentPadding: EdgeInsets.all(16),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 100), // Space for button at bottom
-            ],
-          ),
-        ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: EdgeInsets.only(
-          left: 20,
-          right: 20,
-          bottom: MediaQuery.of(context).viewInsets.bottom > 0 ? 0 : 20,
-        ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_selectedProblem == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Please select a problem type")),
-                    );
-                    return;
-                  }
-                  // Implementation for submission
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text("Feedback submitted successfully!"),
-                      backgroundColor: mintColor,
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: mintColor,
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "Submit",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+            Text(
+              l10n.problemTypes,
+              style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildProblemType(l10n.appCrash, Icons.bug_report, l10n, mintColor, cardBg, textColor),
+                _buildProblemType(l10n.slowPerformance, Icons.speed, l10n, mintColor, cardBg, textColor),
+                _buildProblemType(l10n.incorrectData, Icons.analytics_outlined, l10n, mintColor, cardBg, textColor),
+                _buildProblemType(l10n.other, Icons.more_horiz, l10n, mintColor, cardBg, textColor),
+              ],
+            ),
+            const SizedBox(height: 32),
+            Text(
+              l10n.describeProblem,
+              style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _feedbackController,
+              maxLines: 6,
+              style: TextStyle(color: textColor),
+              decoration: InputDecoration(
+                hintText: l10n.describeProblemHint,
+                hintStyle: TextStyle(color: subTextColor),
+                filled: true,
+                fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
+            const SizedBox(height: 40),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () {
+                  if (_selectedProblemType == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.pleaseSelectProblemType)),
+                    );
+                    return;
+                  }
+                  if (_feedbackController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.pleaseDescribeProblem)),
+                    );
+                    return;
+                  }
+                  // Simulate submission
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.feedbackSent),
+                      backgroundColor: mintColor,
+                    ),
+                  );
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mintColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: Text(
+                  l10n.submit,
+                  style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Widget _buildProblemType(String type, IconData icon, AppLocalizations l10n, Color mintColor, Color cardBg, Color textColor) {
+    final isSelected = _selectedProblemType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedProblemType = type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? mintColor : cardBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isSelected ? mintColor : Colors.white10),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: isSelected ? Colors.black : textColor, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              type,
+              style: TextStyle(
+                color: isSelected ? Colors.black : textColor,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),

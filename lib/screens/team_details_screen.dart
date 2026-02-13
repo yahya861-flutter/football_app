@@ -1,15 +1,17 @@
-
 import 'package:flutter/material.dart';
-import 'package:football_app/providers/squad_provider.dart';
-import 'package:football_app/providers/team_provider.dart';
+import 'package:football_app/providers/stats_provider.dart';
+import 'package:football_app/providers/fixture_provider.dart';
 import 'package:football_app/screens/player_details_screen.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 import '../providers/follow_provider.dart';
 import '../providers/notification_provider.dart';
+import '../providers/team_provider.dart';
 import '../widgets/match_notification_dialog.dart';
+import '../providers/squad_provider.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
   final int teamId;
@@ -62,132 +64,25 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white60 : Colors.black54;
-
+    final Color backgroundColor = isDark ? Colors.black : Theme.of(context).scaffoldBackgroundColor;
+    final l10n = AppLocalizations.of(context)!;
+    debugPrint('Building TeamDetailsScreen for team: ${widget.teamName}');
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: isDark ? Colors.black : Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: backgroundColor,
         body: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
-              SliverAppBar(
-                expandedHeight: 200,
-                pinned: true,
-                backgroundColor: isDark ? const Color(0xFF121212) : Theme.of(context).primaryColor,
-                elevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back, color: textColor),
-                  onPressed: () => Navigator.pop(context),
-                ),
-                actions: [
-                  Consumer<FollowProvider>(
-                    builder: (context, followProvider, child) {
-                      final isFollowed = followProvider.isTeamFollowed(widget.teamId);
-                      return IconButton(
-                        icon: Icon(
-                          isFollowed ? Icons.star : Icons.star_border, 
-                          color: isFollowed ? accentColor : subTextColor,
-                        ),
-                        onPressed: () => followProvider.toggleFollowTeam(widget.teamId, teamData: context.read<TeamProvider>().selectedTeam),
-                      );
-                    },
-                  ),
-                ],
-                flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin,
-                  background: Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 16, top: 80, bottom: 48),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 70,
-                          height: 70,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF121212).withOpacity(0.5) : Colors.black12,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
-                          ),
-                          child: widget.teamLogo.isNotEmpty
-                              ? Image.network(widget.teamLogo, fit: BoxFit.contain)
-                              : Icon(Icons.shield, size: 40, color: subTextColor),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.teamName,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'Poppins',
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Selector<TeamProvider, String>(
-                                selector: (_, p) => p.selectedTeam?['country']?['name'] ?? 'Loading...',
-                                builder: (_, country, __) => Text(
-                                  country,
-                                  style: TextStyle(
-                                    color: subTextColor,
-                                    fontSize: 16,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(48),
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    child: TabBar(
-                      isScrollable: true,
-                      tabAlignment: TabAlignment.start,
-                      indicatorColor: accentColor,
-                      labelColor: isDark ? accentColor : textColor,
-                      unselectedLabelColor: subTextColor,
-                      indicatorWeight: 3,
-                      indicatorSize: TabBarIndicatorSize.label,
-                      labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-                      tabs: const [
-                        Tab(text: "Stats"),
-                        Tab(text: "Fixtures"),
-                        Tab(text: "Squad"),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              _buildSliverAppBar(textColor, subTextColor, backgroundColor, accentColor, l10n),
             ];
           },
           body: TabBarView(
             physics: const NeverScrollableScrollPhysics(),
             children: [
-              Consumer<TeamProvider>(
-                builder: (context, provider, _) {
-                  final seasons = provider.selectedTeam?['seasons'] as List? ?? [];
-                  return _buildStatsTab(provider, seasons, accentColor);
-                },
-              ),
-              Consumer<TeamProvider>(
-                builder: (context, provider, _) => _buildFixturesTab(provider, accentColor),
-              ),
-              Consumer<SquadProvider>(
-                builder: (context, provider, _) => _buildSquadTab(provider, accentColor),
-              ),
+              _buildStatsTab(accentColor, l10n),
+              _buildFixturesTab(accentColor, l10n),
+              _buildSquadTab(accentColor, l10n),
             ],
           ),
         ),
@@ -195,54 +90,162 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
-  Widget _buildStatsTab(TeamProvider provider, List seasons, Color accentColor) {
-    final statsEntries = provider.teamStats;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // Competition/Season Selector (Teal style from reference)
-          if (seasons.isNotEmpty)
-            InkWell(
-              onTap: () => _showCompetitionSelector(context, seasons, provider),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  SliverAppBar _buildSliverAppBar(Color textColor, Color subTextColor, Color backgroundColor, Color accentColor, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      backgroundColor: isDark ? const Color(0xFF121212) : Theme.of(context).primaryColor,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back, color: textColor),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        Consumer<FollowProvider>(
+          builder: (context, followProvider, child) {
+            final isFollowed = followProvider.isTeamFollowed(widget.teamId);
+            return IconButton(
+              icon: Icon(
+                isFollowed ? Icons.star : Icons.star_border, 
+                color: isFollowed ? accentColor : subTextColor,
+              ),
+              onPressed: () => followProvider.toggleFollowTeam(widget.teamId, teamData: context.read<TeamProvider>().selectedTeam),
+            );
+          },
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        background: Padding(
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 80, bottom: 48),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 70,
+                height: 70,
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF26BC94),
-                  borderRadius: BorderRadius.circular(8),
+                  color: isDark ? const Color(0xFF121212).withOpacity(0.5) : Colors.black12,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isDark ? Colors.white24 : Colors.black12),
                 ),
-                child: Row(
+                child: widget.teamLogo.isNotEmpty
+                    ? Image.network(widget.teamLogo, fit: BoxFit.contain)
+                    : Icon(Icons.shield, size: 40, color: subTextColor),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        _selectedSeasonName ?? "Select Competition",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      widget.teamName,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Poppins',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Selector<TeamProvider, String>(
+                      selector: (_, p) => p.selectedTeam?['country']?['name'] ?? l10n.loading,
+                      builder: (_, country, __) => Text(
+                        country,
+                        style: TextStyle(
+                          color: subTextColor,
+                          fontSize: 16,
+                          fontFamily: 'Poppins',
+                        ),
                       ),
                     ),
-                    const Icon(Icons.keyboard_arrow_down, color: Colors.white),
                   ],
                 ),
               ),
-            ),
-          const SizedBox(height: 24),
-          
-          if (provider.isLoading)
-            const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)))
-          else if (statsEntries.isEmpty)
-            _buildEmptyStats()
-          else
-            ..._buildStatsContent(statsEntries, accentColor),
-            
-          const SizedBox(height: 40),
-        ],
+            ],
+          ),
+        ),
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(48),
+        child: Container(
+          alignment: Alignment.centerLeft,
+          child: TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            indicatorColor: accentColor,
+            labelColor: isDark ? accentColor : textColor,
+            unselectedLabelColor: subTextColor,
+            indicatorWeight: 3,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+            tabs: [
+              Tab(text: l10n.stats),
+              Tab(text: l10n.fixtures),
+              Tab(text: l10n.squad),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyStats() {
+  Widget _buildStatsTab(Color accentColor, AppLocalizations l10n) {
+    return Consumer<TeamProvider>(
+      builder: (context, provider, _) {
+        final seasons = provider.selectedTeam?['seasons'] as List? ?? [];
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Competition/Season Selector (Teal style from reference)
+              if (seasons.isNotEmpty)
+                InkWell(
+                  onTap: () => _showCompetitionSelector(context, seasons, provider, l10n),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF26BC94),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selectedSeasonName ?? l10n.selectCompetition,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                      ],
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 24),
+              
+              if (provider.isLoading)
+                const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)))
+              else if (provider.teamStats.isEmpty)
+                _buildEmptyStats(l10n)
+              else
+                ..._buildStatsContent(provider.teamStats, accentColor),
+                
+              const SizedBox(height: 40),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmptyStats(AppLocalizations l10n) {
     return Center(
       child: Column(
         children: [
@@ -256,9 +259,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            "Stats not found for this season",
-            style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
+          Text(
+            l10n.statsNotFound,
+            style: const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -266,7 +269,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
   List<Widget> _buildStatsContent(List<dynamic> statsEntries, Color accentColor) {
-    if (statsEntries.isEmpty) return [ _buildEmptyStats() ];
+    if (statsEntries.isEmpty) return [ _buildEmptyStats(AppLocalizations.of(context)!) ];
 
     // Group stats by league/season
     return statsEntries.map((entry) {
@@ -360,7 +363,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
 
-  void _showCompetitionSelector(BuildContext context, List seasons, TeamProvider provider) {
+  void _showCompetitionSelector(BuildContext context, List seasons, TeamProvider provider, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
@@ -375,9 +378,9 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(bottom: 16),
-                child: Text("Select Competition", style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(l10n.selectCompetition, style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 18, fontWeight: FontWeight.bold)),
               ),
               Expanded(
                 child: ListView.builder(
@@ -414,23 +417,30 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
     );
   }
 
-  Widget _buildFixturesTab(TeamProvider provider, Color accentColor) {
-    return Column(
-      children: [
-       
-        Expanded(
-          child: _buildFixturesList(provider, accentColor),
-        ),
-      ],
+  Widget _buildFixturesTab(Color accentColor, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color subTextColor = isDark ? Colors.white38 : Colors.black38;
+
+    return Consumer<TeamProvider>(
+      builder: (context, provider, _) {
+        return Column(
+          children: [
+           
+            Expanded(
+              child: _buildFixturesList(provider, accentColor, subTextColor, l10n),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildFixturesList(TeamProvider provider, Color accentColor) {
+  Widget _buildFixturesList(TeamProvider provider, Color accentColor, Color subTextColor, AppLocalizations l10n) {
     if (provider.isLoading && provider.teamFixtures.isEmpty) {
       return Center(child: CircularProgressIndicator(color: accentColor));
     }
     if (provider.teamFixtures.isEmpty) {
-      return const Center(child: Text("No fixtures found for selected period", style: TextStyle(color: Colors.white38)));
+      return Center(child: Text(l10n.noFixturesFound, style: TextStyle(color: subTextColor)));
     }
 
     // Group fixtures by local date using timestamps
@@ -708,80 +718,85 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
   }
 
 
-  Widget _buildSquadTab(SquadProvider provider, Color accentColor) {
+  Widget _buildSquadTab(Color accentColor, AppLocalizations l10n) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-
-    if (provider.isLoading && provider.squad.isEmpty) {
-      return Center(child: CircularProgressIndicator(color: accentColor));
-    }
-    if (provider.squad.isEmpty) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      return Center(child: Text("Squad list upcoming", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
-    }
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: provider.squad.length,
-      itemBuilder: (context, index) {
-        final squadItem = provider.squad[index];
-        final player = squadItem['player'] ?? {};
+    return Consumer<SquadProvider>(
+      builder: (context, squadProvider, child) {
+        if (squadProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
         
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PlayerDetailsScreen(
-                  squadItem: squadItem,
-                  teamName: widget.teamName,
-                  teamLogo: widget.teamLogo,
+        final squad = squadProvider.squad;
+        if (squad.isEmpty) {
+          return Center(child: Text(l10n.unknown, style: const TextStyle(color: Colors.white)));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: squad.length,
+          itemBuilder: (context, index) {
+            final squadItem = squad[index];
+            final player = squadItem['player'] ?? {};
+            
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PlayerDetailsScreen(
+                      squadItem: squadItem,
+                      teamName: widget.teamName,
+                      teamLogo: widget.teamLogo,
+                    ),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF121212) : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+                ),
+                child: Row(
+                  children: [
+                    if (player['image_path'] != null)
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundImage: NetworkImage(player['image_path']),
+                      )
+                    else
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                        child: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.black54),
+                      ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            player['display_name'] ?? player['name'] ?? 'Player',
+                            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          if (squadItem['jersey_number'] != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                "${l10n.jersey}: #${squadItem['jersey_number']}",
+                                style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
           },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF121212) : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-            ),
-            child: Row(
-              children: [
-                if (player['image_path'] != null)
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundImage: NetworkImage(player['image_path']),
-                  )
-                else
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundColor: isDark ? Colors.white12 : Colors.black12,
-                    child: Icon(Icons.person, color: isDark ? Colors.white54 : Colors.black54),
-                  ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        player['display_name'] ?? player['name'] ?? 'Player',
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      if (squadItem['jersey_number'] != null)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            "Jersey: #${squadItem['jersey_number']}",
-                            style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 13),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         );
       },
     );

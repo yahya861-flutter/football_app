@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/team_list_provider.dart';
 import 'team_details_screen.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -59,7 +60,7 @@ class _SearchScreenState extends State<SearchScreen> {
             textAlignVertical: TextAlignVertical.center,
             style: TextStyle(color: textPrimary, fontSize: 14),
             decoration: InputDecoration(
-              hintText: "Search teams...",
+              hintText: AppLocalizations.of(context)!.searchTeams,
               hintStyle: TextStyle(color: textPrimary.withOpacity(0.4), fontSize: 14),
               prefixIcon: Icon(Icons.search, color: textPrimary.withOpacity(0.4), size: 20),
               suffixIcon: _searchController.text.isNotEmpty
@@ -105,7 +106,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
         if (provider.teams.isEmpty && _searchController.text.isNotEmpty) {
           return Center(
-            child: Text("No teams found", style: TextStyle(color: subTextColor)),
+            child: Text(AppLocalizations.of(context)!.noTeamsFound, style: TextStyle(color: subTextColor)),
           );
         }
 
@@ -116,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
               children: [
                 Icon(Icons.search, size: 60, color: subTextColor.withOpacity(0.2)),
                 const SizedBox(height: 16),
-                Text("Search for your favorite teams", style: TextStyle(color: subTextColor)),
+                Text(AppLocalizations.of(context)!.searchFavoriteTeamsPrompt, style: TextStyle(color: subTextColor)),
               ],
             ),
           );
@@ -144,7 +145,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 team['name'] ?? 'Unknown',
                 style: TextStyle(color: textColor, fontWeight: FontWeight.w500),
               ),
-              subtitle: Text("Team", style: TextStyle(color: subTextColor, fontSize: 12)),
+              subtitle: Text(AppLocalizations.of(context)!.team, style: TextStyle(color: subTextColor, fontSize: 12)),
               trailing: Icon(Icons.arrow_forward_ios_rounded, color: subTextColor, size: 14),
               onTap: () {
                 Navigator.push(

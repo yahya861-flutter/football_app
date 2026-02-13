@@ -9,6 +9,7 @@ import 'package:football_app/screens/team_details_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 class MatchDetailsScreen extends StatefulWidget {
   final dynamic fixture;
@@ -67,6 +68,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     const Color accentColor = Color(0xFFFF8700);
     final participants = widget.fixture['participants'] as List? ?? [];
     
@@ -79,8 +81,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       }
     }
 
-    final homeName = homeTeam?['name'] ?? 'Home';
-    final awayName = awayTeam?['name'] ?? 'Away';
+    final homeName = homeTeam?['name'] ?? l10n.home;
+    final awayName = awayTeam?['name'] ?? l10n.away;
     final homeImg = homeTeam?['image_path'] ?? '';
     final awayImg = awayTeam?['image_path'] ?? '';
 
@@ -204,7 +206,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                       if (isLive)
                                         _buildLiveIndicator(),
                                       Text(
-                                        isLive ? "LIVE - $stateName" : stateName,
+                                        isLive ? "${l10n.liveLabel} - $stateName" : stateName,
                                         style: TextStyle(
                                           color: isLive ? Colors.redAccent : subTextColor,
                                           fontSize: 12,
@@ -216,7 +218,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                                   if (htScoreStr.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
-                                      "HT: $htScoreStr",
+                                      "${l10n.ht}: $htScoreStr",
                                       style: TextStyle(color: subTextColor, fontSize: 11),
                                     ),
                                   ],
@@ -244,12 +246,12 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                       labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
                       labelPadding: const EdgeInsets.symmetric(horizontal: 16),
-                      tabs: const [
-                        Tab(text: "INFO"),
-                        Tab(text: "H2H"),
-                        Tab(text: "STATS"),
-                        Tab(text: "TABLE"),
-                        Tab(text: "COMMENTS"),
+                      tabs: [
+                        Tab(text: l10n.infoTab),
+                        Tab(text: l10n.h2hTab),
+                        Tab(text: l10n.statsTab),
+                        Tab(text: l10n.tableTab),
+                        Tab(text: l10n.commentsTab),
                       ],
                     ),
                   ],
@@ -341,6 +343,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildInfoTab(dynamic fixture, String htScore) {
+    final l10n = AppLocalizations.of(context)!;
     final venueNameRaw = fixture['venue']?['name']?.toString() ?? '';
     final cityNameRaw = fixture['venue']?['city']?.toString() ?? '';
     
@@ -376,17 +379,17 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           // Section: General Information
           _buildExpansionCard(
             icon: Icons.info_outline,
-            title: "Match Information",
+            title: l10n.matchInformation,
             initiallyExpanded: true,
             content: Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Column(
                 children: [
-                  _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
-                  _buildInfoRow(Icons.notifications_none_rounded, "Kick off", formattedKickOff),
+                  _buildInfoRow(Icons.emoji_events_outlined, l10n.competition, leagueName),
+                  _buildInfoRow(Icons.notifications_none_rounded, l10n.kickOff, formattedKickOff),
                   if (htScore.isNotEmpty)
-                    _buildInfoRow(Icons.notifications_active, "Half Time Result", htScore),
-                  _buildInfoRow(Icons.location_on_outlined, "Venue", venueDisplay, showMap: true),
+                    _buildInfoRow(Icons.notifications_active, l10n.halfTimeResult, htScore),
+                  _buildInfoRow(Icons.location_on_outlined, l10n.venue, venueDisplay, showMap: true),
                 ],
               ),
             ),
@@ -400,24 +403,24 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               
               return _buildExpansionCard(
                 icon: Icons.analytics_outlined,
-                title: "Predictions",
+                title: l10n.predictions,
                 initiallyExpanded: true,
                 content: predProvider.isLoading 
                   ? const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(color: Colors.redAccent)))
                   : Padding(
                       padding: const EdgeInsets.all(24),
                       child: !hasPredictions 
-                        ? Center(child: Text("No prediction available for this match", style: TextStyle(color: subTextColor, fontSize: 13)))
+                        ? Center(child: Text(l10n.noPredictionsAvailable, style: TextStyle(color: subTextColor, fontSize: 13)))
                         : Column(
                             children: [
-                              Text("Win Probability", style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
+                              Text(l10n.winProbability, style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  _buildPollButton("Home", WinProbabilities['home']!),
-                                  _buildPollButton("Draw", WinProbabilities['draw']!),
-                                  _buildPollButton("Away", WinProbabilities['away']!),
+                                  _buildPollButton(l10n.home, WinProbabilities['home']!),
+                                  _buildPollButton(l10n.draw, WinProbabilities['draw']!),
+                                  _buildPollButton(l10n.away, WinProbabilities['away']!),
                                 ],
                               ),
                             ],
@@ -444,6 +447,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildTimelineSection(StatsProvider statsProvider, int homeId) {
+    final l10n = AppLocalizations.of(context)!;
     if (statsProvider.isLoading && statsProvider.events.isEmpty) {
       return const SizedBox();
     }
@@ -471,7 +475,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
     return _buildExpansionCard(
       icon: Icons.timeline_rounded,
-      title: "Match Timeline",
+      title: AppLocalizations.of(context)!.matchTimeline,
       initiallyExpanded: true,
       content: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -486,7 +490,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 child: Row(
                   children: [
                     const Expanded(child: Divider(indent: 20, endIndent: 10)),
-                    Text("HT", style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                    Text(l10n.ht, style: TextStyle(color: subTextColor, fontWeight: FontWeight.bold, fontSize: 12)),
                     const Expanded(child: Divider(indent: 10, endIndent: 20)),
                   ],
                 ),
@@ -513,24 +517,25 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
     Color iconColor = Colors.grey;
     String eventLabel = type;
 
+    final l10n = AppLocalizations.of(context)!;
     if (type.contains('goal')) {
       iconData = Icons.sports_soccer;
       iconColor = Colors.green;
-      eventLabel = "Goal";
-      if (type.contains('own')) eventLabel = "Own Goal";
-      if (type.contains('penalty')) eventLabel = "Penalty Goal";
+      eventLabel = l10n.goal;
+      if (type.contains('own')) eventLabel = l10n.ownGoal;
+      if (type.contains('penalty')) eventLabel = l10n.penaltyGoal;
     } else if (type.contains('yellow') || typeId == 18) {
       iconData = Icons.rectangle;
       iconColor = Colors.yellow[700]!;
-      eventLabel = "Yellowcard";
+      eventLabel = l10n.yellowCard;
     } else if (type.contains('red') || typeId == 19) {
       iconData = Icons.rectangle;
       iconColor = Colors.red;
-      eventLabel = "Redcard";
+      eventLabel = l10n.redCard;
     } else if (type.contains('substitution') || typeId == 20) {
       iconData = Icons.swap_vert_rounded;
       iconColor = Colors.orange;
-      eventLabel = "Substitution";
+      eventLabel = l10n.substitution;
     }
 
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -599,6 +604,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildPressureIndexSection(StatsProvider provider) {
+    final l10n = AppLocalizations.of(context)!;
     if (provider.isLoading && provider.pressureData.isEmpty) return const SizedBox();
     if (provider.pressureData.isEmpty) return const SizedBox();
 
@@ -651,7 +657,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
     return _buildExpansionCard(
       icon: Icons.show_chart_rounded,
-      title: "Pressure Index",
+      title: AppLocalizations.of(context)!.pressureIndex,
       initiallyExpanded: true,
       content: Container(
         padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
@@ -661,9 +667,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(child: _buildLegendItem(away['name'] ?? 'Away', Colors.red)),
+                Expanded(child: _buildLegendItem(away['name'] ?? l10n.away, Colors.red)),
                 const SizedBox(width: 16),
-                Expanded(child: _buildLegendItem(home['name'] ?? 'Home', const Color(0xFFFF8700))),
+                Expanded(child: _buildLegendItem(home['name'] ?? l10n.home, const Color(0xFFFF8700))),
               ],
             ),
             const SizedBox(height: 32),
@@ -738,7 +744,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text("Time", style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold)),
+            Text(AppLocalizations.of(context)!.time, style: TextStyle(color: subTextColor, fontSize: 11, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -898,7 +904,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
         }
 
         if (h2h.h2hMatches.isEmpty) {
-          return Center(child: Text("No Head-to-Head data available", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
+          return Center(child: Text(AppLocalizations.of(context)!.noFixturesFound, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
         }
 
         return ListView(
@@ -927,8 +933,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildToggleItem("Overall")),
-          Expanded(child: _buildToggleItem("Last 5")),
+          Expanded(child: _buildToggleItem(AppLocalizations.of(context)!.home)),
+          Expanded(child: _buildToggleItem(AppLocalizations.of(context)!.away)),
         ],
       ),
     );
@@ -964,6 +970,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildH2HSummary(List<dynamic> allMatches) {
+    final l10n = AppLocalizations.of(context)!;
     final participants = widget.fixture['participants'] as List? ?? [];
     if (participants.length < 2) return const SizedBox();
     
@@ -1005,9 +1012,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSummaryStat(homeWins.toString(), "WINS", home['name']),
-              _buildSummaryStat(draws.toString(), "DRAWS", "DRW"),
-              _buildSummaryStat(awayWins.toString(), "WINS", away['name']),
+              _buildSummaryStat(homeWins.toString(), "WINS", home['name'] ?? l10n.home),
+              _buildSummaryStat(draws.toString(), "DRAWS", l10n.draw),
+              _buildSummaryStat(awayWins.toString(), "WINS", away['name'] ?? l10n.away),
             ],
           ),
           const SizedBox(height: 24),
@@ -1144,6 +1151,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildTableTab(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer<LeagueProvider>(
       builder: (context, leagueProvider, child) {
         final standings = leagueProvider.liveStandings.isNotEmpty 
@@ -1155,7 +1163,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             return const Center(child: CircularProgressIndicator(color: Color(0xFFFF8700)));
           }
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Center(child: Text("No table data", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
+          return Center(child: Text(AppLocalizations.of(context)!.na, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
         }
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -1197,6 +1205,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
   }
 
   Widget _buildTableHeader() {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 20),
@@ -1210,16 +1219,11 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             child: Text("#", style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
           ),
           const SizedBox(width: 14),
-          const SizedBox(
+          SizedBox(
             width: 180,
-            child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+            child: Text(AppLocalizations.of(context)!.team.toUpperCase(), style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           ),
-          _buildHeaderColumn("Played", width: 60, isDark: isDark),
-          _buildHeaderColumn("Won", width: 50, isDark: isDark),
-          _buildHeaderColumn("Drawn", width: 50, isDark: isDark),
-          _buildHeaderColumn("Lost", width: 50, isDark: isDark),
-          _buildHeaderColumn("GD", width: 50, isDark: isDark),
-          _buildHeaderColumn("Points", width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.statsTab, width: 60, isDark: isDark),
         ],
       ),
     );
@@ -1429,8 +1433,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       }
     }
 
-    final hName = home?['name'] ?? 'Home';
-    final aName = away?['name'] ?? 'Away';
+    final hName = home?['name'] ?? AppLocalizations.of(context)!.home;
+    final aName = away?['name'] ?? AppLocalizations.of(context)!.away;
     final hImg = home?['image_path'] ?? '';
     final aImg = away?['image_path'] ?? '';
 
@@ -1513,7 +1517,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
 
         if (provider.stats.isEmpty && provider.events.isEmpty) {
           final isDark = Theme.of(context).brightness == Brightness.dark;
-          return Center(child: Text("No statistics available", style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
+          return Center(child: Text(AppLocalizations.of(context)!.na, style: TextStyle(color: isDark ? Colors.white38 : Colors.black38)));
         }
 
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1527,7 +1531,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             const SizedBox(height: 24),
 
             if (provider.stats.isNotEmpty) ...[
-              Text("Match Statistics", style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(AppLocalizations.of(context)!.matchInformation, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 16),
               ..._generateStatsRows(provider.stats),
               const SizedBox(height: 32),

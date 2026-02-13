@@ -10,6 +10,7 @@ import 'package:football_app/providers/notification_provider.dart';
 import 'package:football_app/widgets/match_notification_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 
 /// This screen shows detailed information for a single football league.
 /// It also fetches and displays live (in-play) matches specifically for this league.
@@ -173,9 +174,9 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                       labelPadding: const EdgeInsets.symmetric(horizontal: 24),
-                      tabs: const [
-                        Tab(text: "Fixtures"),
-                        Tab(text: "Table"),
+                      tabs: [
+                        Tab(text: AppLocalizations.of(context)!.fixtures),
+                        Tab(text: AppLocalizations.of(context)!.tableTab),
                       ],
                     ),
                   ),
@@ -211,7 +212,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
 
         if (fixtureProvider.fixtures.isEmpty) {
           return _buildPlaceholderTab(
-            "No Fixtures Found",
+            AppLocalizations.of(context)!.noFixturesFound,
             Icons.calendar_month,
             accentColor,
           );
@@ -316,12 +317,12 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
 
     final timestamp = fixture['starting_at_timestamp'];
-    String time = "N/A";
+    String time = AppLocalizations.of(context)!.notAvailable;
     if (timestamp != null) {
       try {
         final localDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000).toLocal();
         time = DateFormat('HH:mm').format(localDate);
-      } catch (e) { time = "N/A"; }
+      } catch (e) { time = AppLocalizations.of(context)!.notAvailable; }
     }
 
     final participants = fixture['participants'] as List? ?? [];
@@ -353,11 +354,11 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               ),
               child: (() {
                 final state = fixture['state'];
-                final String period = state?['short_name'] ?? state?['name'] ?? "Sch";
+                final String period = state?['short_name'] ?? state?['name'] ?? AppLocalizations.of(context)!.scheduledShort;
                 final bool isLive = state != null && state['id'] != null && [2, 3, 6, 9, 10, 11, 12, 13, 14, 15, 22].contains(state['id']);
 
                 return Text(
-                  (period == "Sch" || period == "NS") ? time : period,
+                  (period == AppLocalizations.of(context)!.scheduledShort || period == AppLocalizations.of(context)!.notStartedShort) ? time : period,
                   style: TextStyle(
                     color: isLive ? const Color(0xFFFF8700) : textColor,
                     fontSize: 13,
@@ -371,9 +372,9 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             Expanded(
               child: Column(
                 children: [
-                  _buildTeamRow(homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? ''),
+                  _buildTeamRow(homeTeam?['name'] ?? AppLocalizations.of(context)!.home, homeTeam?['image_path'] ?? ''),
                   const SizedBox(height: 12),
-                  _buildTeamRow(awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? ''),
+                  _buildTeamRow(awayTeam?['name'] ?? AppLocalizations.of(context)!.away, awayTeam?['image_path'] ?? ''),
                 ],
               ),
             ),
@@ -382,16 +383,16 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
               builder: (context, notificationProvider, _) {
                 final matchId = fixture['id'] ?? 0;
                 final bool isActive = notificationProvider.isNotificationSet(matchId);
-                final String homeName = fixture['participants']?[0]?['name'] ?? 'Home';
-                final String awayName = fixture['participants']?[1]?['name'] ?? 'Away';
+                final String homeName = fixture['participants']?[0]?['name'] ?? AppLocalizations.of(context)!.home;
+                final String awayName = fixture['participants']?[1]?['name'] ?? AppLocalizations.of(context)!.away;
                 final timestamp = fixture['starting_at_timestamp'];
                 final startTime = timestamp != null 
                     ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
                     : DateTime.now();
 
                 final state = fixture['state'];
-                final String period = state?['short_name'] ?? state?['name'] ?? "Sch";
-                final isUpcoming = period == "Sch" || period == "NS";
+                final String period = state?['short_name'] ?? state?['name'] ?? AppLocalizations.of(context)!.scheduledShort;
+                final isUpcoming = period == AppLocalizations.of(context)!.scheduledShort || period == AppLocalizations.of(context)!.notStartedShort;
 
                 return GestureDetector(
                   onTap: !isUpcoming 
@@ -401,7 +402,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                           notificationProvider.toggleAllOff(matchId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Notifications removed for $homeName vs $awayName"),
+                              content: Text(AppLocalizations.of(context)!.notificationsRemoved),
                               backgroundColor: Colors.grey[800],
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 1),
@@ -473,7 +474,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     }
 
     if (leagueProvider.standings.isEmpty) {
-      return _buildPlaceholderTab("League Table", Icons.table_chart_rounded, accentColor);
+      return _buildPlaceholderTab(AppLocalizations.of(context)!.tableTab, Icons.table_chart_rounded, accentColor);
     }
 
     return SingleChildScrollView(
@@ -516,16 +517,16 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             child: Text("#", style: TextStyle(color: subTextColor, fontSize: 12, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
           ),
           const SizedBox(width: 14),
-          const SizedBox(
+          SizedBox(
             width: 180,
-            child: Text("TEAM", style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+            child: Text(AppLocalizations.of(context)!.team, style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           ),
-          _buildHeaderColumn("Played", width: 60, isDark: isDark),
-          _buildHeaderColumn("Won", width: 50, isDark: isDark),
-          _buildHeaderColumn("Drawn", width: 50, isDark: isDark),
-          _buildHeaderColumn("Lost", width: 50, isDark: isDark),
-          _buildHeaderColumn("GD", width: 50, isDark: isDark),
-          _buildHeaderColumn("Points", width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.played, width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.win, width: 50, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.draw, width: 50, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.loss, width: 50, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.gd, width: 50, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.points, width: 60, isDark: isDark),
         ],
       ),
     );

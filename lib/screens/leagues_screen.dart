@@ -1,12 +1,12 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:provider/provider.dart';
-import 'package:football_app/providers/league_provider.dart';
-import 'package:football_app/providers/team_list_provider.dart';
-import 'package:football_app/providers/follow_provider.dart';
-import 'package:football_app/screens/league_details_screen.dart';
-import 'package:football_app/screens/team_details_screen.dart';
-import 'package:football_app/widgets/notifications_activated_dialog.dart';
+
+import 'package:football_app/l10n/app_localizations.dart';
+import '../providers/follow_provider.dart';
+import '../providers/league_provider.dart';
+import '../widgets/notifications_activated_dialog.dart';
+import 'league_details_screen.dart';
 
 class LeaguesScreen extends StatefulWidget {
   const LeaguesScreen({super.key});
@@ -51,6 +51,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     final Color primaryColor = isDark ? Colors.black : Colors.white;
     const Color accentColor = Color(0xFFFF8700);
     final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
+    final l10n = AppLocalizations.of(context)!;
 
     return DefaultTabController(
       length: 2,
@@ -69,24 +70,24 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               labelColor: isDark ? Colors.white : Colors.black,
               labelStyle: const TextStyle(fontWeight: FontWeight.bold),
               unselectedLabelColor: isDark ? Colors.white38 : Colors.black45,
-              tabs: const [
-                Tab(text: "Leagues"),
-                Tab(text: "Favorite"),
+              tabs: [
+                Tab(text: l10n.leagues),
+                Tab(text: l10n.favorite),
               ],
             ),
           ),
         ),
         body: TabBarView(
           children: [
-            _buildLeaguesTab(accentColor, cardColor),
-            _buildFavoriteLeaguesTab(accentColor, cardColor),
+            _buildLeaguesTab(accentColor, cardColor, l10n),
+            _buildFavoriteLeaguesTab(accentColor, cardColor, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLeaguesTab(Color accentColor, Color cardColor) {
+  Widget _buildLeaguesTab(Color accentColor, Color cardColor, AppLocalizations l10n) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
@@ -104,7 +105,6 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         }).toList();
 
         final topLeagues = filteredLeagues.where((l) => l['category'] == 1).toList();
-        final followedLeagues = filteredLeagues.where((l) => followProvider.isLeagueFollowed(l['id'])).toList();
 
         // 2. Grouping
         Map<String, Map<String, dynamic>> leaguesByCountryMap = {};
@@ -129,14 +129,14 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         // Search
         items.add(Padding(
           padding: const EdgeInsets.only(top: 16, bottom: 24),
-          child: _buildSearchBar(cardColor),
+          child: _buildSearchBar(cardColor, l10n),
         ));
 
         // Top Leagues
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _buildSectionHeader(
-            icon: Icons.thumb_up, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Top Leagues", count: topLeagues.length,
+            icon: Icons.thumb_up, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: l10n.topLeagues, count: topLeagues.length,
             isExpanded: _isLeaguesTopExpanded,
             onToggle: () => setState(() => _isLeaguesTopExpanded = !_isLeaguesTopExpanded),
           ),
@@ -149,7 +149,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
         items.add(Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _buildSectionHeader(
-            icon: Icons.lightbulb_outline, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: "Suggestions", count: 5,
+            icon: Icons.lightbulb_outline, iconColor: isDark ? Colors.tealAccent : Colors.teal, title: l10n.suggestions, count: 5,
             isExpanded: _isLeaguesSuggestionsExpanded,
             onToggle: () => setState(() => _isLeaguesSuggestionsExpanded = !_isLeaguesSuggestionsExpanded),
           ),
@@ -160,7 +160,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
 
         items.add(Padding(
           padding: const EdgeInsets.only(top: 32, bottom: 16),
-          child: Text("All Leagues", style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
+          child: Text(l10n.allLeagues, style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
         ));
 
         // Country Groups
@@ -175,7 +175,7 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
                 children: [
                   CircularProgressIndicator(color: accentColor, strokeWidth: 2),
                   const SizedBox(height: 8),
-                  Text("Loading more leagues (${leagueProvider.leagues.length} loaded)...", style: TextStyle(color: subTextColor, fontSize: 12)),
+                  Text("${l10n.loadingMoreLeagues} (${leagueProvider.leagues.length})...", style: TextStyle(color: subTextColor, fontSize: 12)),
                 ],
               ),
             ),
@@ -275,37 +275,6 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildSearchBar(Color cardColor) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black87;
-    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black38;
-    return Container(
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
-      ),
-      child: TextField(
-        controller: _searchController,
-        style: TextStyle(color: textColor, fontSize: 14),
-        onChanged: (val) => setState(() => _searchQuery = val),
-        decoration: InputDecoration(
-          hintText: "Search leagues...",
-          hintStyle: TextStyle(color: subTextColor, fontSize: 14),
-          prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
-      ),
-    );
-  }
 // Expandable content
 // Expandable content is now handled by _buildSectionHeader and manual list management for better performance.
 // suggestion area
@@ -528,7 +497,39 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
     );
   }
 
-  Widget _buildFavoriteLeaguesTab(Color accentColor, Color cardColor) {
+  Widget _buildSearchBar(Color cardColor, AppLocalizations l10n) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color subTextColor = isDark ? Colors.white.withOpacity(0.34) : Colors.black45;
+    return Container(
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(color: textColor, fontSize: 14),
+        onChanged: (val) => setState(() => _searchQuery = val),
+        decoration: InputDecoration(
+          hintText: l10n.searchLeagues,
+          hintStyle: TextStyle(color: subTextColor, fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: subTextColor, size: 20),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFavoriteLeaguesTab(Color accentColor, Color cardColor, AppLocalizations l10n) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
@@ -544,9 +545,9 @@ class _LeaguesScreenState extends State<LeaguesScreen> {
               children: [
                 Icon(Icons.star_outline_rounded, size: 64, color: subTextColor),
                 const SizedBox(height: 16),
-                Text("No favorited leagues yet", style: TextStyle(color: textColor, fontSize: 16)),
+                Text(l10n.noFavoriteLeagues, style: TextStyle(color: textColor, fontSize: 16)),
                 const SizedBox(height: 8),
-                Text("Star a league to see it here", style: TextStyle(color: subTextColor, fontSize: 14)),
+                Text(l10n.starLeaguePrompt, style: TextStyle(color: subTextColor, fontSize: 14)),
               ],
             ),
           );

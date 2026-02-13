@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class PlayerDetailsScreen extends StatelessWidget {
@@ -15,6 +16,7 @@ class PlayerDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final player = squadItem['player'] ?? squadItem;
     final String name = player['display_name'] ?? player['name'] ?? 'Unknown Player';
     final String img = player['image_path'] ?? '';
@@ -56,6 +58,7 @@ class PlayerDetailsScreen extends StatelessWidget {
         ),
       ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
             // Header Section
@@ -87,6 +90,8 @@ class PlayerDetailsScreen extends StatelessWidget {
               ),
             ),
             
+            _buildStatGrid(player, l10n),
+
             // Info Card
             Container(
               margin: const EdgeInsets.all(16),
@@ -112,7 +117,7 @@ class PlayerDetailsScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        "Info",
+                        l10n.details,
                         style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -124,14 +129,14 @@ class PlayerDetailsScreen extends StatelessWidget {
                   
                   // Details Grid
                   _buildInfoGrid([
-                    _InfoItem("Height", height),
-                    _InfoItem("Age", age),
-                    _InfoItem("Club", teamName, teamLogo),
-                    _InfoItem("Shirt", shirt),
-                    _InfoItem("Prefer Foot", foot),
-                    _InfoItem("Weight", weight),
-                    _InfoItem("Position", position),
-                    _InfoItem("Nationality", nationality),
+                    _InfoItem(l10n.height, height),
+                    _InfoItem(l10n.age, age),
+                    _InfoItem(l10n.club, teamName, teamLogo),
+                    _InfoItem(l10n.shirt, shirt),
+                    _InfoItem(l10n.preferFoot, foot),
+                    _InfoItem(l10n.weight, weight),
+                    _InfoItem(l10n.position, position),
+                    _InfoItem(l10n.nationality, nationality),
                   ], isDark),
                 ],
               ),
@@ -140,6 +145,10 @@ class PlayerDetailsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildStatGrid(dynamic player, AppLocalizations l10n) {
+    return Container(); // Placeholder or actual implementation if known
   }
 
   Widget _buildInfoGrid(List<_InfoItem> items, bool isDark) {

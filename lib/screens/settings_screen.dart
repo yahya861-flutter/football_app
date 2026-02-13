@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:football_app/l10n/app_localizations.dart';
 import 'feedback_screen.dart';
+import 'language_screen.dart';
 import '../providers/notification_provider.dart';
 import '../providers/theme_provider.dart';
 import 'premium_screen.dart';
+
 
 class SettingsScreen extends StatelessWidget {
   final bool isTab;
@@ -21,6 +24,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showReviewDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color backgroundColor = isDark ? const Color(0xFF121212) : Colors.white;
     final Color textColor = isDark ? Colors.white : Colors.black87;
@@ -39,12 +43,12 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "Enjoying the App?",
+                l10n.enjoyingApp,
                 style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               Text(
-                "Tap a star to rate us on the Store!",
+                l10n.rateUsPrompt,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 13),
               ),
@@ -63,7 +67,7 @@ class SettingsScreen extends StatelessWidget {
                   Expanded(
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
-                      child: Text("Later", style: TextStyle(color: textColor.withOpacity(0.5))),
+                      child: Text(l10n.later, style: TextStyle(color: textColor.withOpacity(0.5))),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -78,7 +82,7 @@ class SettingsScreen extends StatelessWidget {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
-                      child: const Text("Rate"),
+                      child: Text(l10n.rate),
                     ),
                   ),
                 ],
@@ -94,6 +98,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final bool isDark = themeProvider.isDarkMode;
+    final l10n = AppLocalizations.of(context)!;
     
     // Theme aware colors
     final Color textColor = isDark ? Colors.white : Colors.black;
@@ -110,40 +115,49 @@ class SettingsScreen extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (context) => const PremiumScreen()),
             ),
-            child: _buildPremiumBanner(),
+            child: _buildPremiumBanner(l10n),
           ),
           const SizedBox(height: 32),
           
           // GENERAL SECTION
-          Text("General", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(l10n.general, style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           _buildToggleTile(
             icon: Icons.dark_mode,
-            title: "Dark Mode",
+            title: l10n.darkMode,
             value: isDark,
             onChanged: (val) => themeProvider.toggleTheme(),
             textColor: textColor,
           ),
+          _buildActionTile(
+            icon: Icons.language,
+            title: l10n.language,
+            textColor: textColor,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>  LanguageScreen()),
+            ),
+          ),
           const SizedBox(height: 32),
 
           // OTHERS SECTION
-          Text("Others", style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
+          Text(l10n.others, style: TextStyle(color: sectionColor, fontSize: 14, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
           _buildActionTile(
             icon: Icons.share, 
-            title: "Share", 
+            title: l10n.share, 
             textColor: textColor,
             onTap: () => Share.share("Check out this amazing Football App! $_youtubeUrl"),
           ),
           _buildActionTile(
             icon: Icons.star_border, 
-            title: "Rate Us", 
+            title: l10n.rateUs, 
             textColor: textColor,
             onTap: () => _showReviewDialog(context),
           ),
           _buildActionTile(
             icon: Icons.feedback_outlined, 
-            title: "Feedback", 
+            title: l10n.feedback, 
             textColor: textColor,
             onTap: () => Navigator.push(
               context,
@@ -152,14 +166,14 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildActionTile(
             icon: Icons.verified_user_outlined, 
-            title: "Privacy Policy", 
+            title: l10n.privacyPolicy, 
             textColor: textColor,
             onTap: () => _launchUrl(_youtubeUrl),
           ),
           const SizedBox(height: 16),
           _buildActionTile(
             icon: Icons.notifications,
-            title: "Test Notification",
+            title: l10n.testNotification,
             textColor: textColor,
             iconColor: const Color(0xFF48C9B0),
             iconSize: 28,
@@ -169,16 +183,16 @@ class SettingsScreen extends StatelessWidget {
           ),
           _buildActionTile(
             icon: Icons.notifications_active,
-            title: "Test Scheduled Notification (10s)",
+            title: l10n.testScheduledNotification,
             textColor: textColor,
             iconColor: const Color(0xFF48C9B0),
             iconSize: 28,
             onTap: () {
               context.read<NotificationProvider>().scheduleTestNotification();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Notification scheduled for 10 seconds..."),
-                  duration: Duration(seconds: 3),
+                SnackBar(
+                  content: Text(l10n.notificationScheduled),
+                  duration: const Duration(seconds: 3),
                 ),
               );
             },
@@ -196,14 +210,14 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Settings"),
+        title: Text(AppLocalizations.of(context)!.settings),
         centerTitle: false,
       ),
       body: content,
     );
   }
 
-  Widget _buildPremiumBanner() {
+  Widget _buildPremiumBanner(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -230,14 +244,14 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "Unlock the World of Premium",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                    Text(
+                      l10n.premiumTitle,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      "Elevate your football experience,\nBecome a VIP Member Today.",
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    Text(
+                      l10n.premiumSubtitle,
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
                     ),
                   ],
                 ),

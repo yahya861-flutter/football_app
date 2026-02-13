@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:football_app/providers/inplay_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 
+import 'package:football_app/l10n/app_localizations.dart';
+
 class LiveMatchesScreen extends StatelessWidget {
   final bool isTab;
   const LiveMatchesScreen({super.key, this.isTab = false});
@@ -17,23 +19,45 @@ class LiveMatchesScreen extends StatelessWidget {
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
     final Color primaryColor = isDark ? Colors.black : Theme.of(context).primaryColor;
     const Color accentColor = Color(0xFFFF8700);
+    final l10n = AppLocalizations.of(context)!;
+
 
     final content = Consumer<InPlayProvider>(
       builder: (context, provider, child) {
         if (provider.isLoading && provider.inPlayMatches.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: accentColor));
+          return const SliverFillRemaining(
+            child: Center(child: CircularProgressIndicator(color: accentColor)),
+          );
         }
 
         if (provider.inPlayMatches.isEmpty) {
-          return _buildEmptyState(context, "No live matches at the moment", provider.fetchInPlayMatches);
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Text(AppLocalizations.of(context)!.noLiveMatches, style: TextStyle(color: subTextColor)),
+            ),
+          );
         }
-
         return _buildGroupedMatchList(context, provider.inPlayMatches);
       },
     );
 
     if (isTab) {
-      return content;
+      return CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                l10n.liveMatches,
+                style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          content,
+          const SliverToBoxAdapter(child: SizedBox(height: 80)), // Space for dock
+        ],
+      );
     }
 
     return Scaffold(
@@ -46,7 +70,7 @@ class LiveMatchesScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Live Matches",
+          l10n.liveMatches,
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         actions: [
@@ -55,13 +79,33 @@ class LiveMatchesScreen extends StatelessWidget {
             onPressed: () {
               context.read<InPlayProvider>().fetchInPlayMatches();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Refreshing live matches..."), duration: Duration(seconds: 1)),
+                SnackBar(content: Text(l10n.refreshingLiveMatches), duration: const Duration(seconds: 1)),
               );
             },
           ),
         ],
       ),
-      body: content,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.liveMatches, style: TextStyle(color: textColor, fontSize: 24, fontWeight: FontWeight.bold)),
+                  if (context.watch<InPlayProvider>().isLoading)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(l10n.refreshingLiveMatches, style: TextStyle(color: subTextColor, fontSize: 13)),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          content,
+        ],
+      ),
     );
   }
 
@@ -69,6 +113,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final l10n = AppLocalizations.of(context)!;
 
     return Center(
       child: Column(
@@ -81,7 +126,7 @@ class LiveMatchesScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: onRefresh,
             style: ElevatedButton.styleFrom(backgroundColor: isDark ? Colors.white10 : Colors.black12),
-            child: Text("Refresh", style: TextStyle(color: textColor)),
+            child: Text(l10n.refresh, style: TextStyle(color: textColor)),
           ),
         ],
       ),
@@ -90,23 +135,25 @@ class LiveMatchesScreen extends StatelessWidget {
 
   Widget _buildGroupedMatchList(BuildContext context, List<dynamic> matchesList) {
     Map<String, List<dynamic>> groupedMatches = {};
+    final l10n = AppLocalizations.of(context)!;
     for (var match in matchesList) {
-      final leagueName = match['league']?['name'] ?? 'Other';
+      final leagueName = match['league']?['name'] ?? l10n.other;
       groupedMatches.putIfAbsent(leagueName, () => []).add(match);
     }
 
     final leagues = groupedMatches.keys.toList();
 
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: leagues.length,
-      itemBuilder: (context, index) {
-        final leagueName = leagues[index];
-        final matches = groupedMatches[leagueName]!;
-        final leagueLogo = matches.first['league']?['image_path'];
-        
-        return _buildModernLeagueGroup(context, leagueName, leagueLogo, matches);
-      },
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final leagueName = leagues[index];
+          final matches = groupedMatches[leagueName]!;
+          final leagueLogo = matches.first['league']?['image_path'];
+          
+          return _buildModernLeagueGroup(context, leagueName, leagueLogo, matches);
+        },
+        childCount: leagues.length,
+      ),
     );
   }
 
@@ -156,6 +203,7 @@ class LiveMatchesScreen extends StatelessWidget {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
     final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final l10n = AppLocalizations.of(context)!;
 
     final participants = match['participants'] as List? ?? [];
     final scores = match['scores'] as List? ?? [];
@@ -231,9 +279,9 @@ class LiveMatchesScreen extends StatelessWidget {
             Expanded(
               child: Column(
                 children: [
-                   _buildModernTeamRow(context, homeTeam?['name'] ?? 'Home', homeTeam?['image_path'] ?? '', homeScore),
+                   _buildModernTeamRow(context, homeTeam?['name'] ?? l10n.home, homeTeam?['image_path'] ?? '', homeScore),
                   const SizedBox(height: 14),
-                  _buildModernTeamRow(context, awayTeam?['name'] ?? 'Away', awayTeam?['image_path'] ?? '', awayScore),
+                  _buildModernTeamRow(context, awayTeam?['name'] ?? l10n.away, awayTeam?['image_path'] ?? '', awayScore),
                 ],
               ),
             ),
@@ -242,8 +290,8 @@ class LiveMatchesScreen extends StatelessWidget {
               builder: (context, notificationProvider, _) {
                 final matchId = match['id'] ?? 0;
                 final bool isActive = notificationProvider.isNotificationSet(matchId);
-                final String homeName = homeTeam?['name'] ?? 'Home';
-                final String awayName = awayTeam?['name'] ?? 'Away';
+                final String homeName = homeTeam?['name'] ?? l10n.home;
+                final String awayName = awayTeam?['name'] ?? l10n.away;
                 final timestamp = match['starting_at_timestamp'];
                 final startTime = timestamp != null 
                     ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
@@ -259,7 +307,7 @@ class LiveMatchesScreen extends StatelessWidget {
                           notificationProvider.toggleAllOff(matchId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Notifications removed for $homeName vs $awayName"),
+                              content: Text(l10n.notificationsRemoved),
                               backgroundColor: Colors.grey[800],
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 1),
