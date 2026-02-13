@@ -557,21 +557,27 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             Icon(iconData, color: iconColor, size: 20),
             const SizedBox(width: 16),
             // Player and Label
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14)),
-                Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
+                ],
+              ),
             ),
           ] else ...[
             // Player and Label (Away)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14)),
-                Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(player, style: TextStyle(color: textColor, fontWeight: FontWeight.w500, fontSize: 14), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(eventLabel, style: TextStyle(color: subTextColor, fontSize: 12)),
+                ],
+              ),
             ),
             const SizedBox(width: 16),
             // Icon
@@ -655,9 +661,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildLegendItem(away['name'] ?? 'Away', Colors.red),
-                const SizedBox(width: 24),
-                _buildLegendItem(home['name'] ?? 'Home', const Color(0xFFFF8700)),
+                Expanded(child: _buildLegendItem(away['name'] ?? 'Away', Colors.red)),
+                const SizedBox(width: 16),
+                Expanded(child: _buildLegendItem(home['name'] ?? 'Home', const Color(0xFFFF8700))),
               ],
             ),
             const SizedBox(height: 32),
@@ -745,9 +751,13 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
       children: [
         Container(width: 12, height: 2, color: color),
         const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11, fontWeight: FontWeight.bold),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 11, fontWeight: FontWeight.bold),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
