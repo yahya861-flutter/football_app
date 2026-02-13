@@ -6,6 +6,12 @@ import 'dart:io';
 import 'package:alarm/alarm.dart';
 import 'package:flutter/foundation.dart';
 
+@pragma('vm:entry-point')
+void onDidReceiveNotificationResponse(NotificationResponse response) {
+  // Handle background notification tap
+  debugPrint("🔔 [BACKGROUND] Notification Response: ${response.payload}");
+}
+
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
@@ -49,9 +55,26 @@ class NotificationService {
     await _notificationsPlugin.initialize(
       settings: settings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle notification tap if needed
+        // Handle notification tap
+        debugPrint("🔔 [FOREGROUND] Notification Response: ${response.payload}");
       },
+      onDidReceiveBackgroundNotificationResponse: onDidReceiveNotificationResponse,
     );
+
+    // 5.1 Create Channel explicitly
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'match_reminders',
+      'Match Reminders',
+      description: 'Notifications for football match reminders',
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      showBadge: true,
+    );
+
+    await _notificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
 
     // 6. Request permissions
     if (Platform.isAndroid) {
@@ -175,8 +198,7 @@ class NotificationService {
             playSound: true,
             enableVibration: true,
             visibility: NotificationVisibility.public,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
+            category: AndroidNotificationCategory.event,
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
