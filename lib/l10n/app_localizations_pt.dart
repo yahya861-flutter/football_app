@@ -238,6 +238,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get winProbability => 'Probabilidade de Vitória';
 
   @override
+  String get drawShort => 'Empates';
+
+  @override
   String get draw => 'Empate';
 
   @override
@@ -394,22 +397,22 @@ class AppLocalizationsPt extends AppLocalizations {
   String get notStartedShort => 'NC';
 
   @override
-  String get played => 'J';
+  String get played => 'Jogos';
 
   @override
-  String get win => 'V';
+  String get win => 'Vitórias';
 
   @override
-  String get loss => 'D';
+  String get loss => 'Derrotas';
 
   @override
-  String get gd => 'DG';
+  String get gd => 'Saldo de Gols';
 
   @override
-  String get points => 'Pts';
+  String get points => 'Pontos';
 
   @override
-  String get pts => 'Pts';
+  String get pts => 'Pontos';
 
   @override
   String get premium => 'Premium';

@@ -572,6 +572,12 @@ abstract class AppLocalizations {
   /// **'Win Probability'**
   String get winProbability;
 
+  /// No description provided for @drawShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Drawn'**
+  String get drawShort;
+
   /// No description provided for @draw.
   ///
   /// In en, this message translates to:
@@ -881,37 +887,37 @@ abstract class AppLocalizations {
   /// No description provided for @played.
   ///
   /// In en, this message translates to:
-  /// **'P'**
+  /// **'Played'**
   String get played;
 
   /// No description provided for @win.
   ///
   /// In en, this message translates to:
-  /// **'W'**
+  /// **'Won'**
   String get win;
 
   /// No description provided for @loss.
   ///
   /// In en, this message translates to:
-  /// **'L'**
+  /// **'Lost'**
   String get loss;
 
   /// No description provided for @gd.
   ///
   /// In en, this message translates to:
-  /// **'GD'**
+  /// **'Goal Difference'**
   String get gd;
 
   /// No description provided for @points.
   ///
   /// In en, this message translates to:
-  /// **'Pts'**
+  /// **'Points'**
   String get points;
 
   /// No description provided for @pts.
   ///
   /// In en, this message translates to:
-  /// **'Pts'**
+  /// **'Points'**
   String get pts;
 
   /// No description provided for @premium.

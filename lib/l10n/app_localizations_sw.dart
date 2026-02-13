@@ -238,6 +238,9 @@ class AppLocalizationsSw extends AppLocalizations {
   String get winProbability => 'Uwezekano wa kushinda';
 
   @override
+  String get drawShort => 'Sare';
+
+  @override
   String get draw => 'Sare';
 
   @override
@@ -391,16 +394,16 @@ class AppLocalizationsSw extends AppLocalizations {
   String get notStartedShort => 'Anza';
 
   @override
-  String get played => 'C';
+  String get played => 'Zilizochezwa';
 
   @override
-  String get win => 'S';
+  String get win => 'Ushindi';
 
   @override
-  String get loss => 'F';
+  String get loss => 'Kupoteza';
 
   @override
-  String get gd => 'Tof';
+  String get gd => 'Tofauti ya Mabao';
 
   @override
   String get points => 'Pointi';

@@ -234,6 +234,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get winProbability => 'احتمالية الفوز';
 
   @override
+  String get drawShort => 'تعادل';
+
+  @override
   String get draw => 'تعادل';
 
   @override
@@ -390,10 +393,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get played => 'لعب';
 
   @override
-  String get win => 'فوز';
+  String get win => 'فاز';
 
   @override
-  String get loss => 'خسارة';
+  String get loss => 'خسر';
 
   @override
   String get gd => 'فارق الأهداف';

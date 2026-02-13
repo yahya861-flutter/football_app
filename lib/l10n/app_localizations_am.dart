@@ -234,6 +234,9 @@ class AppLocalizationsAm extends AppLocalizations {
   String get winProbability => 'የማሸነፍ ዕድል';
 
   @override
+  String get drawShort => 'Drawn';
+
+  @override
   String get draw => 'አቻ';
 
   @override
@@ -387,22 +390,22 @@ class AppLocalizationsAm extends AppLocalizations {
   String get notStartedShort => 'አልጀመረም';
 
   @override
-  String get played => 'ጨ';
+  String get played => 'Played';
 
   @override
-  String get win => 'አ';
+  String get win => 'Won';
 
   @override
-  String get loss => 'ሸ';
+  String get loss => 'Lost';
 
   @override
-  String get gd => 'ግብ';
+  String get gd => 'Goal Difference';
 
   @override
-  String get points => 'ነጥብ';
+  String get points => 'Points';
 
   @override
-  String get pts => 'ነጥብ';
+  String get pts => 'Points';
 
   @override
   String get premium => 'ፕሪሚየም';

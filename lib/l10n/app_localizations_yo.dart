@@ -237,6 +237,9 @@ class AppLocalizationsYo extends AppLocalizations {
   String get winProbability => 'Ìfura ìṣẹ́gun';
 
   @override
+  String get drawShort => 'Drawn';
+
+  @override
   String get draw => 'Ààbọ̀ simi';
 
   @override
@@ -390,22 +393,22 @@ class AppLocalizationsYo extends AppLocalizations {
   String get notStartedShort => 'Bẹ̀rẹ̀';
 
   @override
-  String get played => 'P';
+  String get played => 'Played';
 
   @override
-  String get win => 'W';
+  String get win => 'Won';
 
   @override
-  String get loss => 'L';
+  String get loss => 'Lost';
 
   @override
-  String get gd => 'GD';
+  String get gd => 'Goal Difference';
 
   @override
-  String get points => 'Àwọn àmì';
+  String get points => 'Points';
 
   @override
-  String get pts => 'Àwọn àmì';
+  String get pts => 'Points';
 
   @override
   String get premium => 'Premium';

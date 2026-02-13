@@ -480,7 +480,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: SizedBox(
-        width: 590,
+        width: 750,
         child: Column(
           children: [
             _buildTableHeader(),
@@ -521,12 +521,12 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             width: 180,
             child: Text(AppLocalizations.of(context)!.team, style: TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
           ),
-          _buildHeaderColumn(AppLocalizations.of(context)!.played, width: 60, isDark: isDark),
-          _buildHeaderColumn(AppLocalizations.of(context)!.win, width: 50, isDark: isDark),
-          _buildHeaderColumn(AppLocalizations.of(context)!.draw, width: 50, isDark: isDark),
-          _buildHeaderColumn(AppLocalizations.of(context)!.loss, width: 50, isDark: isDark),
-          _buildHeaderColumn(AppLocalizations.of(context)!.gd, width: 50, isDark: isDark),
-          _buildHeaderColumn(AppLocalizations.of(context)!.points, width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.played, width: 80, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.win, width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.drawShort, width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.loss, width: 60, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.gd, width: 140, isDark: isDark),
+          _buildHeaderColumn(AppLocalizations.of(context)!.points, width: 80, isDark: isDark),
         ],
       ),
     );
@@ -630,13 +630,13 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                 ],
               ),
             ),
-            _buildStatColumn(mp, width: 60),
-            _buildStatColumn(w, width: 50),
-            _buildStatColumn(d, width: 50),
-            _buildStatColumn(l, width: 50),
-            _buildStatColumn(gd, width: 50),
+            _buildStatColumn(mp, width: 80),
+            _buildStatColumn(w, width: 60),
+            _buildStatColumn(d, width: 60),
+            _buildStatColumn(l, width: 60),
+            _buildStatColumn(gd, width: 140),
             SizedBox(
-              width: 60,
+              width: 80,
               child: Center(
                 child: Container(
                   width: 38,

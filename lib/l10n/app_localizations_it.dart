@@ -240,6 +240,9 @@ class AppLocalizationsIt extends AppLocalizations {
   String get winProbability => 'Probabilità di vittoria';
 
   @override
+  String get drawShort => 'Pareggiate';
+
+  @override
   String get draw => 'Pareggio';
 
   @override
@@ -393,22 +396,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String get notStartedShort => 'NP';
 
   @override
-  String get played => 'P';
+  String get played => 'Giocate';
 
   @override
-  String get win => 'V';
+  String get win => 'Vinte';
 
   @override
-  String get loss => 'P';
+  String get loss => 'Perse';
 
   @override
-  String get gd => 'DR';
+  String get gd => 'Differenza Reti';
 
   @override
-  String get points => 'Pt';
+  String get points => 'Punti';
 
   @override
-  String get pts => 'Pt';
+  String get pts => 'Punti';
 
   @override
   String get premium => 'Premium';

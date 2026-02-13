@@ -143,66 +143,113 @@ class LiveMatchesScreen extends StatelessWidget {
 
     final leagues = groupedMatches.keys.toList();
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final leagueName = leagues[index];
-          final matches = groupedMatches[leagueName]!;
-          final leagueLogo = matches.first['league']?['image_path'];
-          
-          return _buildModernLeagueGroup(context, leagueName, leagueLogo, matches);
-        },
-        childCount: leagues.length,
+    return SliverPadding(
+      padding: const EdgeInsets.only(top: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final leagueName = leagues[index];
+            final matches = groupedMatches[leagueName]!;
+            final leagueLogo = matches.first['league']?['image_path'];
+            
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildModernLeagueGroup(context, leagueName, leagueLogo, matches),
+            );
+          },
+          childCount: leagues.length,
+        ),
       ),
     );
   }
 
   Widget _buildModernLeagueGroup(BuildContext context, String name, String? logo, List<dynamic> matches) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
-    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.grey[200]!;
+    final Color cardColor = isDark ? const Color(0xFF121212) : Colors.white;
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    const Color accentColor = Color(0xFFFF8700);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: isDark ? Border.all(color: Colors.white.withOpacity(0.05), width: 1) : null,
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+        ),
         child: ExpansionTile(
           initiallyExpanded: true,
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          leading: logo != null 
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.network(logo, width: 24, height: 24, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: subTextColor, size: 24)),
-              )
-            : Icon(Icons.emoji_events, color: subTextColor, size: 24),
-          title: Text(name, style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13)),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: isDark ? Colors.white10 : Colors.black12, shape: BoxShape.circle),
-                child: Text("${matches.length}", style: TextStyle(color: textColor, fontSize: 10)),
-              ),
-              const SizedBox(width: 8),
-              Icon(Icons.keyboard_arrow_down, color: subTextColor),
-            ],
+          leading: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey[100],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: logo != null 
+              ? Image.network(logo, width: 22, height: 22, errorBuilder: (_, __, ___) => Icon(Icons.emoji_events, color: accentColor, size: 20))
+              : Icon(Icons.emoji_events, color: accentColor, size: 20),
           ),
-          children: matches.map((m) => _buildModernMatchRow(context, m)).toList(),
+          title: Text(
+            name, 
+            style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.3)
+          ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "${matches.length}", 
+                  style: const TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold)
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.expand_more, color: accentColor, size: 16),
+              ],
+            ),
+          ),
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.02) : Colors.grey[50],
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
+                ),
+              ),
+              child: Column(
+                children: matches.asMap().entries.map((entry) {
+                  final int idx = entry.key;
+                  final dynamic m = entry.value;
+                  return _buildModernMatchRow(context, m, isLast: idx == matches.length - 1);
+                }).toList(),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildModernMatchRow(BuildContext context, dynamic match) {
+  Widget _buildModernMatchRow(BuildContext context, dynamic match, {bool isLast = false}) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subTextColor = isDark ? Colors.white38 : Colors.black45;
+    final Color subTextColor = isDark ? Colors.white : Colors.black38;
     final l10n = AppLocalizations.of(context)!;
 
     final participants = match['participants'] as List? ?? [];
@@ -252,30 +299,33 @@ class LiveMatchesScreen extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black12, width: 0.5)),
+          border: isLast ? null : Border(
+            bottom: BorderSide(color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05), width: 1),
+          ),
         ),
         child: Row(
           children: [
             Container(
               width: 50,
-              padding: const EdgeInsets.symmetric(vertical: 6),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF121212) : Colors.grey[300],
-                borderRadius: BorderRadius.circular(4),
+                color: isDark ? const Color(0xFF121212) : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 (period == "Sch" || period == "NS") ? matchTime : period,
                 style: TextStyle(
                   color: isLive ? const Color(0xFFFF8700) : subTextColor,
                   fontSize: 10, 
-                  fontWeight: FontWeight.bold
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 children: [
@@ -369,6 +419,7 @@ class LiveMatchesScreen extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           score,
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 14),

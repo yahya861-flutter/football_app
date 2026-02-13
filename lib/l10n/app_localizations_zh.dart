@@ -234,6 +234,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get winProbability => '获胜概率';
 
   @override
+  String get drawShort => '平';
+
+  @override
   String get draw => '平局';
 
   @override
@@ -387,7 +390,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notStartedShort => '未赛';
 
   @override
-  String get played => '赛';
+  String get played => '已赛';
 
   @override
   String get win => '胜';
@@ -396,13 +399,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loss => '负';
 
   @override
-  String get gd => '净';
+  String get gd => '净胜球';
 
   @override
-  String get points => '分';
+  String get points => '积分';
 
   @override
-  String get pts => '分';
+  String get pts => '积分';
 
   @override
   String get premium => '高级版';

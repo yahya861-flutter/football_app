@@ -204,19 +204,22 @@ class _MatchesScreenState extends State<MatchesScreen> {
 
     final leagues = groupedMatches.keys.toList();
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final leagueName = leagues[index];
-          final matches = groupedMatches[leagueName]!;
-          final leagueLogo = matches.first['league']?['image_path'];
-          
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: _buildModernLeagueGroup(leagueName, leagueLogo, matches),
-          );
-        },
-        childCount: leagues.length,
+    return SliverPadding(
+      padding: const EdgeInsets.only(top: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final leagueName = leagues[index];
+            final matches = groupedMatches[leagueName]!;
+            final leagueLogo = matches.first['league']?['image_path'];
+            
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: _buildModernLeagueGroup(leagueName, leagueLogo, matches),
+            );
+          },
+          childCount: leagues.length,
+        ),
       ),
     );
   }

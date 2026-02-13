@@ -237,6 +237,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get winProbability => 'जीत की संभावना';
 
   @override
+  String get drawShort => 'ड्रा';
+
+  @override
   String get draw => 'ड्रॉ';
 
   @override
@@ -391,16 +394,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notStartedShort => 'NS';
 
   @override
-  String get played => 'P';
+  String get played => 'खेले गए';
 
   @override
-  String get win => 'W';
+  String get win => 'जीत';
 
   @override
-  String get loss => 'L';
+  String get loss => 'हार';
 
   @override
-  String get gd => 'GD';
+  String get gd => 'गोल का अंतर';
 
   @override
   String get points => 'अंक';

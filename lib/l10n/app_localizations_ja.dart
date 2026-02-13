@@ -234,6 +234,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get winProbability => '勝率';
 
   @override
+  String get drawShort => '引き分け';
+
+  @override
   String get draw => '引き分け';
 
   @override
@@ -387,22 +390,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get notStartedShort => '未';
 
   @override
-  String get played => '試';
+  String get played => '試合数';
 
   @override
-  String get win => '勝';
+  String get win => '勝利';
 
   @override
-  String get loss => '敗';
+  String get loss => '敗北';
 
   @override
-  String get gd => '得失';
+  String get gd => '得失点差';
 
   @override
-  String get points => '点';
+  String get points => '勝ち点';
 
   @override
-  String get pts => '点';
+  String get pts => '勝ち点';
 
   @override
   String get premium => 'プレミアム';
