@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:football_app/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
 
-class MatchAlarmDialog extends StatefulWidget {
+class MatchNotificationDialog extends StatefulWidget {
   final int matchId;
   final String matchTitle;
   final DateTime startTime;
 
-  const MatchAlarmDialog({
+  const MatchNotificationDialog({
     super.key,
     required this.matchId,
     required this.matchTitle,
@@ -15,11 +15,10 @@ class MatchAlarmDialog extends StatefulWidget {
   });
 
   @override
-  State<MatchAlarmDialog> createState() => _MatchAlarmDialogState();
+  State<MatchNotificationDialog> createState() => _MatchNotificationDialogState();
 }
 
-class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _MatchNotificationDialogState extends State<MatchNotificationDialog> {
   bool _notifyBeforeMatch = false;
   int _hours = 0;
   int _minutes = 0;
@@ -31,7 +30,6 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     
     // Load existing settings
     final provider = Provider.of<NotificationProvider>(context, listen: false);
@@ -45,7 +43,6 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -74,41 +71,61 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Custom TabBar
-            Container(
-              margin: const EdgeInsets.all(16),
-              height: 40,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.black26 : Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-                indicator: BoxDecoration(
-                  color: _mintColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: textColor,
-                labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                tabs: const [
-                  Tab(text: "Alarm"),
-                  Tab(text: "Notification"),
-                ],
+            Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 24, bottom: 8),
+              child: Text(
+                "Match Notifications",
+                style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-
+            
             Flexible(
-              child: SizedBox(
-                height: 300,
-                child: TabBarView(
-                  controller: _tabController,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildAlarmTab(textColor, subTextColor, isDark),
-                    _buildNotificationTab(textColor, subTextColor, isDark),
+                    _buildTriggerRow(
+                      "Before match reminder",
+                      _notifyBeforeMatch,
+                      (val) => setState(() => _notifyBeforeMatch = val!),
+                      textColor,
+                    ),
+                    if (_notifyBeforeMatch) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildTimeBox("Hours", _hours, (val) => setState(() => _hours = val), isDark, textColor, subTextColor),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                          ),
+                          _buildTimeBox("Minutes", _minutes, (val) => setState(() => _minutes = val), isDark, textColor, subTextColor),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    _buildTriggerRow(
+                      "At the start of match",
+                      _notifyAtStart,
+                      (val) => setState(() => _notifyAtStart = val!),
+                      textColor,
+                    ),
+                    const SizedBox(height: 24),
+                    _buildTriggerRow(
+                      "Full Time Result",
+                      _notifyAtFullTime,
+                      (val) => setState(() => _notifyAtFullTime = val!),
+                      textColor,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "Get notified automatically for these match events.",
+                      style: TextStyle(color: subTextColor, fontSize: 12),
+                    ),
                   ],
                 ),
               ),
@@ -151,87 +168,6 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
     );
   }
 
-  Widget _buildAlarmTab(Color textColor, Color subTextColor, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Match Alarm",
-            style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          _buildTriggerRow(
-            "Before match",
-            _notifyBeforeMatch,
-            (val) => setState(() {
-              _notifyBeforeMatch = val!;
-              if (_notifyBeforeMatch) _notifyAtStart = false;
-            }),
-            textColor,
-          ),
-          const SizedBox(height: 16),
-          // Time Pickers
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildTimeBox("Hours", _hours, (val) => setState(() => _hours = val), isDark, textColor, subTextColor),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-              ),
-              _buildTimeBox("Minutes", _minutes, (val) => setState(() => _minutes = val), isDark, textColor, subTextColor),
-            ],
-          ),
-          const SizedBox(height: 24),
-          _buildTriggerRow(
-            "At the start of match",
-            _notifyAtStart,
-            (val) => setState(() {
-              _notifyAtStart = val!;
-              if (_notifyAtStart) _notifyBeforeMatch = false;
-            }),
-            textColor,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNotificationTab(Color textColor, Color subTextColor, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Notification Triggers",
-            style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          _buildTriggerRow(
-            "Match Start",
-            _notifyAtStart,
-            (val) => setState(() => _notifyAtStart = val!),
-            textColor,
-          ),
-          const SizedBox(height: 20),
-          _buildTriggerRow(
-            "Full Time Result",
-            _notifyAtFullTime,
-            (val) => setState(() => _notifyAtFullTime = val!),
-            textColor,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            "Get notified automatically when the match starts or ends.",
-            style: TextStyle(color: subTextColor, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildTriggerRow(String label, bool value, Function(bool?) onChanged, Color textColor, {bool enabled = true}) {
     final Color activeText = enabled ? textColor : (textColor.withOpacity(0.4));
@@ -318,8 +254,8 @@ class _MatchAlarmDialogState extends State<MatchAlarmDialog> with SingleTickerPr
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(settings.isActive 
-          ? "Alarm set for ${widget.matchTitle}" 
-          : "Alarms removed for ${widget.matchTitle}"),
+          ? "Notifications set for ${widget.matchTitle}" 
+          : "Notifications removed for ${widget.matchTitle}"),
         backgroundColor: settings.isActive ? _mintColor : Colors.grey[800],
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

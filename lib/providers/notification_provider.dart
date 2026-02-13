@@ -92,30 +92,27 @@ class NotificationProvider with ChangeNotifier {
       // 2. Schedule new notifications/alarms
       if (settings.notifyBeforeMatch && settings.beforeMatchMinutes > 0) {
         final scheduledDate = startTime.subtract(Duration(minutes: settings.beforeMatchMinutes));
-        // Use ALARM for pre-match reminders
-        await _notificationService.scheduleAlarm(
+        await _notificationService.scheduleNotification(
           id: matchId * 10 + 1,
           title: "Match Reminder",
           body: "$matchTitle starts in ${settings.beforeMatchMinutes} minutes!",
-          scheduledTime: scheduledDate,
+          scheduledDate: scheduledDate,
         );
       } else if (settings.notifyBeforeMatch && settings.beforeMatchMinutes == 0) {
-        // If 0 minutes selected but before match is on, schedule for start time as alarm
-         await _notificationService.scheduleAlarm(
+        await _notificationService.scheduleNotification(
           id: matchId * 10 + 1,
           title: "Match Reminder",
           body: "$matchTitle is starting now!",
-          scheduledTime: startTime,
+          scheduledDate: startTime,
         );
       }
 
       if (settings.notifyAtStart) {
-        // Use ALARM for start to ensure it's loud as expected
-        await _notificationService.scheduleAlarm(
+        await _notificationService.scheduleNotification(
           id: matchId * 10 + 2,
           title: "Match Starting",
           body: "$matchTitle has started!",
-          scheduledTime: startTime,
+          scheduledDate: startTime,
         );
       }
 
@@ -173,17 +170,16 @@ class NotificationProvider with ChangeNotifier {
   }
 
   Future<void> _cancelMatchNotifications(int matchId) async {
-    // Cancel alarms
+    // Ensure both Alarms and Local Notifications are cleared for these IDs
     await _notificationService.stopAlarm(matchId * 10 + 1);
     await _notificationService.stopAlarm(matchId * 10 + 2);
     
-    // Cancel local notifications
     await _notificationService.cancelNotification(matchId * 10 + 1);
     await _notificationService.cancelNotification(matchId * 10 + 2);
     await _notificationService.cancelNotification(matchId * 10 + 3);
   }
 
-  bool isAlarmSet(int matchId) {
+  bool isNotificationSet(int matchId) {
     return _settingsMap.containsKey(matchId) && _settingsMap[matchId]!.isActive;
   }
 }

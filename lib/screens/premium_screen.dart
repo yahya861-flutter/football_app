@@ -134,7 +134,7 @@ class _PremiumScreenState extends State<PremiumScreen> {
                         SizedBox(height: isSmallScreen ? 12 : 24),
                         _buildFeatureRow("Covering 2100+ leagues", mintColor, isSmallScreen),
                         _buildFeatureRow("Ads Free Version", mintColor, isSmallScreen),
-                        _buildFeatureRow("Custom Match Alarm", mintColor, isSmallScreen),
+                        _buildFeatureRow("Custom Match Notifications", mintColor, isSmallScreen),
                       ],
                     ),
                   ),

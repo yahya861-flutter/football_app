@@ -7,7 +7,7 @@ import 'package:football_app/providers/follow_provider.dart';
 import 'package:football_app/screens/match_details_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
 import 'package:football_app/providers/notification_provider.dart';
-import 'package:football_app/widgets/match_alarm_dialog.dart';
+import 'package:football_app/widgets/match_notification_dialog.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -381,7 +381,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
             Consumer<NotificationProvider>(
               builder: (context, notificationProvider, _) {
                 final matchId = fixture['id'] ?? 0;
-                final bool isActive = notificationProvider.isAlarmSet(matchId);
+                final bool isActive = notificationProvider.isNotificationSet(matchId);
                 final String homeName = fixture['participants']?[0]?['name'] ?? 'Home';
                 final String awayName = fixture['participants']?[1]?['name'] ?? 'Away';
                 final timestamp = fixture['starting_at_timestamp'];
@@ -401,7 +401,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                           notificationProvider.toggleAllOff(matchId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Alarms removed for $homeName vs $awayName"),
+                              content: Text("Notifications removed for $homeName vs $awayName"),
                               backgroundColor: Colors.grey[800],
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 1),
@@ -410,7 +410,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                         } else {
                           showDialog(
                             context: context,
-                            builder: (context) => MatchAlarmDialog(
+                            builder: (context) => MatchNotificationDialog(
                               matchId: matchId,
                               matchTitle: "$homeName vs $awayName",
                               startTime: startTime,
@@ -427,7 +427,7 @@ class _LeagueDetailsScreenState extends State<LeagueDetailsScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isActive ? Icons.alarm_on : Icons.alarm,
+                      isActive ? Icons.notifications_active : Icons.notifications_none_rounded,
                       color: !isUpcoming 
                         ? Colors.white10 
                         : (isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54)),

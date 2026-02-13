@@ -383,9 +383,9 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
               child: Column(
                 children: [
                   _buildInfoRow(Icons.emoji_events_outlined, "Competition", leagueName),
-                  _buildInfoRow(Icons.alarm, "Kick off", formattedKickOff),
+                  _buildInfoRow(Icons.notifications_none_rounded, "Kick off", formattedKickOff),
                   if (htScore.isNotEmpty)
-                    _buildInfoRow(Icons.alarm_on, "Half Time Result", htScore),
+                    _buildInfoRow(Icons.notifications_active, "Half Time Result", htScore),
                   _buildInfoRow(Icons.location_on_outlined, "Venue", venueDisplay, showMap: true),
                 ],
               ),
@@ -865,8 +865,8 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
             children: [
               Icon(
                 icon, 
-                size: (icon == Icons.alarm || icon == Icons.alarm_on) ? 28 : 20, 
-                color: (icon == Icons.alarm || icon == Icons.alarm_on) ? const Color(0xFF48C9B0) : const Color(0xFFFF8700).withOpacity(0.7)
+                size: (icon == Icons.notifications_none_rounded || icon == Icons.notifications_active) ? 28 : 20, 
+                color: (icon == Icons.notifications_none_rounded || icon == Icons.notifications_active) ? const Color(0xFF48C9B0) : const Color(0xFFFF8700).withOpacity(0.7)
               ),
               const SizedBox(width: 8),
               Text(
@@ -1475,7 +1475,7 @@ class _MatchDetailsScreenState extends State<MatchDetailsScreen> {
                 ],
               ),
             ),
-            Icon(Icons.alarm, color: isDark ? Colors.white60 : Colors.black54, size: 28),
+            Icon(Icons.notifications_active, color: isDark ? Colors.white60 : Colors.black54, size: 28),
           ],
         ),
       ),

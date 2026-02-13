@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/follow_provider.dart';
 import '../providers/notification_provider.dart';
-import '../widgets/match_alarm_dialog.dart';
+import '../widgets/match_notification_dialog.dart';
 
 class TeamDetailsScreen extends StatefulWidget {
   final int teamId;
@@ -636,7 +636,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
               Consumer<NotificationProvider>(
                 builder: (context, notificationProvider, _) {
                   final int matchId = fixture['id'] ?? 0;
-                  final bool isActive = notificationProvider.isAlarmSet(matchId);
+                  final bool isActive = notificationProvider.isNotificationSet(matchId);
                   final DateTime startTime = timestamp != null 
                       ? DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)
                       : DateTime.now();
@@ -648,7 +648,7 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                       } else {
                         showDialog(
                           context: context,
-                          builder: (context) => MatchAlarmDialog(
+                          builder: (context) => MatchNotificationDialog(
                             matchId: matchId,
                             matchTitle: "${homeTeam?['name'] ?? 'Home'} vs ${awayTeam?['name'] ?? 'Away'}",
                             startTime: startTime,
@@ -659,13 +659,13 @@ class _TeamDetailsScreenState extends State<TeamDetailsScreen> {
                     child: Column(
                       children: [
                         Icon(
-                          isActive ? Icons.alarm_on : Icons.alarm, 
+                          isActive ? Icons.notifications_active : Icons.notifications_none_rounded, 
                           color: isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54), 
                           size: 28
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          isActive ? "On" : "Alarm", 
+                          isActive ? "On" : "Notify", 
                           style: TextStyle(color: isActive ? const Color(0xFF48C9B0) : subTextColor, fontSize: 10)
                         ),
                       ],

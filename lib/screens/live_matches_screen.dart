@@ -1,5 +1,5 @@
 import 'package:football_app/providers/notification_provider.dart';
-import 'package:football_app/widgets/match_alarm_dialog.dart';
+import 'package:football_app/widgets/match_notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -241,7 +241,7 @@ class LiveMatchesScreen extends StatelessWidget {
             Consumer<NotificationProvider>(
               builder: (context, notificationProvider, _) {
                 final matchId = match['id'] ?? 0;
-                final bool isActive = notificationProvider.isAlarmSet(matchId);
+                final bool isActive = notificationProvider.isNotificationSet(matchId);
                 final String homeName = homeTeam?['name'] ?? 'Home';
                 final String awayName = awayTeam?['name'] ?? 'Away';
                 final timestamp = match['starting_at_timestamp'];
@@ -259,7 +259,7 @@ class LiveMatchesScreen extends StatelessWidget {
                           notificationProvider.toggleAllOff(matchId);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text("Alarms removed for $homeName vs $awayName"),
+                              content: Text("Notifications removed for $homeName vs $awayName"),
                               backgroundColor: Colors.grey[800],
                               behavior: SnackBarBehavior.floating,
                               duration: const Duration(seconds: 1),
@@ -268,7 +268,7 @@ class LiveMatchesScreen extends StatelessWidget {
                         } else {
                           showDialog(
                             context: context,
-                            builder: (context) => MatchAlarmDialog(
+                            builder: (context) => MatchNotificationDialog(
                               matchId: matchId,
                               matchTitle: "$homeName vs $awayName",
                               startTime: startTime,
@@ -285,7 +285,7 @@ class LiveMatchesScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      isActive ? Icons.alarm_on : Icons.alarm,
+                      isActive ? Icons.notifications_active : Icons.notifications_none_rounded,
                       color: !isUpcoming 
                         ? subTextColor.withOpacity(0.1) 
                         : (isActive ? const Color(0xFF48C9B0) : (isDark ? Colors.white60 : Colors.black54)),

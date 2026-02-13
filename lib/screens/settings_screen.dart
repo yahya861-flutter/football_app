@@ -156,7 +156,7 @@ class SettingsScreen extends StatelessWidget {
             textColor: textColor,
             onTap: () => _launchUrl(_youtubeUrl),
           ),
-          /*const SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildActionTile(
             icon: Icons.notifications,
             title: "Test Notification",
@@ -165,22 +165,6 @@ class SettingsScreen extends StatelessWidget {
             iconSize: 28,
             onTap: () {
               context.read<NotificationProvider>().showTestNotification();
-            },
-          ),
-          _buildActionTile(
-            icon: Icons.alarm,
-            title: "Test Scheduled Alarm (10s)",
-            textColor: textColor,
-            iconColor: const Color(0xFF48C9B0),
-            iconSize: 28,
-            onTap: () {
-              context.read<NotificationProvider>().scheduleTestAlarm();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Loud Alarm scheduled for 10 seconds..."),
-                  duration: Duration(seconds: 3),
-                ),
-              );
             },
           ),
           _buildActionTile(
@@ -193,12 +177,12 @@ class SettingsScreen extends StatelessWidget {
               context.read<NotificationProvider>().scheduleTestNotification();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text("Standard Notification scheduled for 10 seconds..."),
+                  content: Text("Notification scheduled for 10 seconds..."),
                   duration: Duration(seconds: 3),
                 ),
               );
             },
-          ),*/
+          ),
         ],
       ),
     );
