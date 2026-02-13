@@ -88,6 +88,32 @@ class NotificationService {
       await androidImplementation?.requestExactAlarmsPermission();
       
       debugPrint("🔔 Permissions requested for Android.");
+    } else if (Platform.isMacOS) {
+      // Add a small delay to ensure the system is ready to show the prompt
+      debugPrint("🔔 [INIT] Waiting 2s before requesting macOS permissions...");
+      await Future.delayed(const Duration(seconds: 2));
+      
+      final bool? granted = await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<MacOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      debugPrint("🔔 [INIT] Permissions result for macOS: Granted = $granted");
+    } else if (Platform.isIOS) {
+      // Add a small delay to ensure the system is ready to show the prompt
+      debugPrint("🔔 [INIT] Waiting 2s before requesting iOS permissions...");
+      await Future.delayed(const Duration(seconds: 2));
+
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+      debugPrint("🔔 [INIT] Permissions requested for iOS.");
     }
   }
 
@@ -204,6 +230,15 @@ class NotificationService {
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
+            presentBanner: true,
+            presentList: true,
+          ),
+          macOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            presentBanner: true,
+            presentList: true,
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -221,7 +256,9 @@ class NotificationService {
            body: body,
            scheduledDate: tzDateTime,
            notificationDetails: const NotificationDetails(
-             android: AndroidNotificationDetails('match_reminders', 'Match Reminders')
+             android: AndroidNotificationDetails('match_reminders', 'Match Reminders'),
+             iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+             macOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
            ),
            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
          );
@@ -241,7 +278,7 @@ class NotificationService {
         id: id,
         title: title,
         body: body,
-        notificationDetails: NotificationDetails(
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'match_reminders',
             'Match Reminders',
@@ -253,10 +290,19 @@ class NotificationService {
             enableVibration: true,
             visibility: NotificationVisibility.public,
           ),
-          iOS: const DarwinNotificationDetails(
+          iOS: DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
+            presentBanner: true,
+            presentList: true,
+          ),
+          macOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            presentBanner: true,
+            presentList: true,
           ),
         ),
       );

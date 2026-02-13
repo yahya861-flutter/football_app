@@ -156,7 +156,7 @@ class SettingsScreen extends StatelessWidget {
             textColor: textColor,
             onTap: () => _launchUrl(_youtubeUrl),
           ),
-         /* const SizedBox(height: 16),
+          const SizedBox(height: 16),
           _buildActionTile(
             icon: Icons.notifications,
             title: "Test Notification",
@@ -182,7 +182,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               );
             },
-          ),*/
+          ),
         ],
       ),
     );

@@ -1,6 +1,9 @@
-import 'dart:async';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+ import 'dart:async';
+ import 'dart:io';
+ import 'package:flutter/foundation.dart';
+ import 'package:flutter/cupertino.dart';
+ import 'package:flutter/material.dart';
+ import 'package:football_app/widgets/mac_dock_nav_bar.dart';
 import 'package:football_app/screens/premium_screen.dart';
 import 'package:football_app/screens/settings_screen.dart';
 import 'package:football_app/screens/team_details_screen.dart';
@@ -137,58 +140,83 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     _titles[_selectedIndex],
                     style: TextStyle(color: textPrimary, fontWeight: FontWeight.bold),
                   ),
-        actions: _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
-                ? [
-                    RotationTransition(
-                      turns: Tween(begin: 0.0, end: 1.0).animate(_rotationController),
-                      child: IconButton(
-                        icon: Icon(Icons.refresh, color: textPrimary),
-                        onPressed: _handleRefresh,
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.search, color: textPrimary),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const SearchScreen()),
-                        );
-                      },
-                    ),
-                  ]
-                : [], // No tools for other screens
-      ),
-      // Display the screen corresponding to the current selection
-      body: _screens[_selectedIndex],
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: isDark ? Colors.white.withOpacity(0.08) : Colors.transparent,
-              width: 0.8,
-            ),
-          ),
-        ),
-        child: BottomAppBar(
-          color: isDark ? const Color(0xFF121212) : Colors.grey[200]!,
-          elevation: isDark ? 0 : 10,
-          padding: EdgeInsets.zero,
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
-                _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
-                _buildLiveNavItem(2, accentColor), // Integrated Live Button
-                _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
-                _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
-              ],
-            ),
-          ),
-        ),
-      ),
+         actions: _selectedIndex == 0 // Show Search and Refresh ONLY on Matches tab
+                 ? [
+                     RotationTransition(
+                       turns: Tween(begin: 0.0, end: 1.0).animate(_rotationController),
+                       child: IconButton(
+                         icon: Icon(Icons.refresh, color: textPrimary),
+                         onPressed: _handleRefresh,
+                       ),
+                     ),
+                     IconButton(
+                       icon: Icon(Icons.search, color: textPrimary),
+                       onPressed: () {
+                         Navigator.push(
+                           context,
+                           MaterialPageRoute(builder: (context) => const SearchScreen()),
+                         );
+                       },
+                     ),
+                   ]
+                 : [], // No tools for other screens
+       ),
+       // Display the screen corresponding to the current selection
+       body: Stack(
+         children: [
+           _screens[_selectedIndex],
+           if (!kIsWeb && Platform.isMacOS)
+             Positioned(
+               bottom: 20,
+               left: 0,
+               right: 0,
+               child: Center(
+                 child: MacDockNavBar(
+                   selectedIndex: _selectedIndex,
+                   onItemSelected: (index) => setState(() => _selectedIndex = index),
+                   items: [
+                     MacDockItem(icon: Icons.sports_soccer, label: "Matches"),
+                     MacDockItem(icon: Icons.emoji_events, label: "Leagues"),
+                     MacDockItem(icon: Icons.live_tv, label: "Live"),
+                     MacDockItem(icon: Icons.groups_rounded, label: "Teams"),
+                     MacDockItem(icon: Icons.settings, label: "Settings"),
+                   ],
+                 ),
+               ),
+             ),
+         ],
+       ),
+       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+       bottomNavigationBar: (!kIsWeb && Platform.isMacOS) 
+         ? null 
+         : Container(
+             decoration: BoxDecoration(
+               border: Border(
+                 top: BorderSide(
+                   color: isDark ? Colors.white.withOpacity(0.08) : Colors.transparent,
+                   width: 0.8,
+                 ),
+               ),
+             ),
+             child: BottomAppBar(
+               color: isDark ? const Color(0xFF121212) : Colors.grey[200]!,
+               elevation: isDark ? 0 : 10,
+               padding: EdgeInsets.zero,
+               child: SizedBox(
+                 height: 60,
+                 child: Row(
+                   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                   children: [
+                     _buildBottomNavItem(0, Icons.sports_soccer, "Matches", accentColor),
+                     _buildBottomNavItem(1, Icons.emoji_events, "Leagues", accentColor),
+                     _buildLiveNavItem(2, accentColor), // Integrated Live Button
+                     _buildBottomNavItem(3, Icons.groups_rounded, "Teams", accentColor),
+                     _buildBottomNavItem(4, Icons.settings, "Settings", accentColor),
+                   ],
+                 ),
+               ),
+             ),
+           ),
     ),
   );
 }
