@@ -28,9 +28,12 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     // Calculate the total width to ensure the background matches the Row
-    final double totalIconWidth = widget.items.length * (_baseSize + 16.0);
-    final double totalDockWidth = totalIconWidth + 20.0;
+    // Increased spacing for larger icons
+    final double totalIconWidth = widget.items.length * (_baseSize + 20.0);
+    final double totalDockWidth = totalIconWidth + 24.0;
 
     return MouseRegion(
       onHover: (event) {
@@ -40,30 +43,34 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
       },
       onExit: (_) => setState(() => _hoveredIndex = null),
       child: Stack(
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.center, // Better vertical centering
         clipBehavior: Clip.none,
         children: [
           // 1. The Dock Shelf Background (Fixed height, does not grow)
           Container(
             width: totalDockWidth,
-            height: _baseSize + 16,
+            height: _baseSize + 32, // More height for premium feel and breathing room
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: Colors.black.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(32),
+              color: isDark 
+                  ? Colors.black.withOpacity(0.4) 
+                  : Colors.white.withOpacity(0.4),
               border: Border.all(
-                color: Colors.white.withOpacity(0.15),
+                color: isDark 
+                    ? Colors.white.withOpacity(0.15) 
+                    : Colors.black.withOpacity(0.1),
                 width: 0.8,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withOpacity(isDark ? 0.5 : 0.15),
                   blurRadius: 40,
                   offset: const Offset(0, 15),
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(23),
+              borderRadius: BorderRadius.circular(31),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                 child: const SizedBox.expand(),
@@ -73,10 +80,10 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
           
           // 2. The Icons Row (Floating above the shelf, allowed to overflow)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 20, bottom: 8), // Adjusted vertical balance
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center, // Centered in the row
               children: List.generate(widget.items.length, (index) {
                 return _buildDockItem(index);
               }),
@@ -90,14 +97,16 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
   Widget _buildDockItem(int index) {
     final item = widget.items[index];
     final bool isSelected = widget.selectedIndex == index;
-    final bool isLive = index == 2; // Index 2 is always "Live"
+    final bool isLive = index == 2; 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     // Calculate scaling factor based on PIXEL distance from mouse
     double scale = 1.0;
-    const double pixelRange = 150.0;
+    const double pixelRange = 160.0;
     
     if (_hoveredIndex != null) {
-      final double iconCenterX = 10.0 + (index * (_baseSize + 16)) + (_baseSize / 2);
+      // Re-calculate center for pixel logic with new spacing
+      final double iconCenterX = 12.0 + (index * (_baseSize + 20)) + (_baseSize / 2);
       final double distance = (_hoveredIndex! - iconCenterX).abs();
       
       if (distance < pixelRange) {
@@ -108,21 +117,27 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
 
     // Colors
     const Color accentColor = Color(0xFFFF8700);
+    final Color iconColor = isLive 
+        ? Colors.white 
+        : (isSelected 
+            ? accentColor 
+            : (isDark ? Colors.white : Colors.black));
 
     return GestureDetector(
       onTap: () => widget.onItemSelected(index),
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 100),
               curve: Curves.easeOutCubic,
               transform: Matrix4.identity()
                 ..scale(scale)
-                ..translate(0.0, - (scale - 1.0) * 25 - (isLive ? 5 : 0)), // Live item always floats slightly
+                ..translate(0.0, - (scale - 1.0) * 30 - (isLive ? 5 : 0)), // Higher lift for engagement
               width: _baseSize,
               height: _baseSize,
               child: Stack(
@@ -155,30 +170,24 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
                           ),
                         );
                       },
-                      onEnd: () {
-                        setState(() {
-                          _livePulseKey++;
-                        });
-                      },
+                      onEnd: () => setState(() => _livePulseKey++),
                     ),
                   
-                  // Icon
+                  // Icon (Increased size to 34)
                   Icon(
                     item.icon,
-                    size: isLive ? 24 : 28,
-                    color: isLive 
-                        ? Colors.white 
-                        : (isSelected ? accentColor : Colors.white.withOpacity(0.85)),
+                    size: isLive ? 26 : 34,
+                    color: iconColor,
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 2), // Reduced Gap
+            const SizedBox(height: 4),
             // Active Indicator (Dot)
             AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              width: 4,
-              height: 4,
+              width: 5,
+              height: 5,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: isSelected ? accentColor : Colors.transparent,
@@ -190,7 +199,7 @@ class _MacDockNavBarState extends State<MacDockNavBar> {
                 ] : null,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 6), // Lifted dot further from border
           ],
         ),
       ),
